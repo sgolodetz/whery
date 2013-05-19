@@ -1,0 +1,51 @@
+Boost 1.53.0 Setup Instructions
+Last Updated by Stuart Golodetz on 20/05/13
+-------------------------------------------
+
+1. Extract boost_1_53_0.tar.gz into the libraries directory.
+
+	On Windows:
+
+	a) Just extract it using something like the shareware version of WinRAR.
+
+	On Linux or Mac:
+
+	a) Change to the libraries directory.
+	b) Run "tar xzf setup/boost_1_53_0/boost_1_53_0.tar.gz".
+
+2. Rename the boost_1_53_0 subdirectory of libraries to boost-setup.
+
+3. For Visual Studio 2010 and later only:
+
+	a) Open boost-setup\boost\test\impl\compiler_log_formatter.ipp
+	b) Change this line:
+
+	output << "error in \"" << test_phase_identifier() << "\": ";
+
+	to this:
+
+	output << "error : in \"" << test_phase_identifier() << "\": ";
+
+This fixes the problem of test failures not appearing in the error pane (the format changed between Visual Studio 2008 and Visual Studio 2010).
+
+4. Whilst most of the Boost libraries are header-only (i.e. there's no compilation needed), whery uses some Boost libraries that need compiling: in particular, date_time, filesystem and thread. To compile those libraries, you need to follow the instructions here:
+
+http://www.boost.org/doc/libs/1_53_0/more/getting_started/index.html
+
+(If they're no longer there by this point, the Getting Started instructions for the latest version of Boost will hopefully suffice. Search for it on the main page at www.boost.org.)
+
+Essentially, you need to run the following at the command prompt (from within the boost-setup directory).
+
+Windows (Visual Studio 2010):
+
+bootstrap
+b2 -j2 --libdir=..\boost_1_53_0\lib --includedir=..\boost_1_53_0\include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete toolset=msvc-10.0 install
+
+Linux or Mac:
+
+bootstrap
+b2 -j2 --libdir=../boost_1_53_0/lib --includedir=../boost_1_53_0/include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete --layout=versioned toolset=gcc install
+
+The -j2 option is added to help improve the speed of the builds; it can be modified/removed as desired.
+
+5. (Optional) Remove the boost-setup directory as it is no longer needed.
