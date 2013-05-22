@@ -11,7 +11,7 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-FieldTupleComparator::FieldTupleComparator(const std::vector<std::pair<int,SortDirection> >& fieldIndices)
+FieldTupleComparator::FieldTupleComparator(const std::vector<std::pair<unsigned int,SortDirection> >& fieldIndices)
 :	m_fieldIndices(fieldIndices)
 {
 	if(fieldIndices.empty())

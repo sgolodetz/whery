@@ -53,6 +53,23 @@ public:
 	//#################### PUBLIC METHODS ####################
 public:
 	/**
+	Copies the fields of the source record across to this record. The two records
+	must have matching arities and the individual field types must be compatible.
+
+	\param source					The record from which to copy fields.
+	\throw std::bad_cast			If one or more of the individual field types are incompatible.
+	\throw std::invalid_argument	If the records do not have matching arities.
+	*/
+	void copy_from(const Record& source) const;
+
+	/**
+	Gets the location of the record in memory.
+
+	\return	The location of the record in memory.
+	*/
+	const char *location() const;
+
+	/**
 	Gets the overall size of the record (in bytes).
 
 	\return	The overall size of the record (in bytes).

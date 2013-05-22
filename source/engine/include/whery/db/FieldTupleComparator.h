@@ -31,7 +31,7 @@ private:
 	The non-empty list of field indices on which to sort (in order),
 	together with their sort directions.
 	*/
-	std::vector<std::pair<int,SortDirection> > m_fieldIndices;
+	std::vector<std::pair<unsigned int,SortDirection> > m_fieldIndices;
 
 	//#################### CONSTRUCTORS ####################
 public:
@@ -42,7 +42,7 @@ public:
 									together with their sort directions.
 	\throw std::invalid_argument	If fieldIndices is empty.
 	*/
-	explicit FieldTupleComparator(const std::vector<std::pair<int,SortDirection> >& fieldIndices);
+	explicit FieldTupleComparator(const std::vector<std::pair<unsigned int,SortDirection> >& fieldIndices);
 
 	//#################### PUBLIC OPERATORS ####################
 public:

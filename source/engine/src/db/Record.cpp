@@ -31,6 +31,25 @@ Field Record::field(unsigned int i) const
 
 //#################### PUBLIC METHODS ####################
 
+void Record::copy_from(const Record& source) const
+{
+	if(source.arity() != arity())
+	{
+		throw std::invalid_argument("It is not possible to copy from a record whose arity differs from this record.");
+	}
+
+	// Copy the individual fields across. If the field types are not compatible, an exception will be thrown.
+	for(size_t i = 0; i < arity(); ++i)
+	{
+		field(i).set_from(source.field(i));
+	}
+}
+
+const char *Record::location() const
+{
+	return m_location;
+}
+
 unsigned int Record::size() const
 {
 	return m_manipulator.size();
