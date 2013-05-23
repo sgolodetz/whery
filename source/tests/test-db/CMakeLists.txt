@@ -13,6 +13,7 @@ SET(targetname test-db)
 #############################
 
 SET(sources
+DataPageTest.cpp
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshRecordTest.cpp

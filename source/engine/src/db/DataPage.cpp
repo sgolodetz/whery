@@ -74,15 +74,6 @@ std::vector<Record> DataPage::records_by_value(
 	throw 23;
 }
 
-std::vector<Record> DataPage::records_by_range(
-	const std::vector<unsigned int>& projectedFields,
-	const FieldTuple& lowerBound,
-	const FieldTuple& upperBound) const
-{
-	// TODO
-	throw 23;
-}
-
 unsigned int DataPage::size() const
 {
 	return m_buffer.size();
