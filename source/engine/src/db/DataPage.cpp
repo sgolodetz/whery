@@ -9,6 +9,7 @@
 
 #include "whery/db/FieldTupleComparator.h"
 #include "whery/db/RecordProjection.h"
+#include "whery/db/ValueKey.h"
 
 namespace whery {
 
@@ -81,34 +82,27 @@ std::vector<Record> DataPage::records() const
 	return result;
 }
 
-std::vector<Record> DataPage::records_by_range(
-		const std::vector<unsigned int>& projectedFields,
-		const FieldTuple& lowerBound,
-		const FieldTuple& upperBound) const
+std::vector<Record> DataPage::records_by_range(const RangeKey& key) const
 {
 	// TODO
 	throw 23;
 }
 
-std::vector<Record> DataPage::records_by_value(
-	const std::vector<unsigned int>& projectedFields,
-	const FieldTuple& key) const
+std::vector<Record> DataPage::records_by_value(const ValueKey& key) const
 {
-	assert(projectedFields.size() == key.arity());
-
 	// Make the comparator.
-	std::vector<std::pair<unsigned int,SortDirection> > fieldIndices;
-	fieldIndices.reserve(key.arity());
-	for(size_t i = 0; i < key.arity(); ++i) fieldIndices.push_back(std::make_pair(i, ASC));
-	FieldTupleComparator comparator(fieldIndices);
+	std::vector<std::pair<unsigned int,SortDirection> > comparisonFields;
+	comparisonFields.reserve(key.arity());
+	for(size_t i = 0; i < key.arity(); ++i) comparisonFields.push_back(std::make_pair(i, ASC));
+	FieldTupleComparator comparator(comparisonFields);
 
-	// Filter the records for those whose projection equals the key.
+	// Filter the records for those whose projection on the key's field indices equals the key.
 	std::vector<Record> results;
 	results.reserve(m_records.size());
 	for(std::map<const char*,Record>::const_iterator it = m_records.begin(), iend = m_records.end(); it != iend; ++it)
 	{
 		const Record& record = it->second;
-		RecordProjection projection(record, projectedFields);
+		RecordProjection projection(record, key.field_indices());
 		if(comparator.compare(projection, key) == 0)
 		{
 			results.push_back(record);

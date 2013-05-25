@@ -13,6 +13,10 @@
 
 namespace whery {
 
+//#################### FORWARD DECLARATIONS ####################
+class RangeKey;
+class ValueKey;
+
 /**
 \brief An instance of this class represents a page of records for a database relation.
 
@@ -118,23 +122,23 @@ public:
 	*/
 	std::vector<Record> records() const;
 
-	std::vector<Record> records_by_range(
-		const std::vector<unsigned int>& projectedFields,
-		const FieldTuple& lowerBound,
-		const FieldTuple& upperBound
-	) const;
+	/**
+	Performs a range-based lookup to find the records on the page that lie in the
+	range specified by the key.
+
+	\param key	The key specifying the range in which matching records should lie.
+	\return		An array of Record objects that refer to the matching records on the page.
+	*/
+	std::vector<Record> records_by_range(const RangeKey& key) const;
 
 	/**
 	Performs a value-based lookup to find the records on the page that match
-	the specified key after projecting them on the specified fields.
+	the specified key.
 
-	\param projectedFields	The fields on which to project the records on the page.
-	\param key				The key against which to match the record projections.
+	\param key	The key against which to match the records.
+	\return		An array of Record objects that refer to the matching records on the page.
 	*/
-	std::vector<Record> records_by_value(
-		const std::vector<unsigned int>& projectedFields,
-		const FieldTuple& key
-	) const;
+	std::vector<Record> records_by_value(const ValueKey& key) const;
 
 	/**
 	Gets the size (in bytes) of the page's buffer.

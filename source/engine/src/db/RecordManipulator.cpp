@@ -21,15 +21,15 @@ RecordManipulator::RecordManipulator(const std::vector<const FieldManipulator*>&
 
 RecordManipulator::RecordManipulator(
 	const std::vector<const FieldManipulator*>& fieldManipulators,
-	const std::vector<unsigned int>& projectedFields)
+	const std::vector<unsigned int>& fieldIndices)
 {
 	std::vector<const FieldManipulator*> projectedFieldManipulators;
-	size_t projectedFieldCount = projectedFields.size();
-	projectedFieldManipulators.reserve(projectedFieldCount);
-	for(size_t i = 0; i < projectedFieldCount; ++i)
+	size_t fieldCount = fieldIndices.size();
+	projectedFieldManipulators.reserve(fieldCount);
+	for(size_t i = 0; i < fieldCount; ++i)
 	{
-		assert(projectedFields[i] < fieldManipulators.size());
-		projectedFieldManipulators.push_back(fieldManipulators[projectedFields[i]]);
+		assert(fieldIndices[i] < fieldManipulators.size());
+		projectedFieldManipulators.push_back(fieldManipulators[fieldIndices[i]]);
 	}
 
 	initialise(projectedFieldManipulators);

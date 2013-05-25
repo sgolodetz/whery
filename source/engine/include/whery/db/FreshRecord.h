@@ -35,18 +35,6 @@ public:
 	/**
 	Constructs a fresh record backed by a buffer of the correct size.
 
-	\param fieldManipulators		A non-empty array of manipulators for the fields in the record.
-	\param projectedFields			A non-empty array specified a way in which the manipulators should be rearranged.
-	\throw std::invalid_argument	If fieldManipulators or projectedFields is empty.
-	*/
-	FreshRecord(
-		const std::vector<const FieldManipulator*>& fieldManipulators,
-		const std::vector<unsigned int>& projectedFields
-	);
-
-	/**
-	Constructs a fresh record backed by a buffer of the correct size.
-
 	\param manipulator	The manipulator used to interact with the buffer.
 	*/
 	explicit FreshRecord(const RecordManipulator& manipulator);

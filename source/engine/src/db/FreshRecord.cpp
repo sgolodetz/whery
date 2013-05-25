@@ -15,14 +15,6 @@ FreshRecord::FreshRecord(const std::vector<const FieldManipulator*>& fieldManipu
 	set_fresh_buffer(m_manipulator.size());
 }
 
-FreshRecord::FreshRecord(
-	const std::vector<const FieldManipulator*>& fieldManipulators,
-	const std::vector<unsigned int>& projectedFields)
-:	Record(RecordManipulator(fieldManipulators, projectedFields))
-{
-	set_fresh_buffer(m_manipulator.size());
-}
-
 FreshRecord::FreshRecord(const RecordManipulator& manipulator)
 :	Record(manipulator)
 {

@@ -21,9 +21,11 @@ src/db/FieldManipulator.cpp
 src/db/FieldTupleComparator.cpp
 src/db/FreshRecord.cpp
 src/db/IntFieldManipulator.cpp
+src/db/RangeKey.cpp
 src/db/Record.cpp
 src/db/RecordManipulator.cpp
 src/db/RecordProjection.cpp
+src/db/ValueKey.cpp
 )
 
 SET(db_headers
@@ -35,9 +37,11 @@ include/whery/db/FieldTuple.h
 include/whery/db/FieldTupleComparator.h
 include/whery/db/FreshRecord.h
 include/whery/db/IntFieldManipulator.h
+include/whery/db/RangeKey.h
 include/whery/db/Record.h
 include/whery/db/RecordManipulator.h
 include/whery/db/RecordProjection.h
+include/whery/db/ValueKey.h
 )
 
 ##

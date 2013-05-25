@@ -47,17 +47,17 @@ public:
 	explicit RecordManipulator(const std::vector<const FieldManipulator*>& fieldManipulators);
 
 	/**
-	Constructs a record manipulator. This constructor is primarily useful when constructing record
-	manipulators for keys, since it allows us to pass in the field manipulators for the underlying
-	records and then rearrange them as necessary for the key.
+	Constructs a record manipulator. This constructor is used when constructing record
+	manipulators for keys, since it allows us to pass in the field manipulators for the
+	underlying records and then rearrange them as necessary for the key.
 
 	\param fieldManipulators		A non-empty array of manipulators for the fields in a target record.
-	\param projectedFields			A non-empty array specified a way in which the manipulators should be rearranged.
-	\throw std::invalid_argument	If fieldManipulators or projectedFields is empty.
+	\param fieldIndices				A non-empty array specifying the indices of the fields to be used for the key.
+	\throw std::invalid_argument	If fieldManipulators or fieldIndices is empty.
 	*/
 	RecordManipulator(
 		const std::vector<const FieldManipulator*>& fieldManipulators,
-		const std::vector<unsigned int>& projectedFields
+		const std::vector<unsigned int>& fieldIndices
 	);
 
 	//#################### PUBLIC METHODS ####################

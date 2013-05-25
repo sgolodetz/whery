@@ -11,8 +11,8 @@ using namespace boost::assign;
 
 #include "whery/db/DataPage.h"
 #include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/FreshRecord.h"
 #include "whery/db/IntFieldManipulator.h"
+#include "whery/db/ValueKey.h"
 using namespace whery;
 
 #include "Constants.h"
@@ -100,28 +100,25 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 {
 	DataPage_Ptr page = make_data_page();
 
-	std::vector<unsigned int> projectedFields = list_of(0);
-	FreshRecord key(page->field_manipulators(), projectedFields);
+	ValueKey key(page->field_manipulators(), list_of(0));
 	key.field(0).set_int(7);
-	std::vector<Record> results = page->records_by_value(projectedFields, key);
+	std::vector<Record> results = page->records_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 1);
 	BOOST_CHECK_CLOSE(results[0].field(1).get_double(), 8.0, Constants::SMALL_EPSILON);
 	BOOST_CHECK_EQUAL(results[0].field(2).get_int(), 51);
 
-	projectedFields = list_of(1);
-	key = FreshRecord(page->field_manipulators(), projectedFields);
+	key = ValueKey(page->field_manipulators(), list_of(1));
 	key.field(0).set_double(9.0);
-	results = page->records_by_value(projectedFields, key);
+	results = page->records_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 1);
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 23);
 	BOOST_CHECK_EQUAL(results[0].field(2).get_int(), 84);
 
-	projectedFields = list_of(2);
-	key = FreshRecord(page->field_manipulators(), projectedFields);
+	key = ValueKey(page->field_manipulators(), list_of(2));
 	key.field(0).set_int(51);
-	results = page->records_by_value(projectedFields, key);
+	results = page->records_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 2);
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 7);
