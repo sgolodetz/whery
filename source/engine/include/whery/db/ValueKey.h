@@ -6,14 +6,14 @@
 #ifndef H_WHERY_VALUEKEY
 #define H_WHERY_VALUEKEY
 
-#include "FreshRecord.h"
+#include "FreshTuple.h"
 
 namespace whery {
 
 /**
 An instance of this class represents a key used for value lookups on database relations.
 */
-class ValueKey : public FreshRecord
+class ValueKey : public FreshTuple
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -25,7 +25,7 @@ public:
 	/**
 	Constructs a value key.
 
-	\param fieldManipulators		A non-empty array of manipulators for the fields in the records being keyed.
+	\param fieldManipulators		A non-empty array of manipulators for the fields in the tuples being keyed.
 	\param fieldIndices				A non-empty array specifying the indices of the fields to be used for the key.
 	\throw std::invalid_argument	If fieldManipulators or fieldIndices is empty.
 	*/

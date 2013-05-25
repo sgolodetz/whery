@@ -14,33 +14,33 @@ SET(targetname whery)
 
 ##
 SET(db_sources
+src/db/BackedTuple.cpp
 src/db/DataPage.cpp
 src/db/DoubleFieldManipulator.cpp
 src/db/Field.cpp
 src/db/FieldManipulator.cpp
-src/db/FieldTupleComparator.cpp
-src/db/FreshRecord.cpp
+src/db/FreshTuple.cpp
 src/db/IntFieldManipulator.cpp
 src/db/RangeKey.cpp
-src/db/Record.cpp
-src/db/RecordManipulator.cpp
-src/db/RecordProjection.cpp
+src/db/TupleComparator.cpp
+src/db/TupleManipulator.cpp
+src/db/TupleProjection.cpp
 src/db/ValueKey.cpp
 )
 
 SET(db_headers
+include/whery/db/BackedTuple.h
 include/whery/db/DataPage.h
 include/whery/db/DoubleFieldManipulator.h
 include/whery/db/Field.h
 include/whery/db/FieldManipulator.h
-include/whery/db/FieldTuple.h
-include/whery/db/FieldTupleComparator.h
-include/whery/db/FreshRecord.h
+include/whery/db/FreshTuple.h
 include/whery/db/IntFieldManipulator.h
 include/whery/db/RangeKey.h
-include/whery/db/Record.h
-include/whery/db/RecordManipulator.h
-include/whery/db/RecordProjection.h
+include/whery/db/Tuple.h
+include/whery/db/TupleComparator.h
+include/whery/db/TupleManipulator.h
+include/whery/db/TupleProjection.h
 include/whery/db/ValueKey.h
 )
 

@@ -1,9 +1,9 @@
 /**
- * whery: RecordManipulator.cpp
+ * whery: TupleManipulator.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/RecordManipulator.h"
+#include "whery/db/TupleManipulator.h"
 
 #include <cassert>
 
@@ -14,12 +14,12 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-RecordManipulator::RecordManipulator(const std::vector<const FieldManipulator*>& fieldManipulators)
+TupleManipulator::TupleManipulator(const std::vector<const FieldManipulator*>& fieldManipulators)
 {
 	initialise(fieldManipulators);
 }
 
-RecordManipulator::RecordManipulator(
+TupleManipulator::TupleManipulator(
 	const std::vector<const FieldManipulator*>& fieldManipulators,
 	const std::vector<unsigned int>& fieldIndices)
 {
@@ -37,39 +37,39 @@ RecordManipulator::RecordManipulator(
 
 //#################### PUBLIC METHODS ####################
 
-unsigned int RecordManipulator::arity() const
+unsigned int TupleManipulator::arity() const
 {
 	return m_fieldManipulators.size();
 }
 
-Field RecordManipulator::field(char *recordLocation, unsigned int i) const
+Field TupleManipulator::field(char *tupleLocation, unsigned int i) const
 {
 	assert(i < m_fieldManipulators.size());
-	return Field(recordLocation + m_fieldOffsets[i], *m_fieldManipulators[i]);
+	return Field(tupleLocation + m_fieldOffsets[i], *m_fieldManipulators[i]);
 }
 
-const std::vector<const FieldManipulator*>& RecordManipulator::field_manipulators() const
+const std::vector<const FieldManipulator*>& TupleManipulator::field_manipulators() const
 {
 	return m_fieldManipulators;
 }
 
-unsigned int RecordManipulator::size() const
+unsigned int TupleManipulator::size() const
 {
 	return m_size;
 }
 
 //#################### PRIVATE METHODS ####################
 
-void RecordManipulator::initialise(const std::vector<const FieldManipulator*>& fieldManipulators)
+void TupleManipulator::initialise(const std::vector<const FieldManipulator*>& fieldManipulators)
 {
 	if(fieldManipulators.empty())
 	{
-		throw std::invalid_argument("Records must contain at least one field.");
+		throw std::invalid_argument("Tuples must contain at least one field.");
 	}
 
 	m_fieldManipulators = fieldManipulators;
 
-	// Calculate the memory offsets of the fields (in bytes) from the start of a target record.
+	// Calculate the memory offsets of the fields (in bytes) from the start of a target tuple.
 	AlignmentTracker alignmentTracker;
 	m_fieldOffsets.reserve(m_fieldManipulators.size());
 	for(size_t i = 0, size = m_fieldManipulators.size(); i < size; ++i)
@@ -79,7 +79,7 @@ void RecordManipulator::initialise(const std::vector<const FieldManipulator*>& f
 		alignmentTracker.advance(m_fieldManipulators[i]->size());
 	}
 
-	// Advance to the next maximum-alignment boundary and store the size of the record.
+	// Advance to the next maximum-alignment boundary and store the size of the tuple.
 	alignmentTracker.advance_to_boundary(alignmentTracker.max_alignment());
 	m_size = alignmentTracker.offset();
 }

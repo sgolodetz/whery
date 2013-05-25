@@ -1,24 +1,24 @@
 /**
- * whery: FieldTuple.h
+ * whery: Tuple.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_FIELDTUPLE
-#define H_WHERY_FIELDTUPLE
+#ifndef H_WHERY_TUPLE
+#define H_WHERY_TUPLE
 
 #include "Field.h"
 
 namespace whery {
 
 /**
-\brief An instance of a class deriving from this one represents a tuple of fields (e.g. a record or key).
+\brief An instance of a class deriving from this one represents a tuple of fields (e.g. a database record or key).
 */
-class FieldTuple
+class Tuple
 {
 	//#################### DESTRUCTOR ####################
 protected:
-	/** Protected to prevent deletion via a FieldTuple pointer. */
-	~FieldTuple() {}
+	/** Protected to prevent deletion via a Tuple pointer. */
+	~Tuple() {}
 
 	//#################### PUBLIC ABSTRACT METHODS ####################
 public:

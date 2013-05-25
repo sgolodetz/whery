@@ -1,5 +1,5 @@
 /**
- * test-db: FreshRecordTest.cpp
+ * test-db: FreshTupleTest.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -9,7 +9,7 @@
 using namespace boost::assign;
 
 #include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/FreshRecord.h"
+#include "whery/db/FreshTuple.h"
 #include "whery/db/IntFieldManipulator.h"
 using namespace whery;
 
@@ -17,7 +17,7 @@ using namespace whery;
 
 //#################### TESTS ####################
 
-BOOST_AUTO_TEST_SUITE(FreshRecordTest)
+BOOST_AUTO_TEST_SUITE(FreshTupleTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
@@ -26,15 +26,15 @@ BOOST_AUTO_TEST_CASE(field)
 		(&DoubleFieldManipulator::instance())
 		(&IntFieldManipulator::instance());
 
-	FreshRecord record(fms);
-	record.field(0).set_int(23);
-	record.field(1).set_double(9.0);
-	record.field(2).set_int(84);
+	FreshTuple tuple(fms);
+	tuple.field(0).set_int(23);
+	tuple.field(1).set_double(9.0);
+	tuple.field(2).set_int(84);
 
-	// Check that we can retrieve the field values from the record correctly.
-	BOOST_CHECK_EQUAL(record.field(0).get_int(), 23);
-	BOOST_CHECK_CLOSE(record.field(1).get_double(), 9.0, Constants::SMALL_EPSILON);
-	BOOST_CHECK_EQUAL(record.field(2).get_int(), 84);
+	// Check that we can retrieve the field values from the tuple correctly.
+	BOOST_CHECK_EQUAL(tuple.field(0).get_int(), 23);
+	BOOST_CHECK_CLOSE(tuple.field(1).get_double(), 9.0, Constants::SMALL_EPSILON);
+	BOOST_CHECK_EQUAL(tuple.field(2).get_int(), 84);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

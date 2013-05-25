@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "Record.h"
+#include "BackedTuple.h"
 
 namespace whery {
 
@@ -18,35 +18,35 @@ class RangeKey;
 class ValueKey;
 
 /**
-\brief An instance of this class represents a page of records for a database relation.
+\brief An instance of this class represents a page of tuples for a database relation.
 
-Pages of records are of a fixed size, and as such can hold a maximum number of records.
+Pages of tuples are of a fixed size, and as such can hold a maximum number of tuples.
 When they are full, additional pages must be allocated.
 */
 class DataPage
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
-	/** The memory buffer used by the page to hold the record data. */
+	/** The memory buffer used by the page to hold the tuple data. */
 	std::vector<char> m_buffer;
 
-	/** A free list of records that have been deleted - these can be reallocated by add_record(). */
-	std::vector<Record> m_freeList;
+	/** A free list of tuples that have been deleted - these can be reallocated by add_tuple(). */
+	std::vector<BackedTuple> m_freeList;
 
-	/** The manipulator used to interact with the records in the buffer. */
-	RecordManipulator m_recordManipulator;
+	/** The manipulator used to interact with the tuples in the buffer. */
+	TupleManipulator m_tupleManipulator;
 
-	/** A map from record locations to the corresponding records. */
-	std::map<const char*,Record> m_records;
+	/** A map from tuple locations to the corresponding tuples. */
+	std::map<const char*,BackedTuple> m_tuples;
 
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
-	Constructs a data page to contain records whose fields can be manipulated
+	Constructs a data page to contain tuples whose fields can be manipulated
 	by the specified manipulators.
 
 	\param fieldManipulators		A non-empty array of manipulators to be used to manipulate
-									the fields of each record on the page.
+									the fields of each tuple on the page.
 	\param bufferSize				The size (in bytes) to use for the page's memory buffer.
 	\throw std::invalid_argument	If fieldManipulators is empty.
 	*/
@@ -56,7 +56,7 @@ public:
 private:
 	/**
 	Private and unimplemented for now - the compiler-generated defaults
-	would be inadequate, because the copied records map would refer to
+	would be inadequate, because the copied tuples map would refer to
 	the buffer on the original data page.
 	*/
 	DataPage(const DataPage&);
@@ -65,80 +65,80 @@ private:
 	//#################### PUBLIC METHODS ####################
 public:
 	/**
-	Adds a record to the page, provided there is enough space to do so.
+	Adds a tuple to the page, provided there is enough space to do so.
 
-	\return						A Record object referring to the newly-added record, if the add succeeds.
-	\throw std::out_of_range	If there is not enough space on the page to add a record.
+	\return						A BackedTuple object referring to the newly-added tuple, if the add succeeds.
+	\throw std::out_of_range	If there is not enough space on the page to add a tuple.
 	*/
-	Record add_record();
+	BackedTuple add_tuple();
 
 	/**
-	Deletes the specified record from the page, if it is present. The Record object
+	Deletes the specified tuple from the page, if it is present. The BackedTuple object
 	is invalid after the deletion and should no longer be used by the calling code.
 
-	\param record	A Record object referring to the record to delete.
+	\param tuple	A BackedTuple object referring to the tuple to delete.
 	*/
-	void delete_record(const Record& record);
+	void delete_tuple(const BackedTuple& tuple);
 
 	/**
-	Gets the number of additional records that can fit on the page.
+	Gets the number of additional tuples that can fit on the page.
 
-	\return	The number of additional records that can fit on the page.
+	\return	The number of additional tuples that can fit on the page.
 	*/
-	unsigned int empty_records() const;
+	unsigned int empty_tuples() const;
 
 	/**
-	Gets the manipulators for the fields in records on the page.
+	Gets the manipulators for the fields of the tuples on the page.
 
-	\return	The manipulators for the fields in records on the page.
+	\return	The manipulators for the fields of the tuples on the page.
 	*/
 	const std::vector<const FieldManipulator*>& field_manipulators() const;
 
 	/**
-	Gets the maximum number of records that can be stored on the page.
+	Gets the maximum number of tuples that can be stored on the page.
 
-	\return	The maximum number of records that can be stored on the page.
+	\return	The maximum number of tuples that can be stored on the page.
 	*/
-	unsigned int max_records() const;
+	unsigned int max_tuples() const;
 
 	/**
-	Gets the percentage of the page's buffer that currently contains records.
+	Gets the percentage of the page's buffer that currently contains tuples.
 
-	\return	The percentage of the page's buffer that currently contains records (in the range 0-100).
+	\return	The percentage of the page's buffer that currently contains tuples (in the range 0-100).
 	*/
 	double percentage_full() const;
 
 	/**
-	Gets the number of records that are currently stored on the page.
+	Gets the number of tuples that are currently stored on the page.
 
-	\return	The number of records that are currently stored on the page.
+	\return	The number of tuples that are currently stored on the page.
 	*/
-	unsigned int record_count() const;
+	unsigned int tuple_count() const;
 
 	/**
-	Gets an array of Record objects that refer to the records on the page.
+	Gets an array of BackedTuple objects that refer to the tuples on the page.
 
-	\return	An array of Record objects that refer to the records on the page.
+	\return	An array of BackedTuple objects that refer to the tuples on the page.
 	*/
-	std::vector<Record> records() const;
+	std::vector<BackedTuple> tuples() const;
 
 	/**
-	Performs a range-based lookup to find the records on the page that lie in the
+	Performs a range-based lookup to find the tuples on the page that lie in the
 	range specified by the key.
 
-	\param key	The key specifying the range in which matching records should lie.
-	\return		An array of Record objects that refer to the matching records on the page.
+	\param key	The key specifying the range in which matching tuples should lie.
+	\return		An array of BackedTuple objects that refer to the matching tuples on the page.
 	*/
-	std::vector<Record> records_by_range(const RangeKey& key) const;
+	std::vector<BackedTuple> tuples_by_range(const RangeKey& key) const;
 
 	/**
-	Performs a value-based lookup to find the records on the page that match
+	Performs a value-based lookup to find the tuples on the page that match
 	the specified key.
 
-	\param key	The key against which to match the records.
-	\return		An array of Record objects that refer to the matching records on the page.
+	\param key	The key against which to match the tuples.
+	\return		An array of BackedTuple objects that refer to the matching tuples on the page.
 	*/
-	std::vector<Record> records_by_value(const ValueKey& key) const;
+	std::vector<BackedTuple> tuples_by_value(const ValueKey& key) const;
 
 	/**
 	Gets the size (in bytes) of the page's buffer.

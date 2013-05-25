@@ -1,44 +1,44 @@
 /**
- * whery: RecordProjection.h
+ * whery: TupleProjection.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_RECORDPROJECTION
-#define H_WHERY_RECORDPROJECTION
+#ifndef H_WHERY_TUPLEPROJECTION
+#define H_WHERY_TUPLEPROJECTION
 
 #include <vector>
 
-#include "Record.h"
+#include "Tuple.h"
 
 namespace whery {
 
 /**
 \brief An instance of this class represents the projection of a specified set of fields
-from a record to form a derived field tuple.
+from a tuple to form a derived tuple.
 */
-class RecordProjection : public FieldTuple
+class TupleProjection : public Tuple
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
 	/**
 	The indices of the fields that are to be projected. Each index must be less than the
-	arity of the record, and duplicates are allowed.
+	arity of the source tuple, and duplicates are allowed.
 	*/
 	std::vector<unsigned int> m_projectedFields;
 
-	/** The record whose fields are to be projected. */
-	Record m_record;
+	/** The tuple whose fields are to be projected. */
+	const Tuple& m_source;
 
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
-	Constructs a record projection.
+	Constructs a tuple projection.
 
-	\param record					The record whose fields are to be projected.
+	\param source					The tuple whose fields are to be projected.
 	\param projectedFields			The indices of the fields that are to be projected.
 	\throw std::invalid_argument	If projectedFields is empty.
 	*/
-	RecordProjection(const Record& record, const std::vector<unsigned int>& projectedFields);
+	TupleProjection(const Tuple& source, const std::vector<unsigned int>& projectedFields);
 
 	//#################### PUBLIC INHERITED METHODS ####################
 public:

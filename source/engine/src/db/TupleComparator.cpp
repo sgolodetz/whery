@@ -1,40 +1,40 @@
 /**
- * whery: FieldTupleComparator.cpp
+ * whery: TupleComparator.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/FieldTupleComparator.h"
+#include "whery/db/TupleComparator.h"
 
-#include "whery/db/FieldTuple.h"
+#include "whery/db/Tuple.h"
 
 namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-FieldTupleComparator::FieldTupleComparator(const std::vector<std::pair<unsigned int,SortDirection> >& fieldIndices)
+TupleComparator::TupleComparator(const std::vector<std::pair<unsigned int,SortDirection> >& fieldIndices)
 :	m_fieldIndices(fieldIndices)
 {
 	if(fieldIndices.empty())
 	{
-		throw std::invalid_argument("Field tuple comparisons must be performed on a non-empty list of fields.");
+		throw std::invalid_argument("Tuple comparisons must be performed on a non-empty list of fields.");
 	}
 }
 
 //#################### PUBLIC OPERATORS ####################
 
-bool FieldTupleComparator::operator()(const FieldTuple& lhs, const FieldTuple& rhs) const
+bool TupleComparator::operator()(const Tuple& lhs, const Tuple& rhs) const
 {
 	return compare(lhs, rhs) == -1;
 }
 
 //#################### PUBLIC METHODS ####################
 
-int FieldTupleComparator::compare(const FieldTuple& lhs, const FieldTuple& rhs) const
+int TupleComparator::compare(const Tuple& lhs, const Tuple& rhs) const
 {
 	// Check that the arities of the two tuples match.
 	if(lhs.arity() != rhs.arity())
 	{
-		throw std::invalid_argument("Field tuple comparisons must be performed on tuples of the same arity.");
+		throw std::invalid_argument("Tuple comparisons must be performed on tuples of the same arity.");
 	}
 
 	for(size_t i = 0, size = m_fieldIndices.size(); i < size; ++i)
@@ -53,8 +53,7 @@ int FieldTupleComparator::compare(const FieldTuple& lhs, const FieldTuple& rhs) 
 		}
 	}
 
-	// If the field tuples are equivalent after all of the relevant fields have been compared,
-	// then they compare equal.
+	// If the tuples are equivalent after all of the relevant fields have been compared, then they compare equal.
 	return 0;
 }
 

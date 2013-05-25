@@ -14,7 +14,7 @@ namespace whery {
 class FieldManipulator;
 
 /**
-\brief An instance of this class represents a field in a database record.
+\brief An instance of this class represents a field in a tuple.
 
 Field objects themselves are immutable; it is only the values to which
 they point that can be changed.

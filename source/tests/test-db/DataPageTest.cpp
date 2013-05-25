@@ -36,20 +36,20 @@ DataPage_Ptr make_data_page()
 		PAGE_BUFFER_SIZE
 	));
 
-	Record record = page->add_record();
-	record.field(0).set_int(23);
-	record.field(1).set_double(9.0);
-	record.field(2).set_int(84);
+	BackedTuple tuple = page->add_tuple();
+	tuple.field(0).set_int(23);
+	tuple.field(1).set_double(9.0);
+	tuple.field(2).set_int(84);
 
-	record = page->add_record();
-	record.field(0).set_int(7);
-	record.field(1).set_double(8.0);
-	record.field(2).set_int(51);
+	tuple = page->add_tuple();
+	tuple.field(0).set_int(7);
+	tuple.field(1).set_double(8.0);
+	tuple.field(2).set_int(51);
 
-	record = page->add_record();
-	record.field(0).set_int(17);
-	record.field(1).set_double(10.0);
-	record.field(2).set_int(51);
+	tuple = page->add_tuple();
+	tuple.field(0).set_int(17);
+	tuple.field(1).set_double(10.0);
+	tuple.field(2).set_int(51);
 
 	return page;
 }
@@ -60,49 +60,49 @@ DataPage_Ptr make_data_page()
 
 BOOST_AUTO_TEST_SUITE(DataPageTest)
 
-BOOST_AUTO_TEST_CASE(delete_record)
+BOOST_AUTO_TEST_CASE(delete_tuple)
 {
 	DataPage_Ptr page = make_data_page();
-	std::vector<Record> records = page->records();
+	std::vector<BackedTuple> tuples = page->tuples();
 
-	// Check that the page has the right number of records to start with.
-	BOOST_CHECK_EQUAL(page->record_count(), 3);
+	// Check that the page has the right number of tuples to start with.
+	BOOST_CHECK_EQUAL(page->tuple_count(), 3);
 
-	page->delete_record(records[1]);
+	page->delete_tuple(tuples[1]);
 
-	// Check that deleting a record decreases the record count of the page
-	// and leaves the other records unaffected.
-	BOOST_CHECK_EQUAL(page->record_count(), 2);
-	BOOST_CHECK_EQUAL(records[0].field(0).get_int(), 23);
-	BOOST_CHECK_EQUAL(records[2].field(0).get_int(), 17);
+	// Check that deleting a tuples decreases the tuple count of the page
+	// and leaves the other tuples unaffected.
+	BOOST_CHECK_EQUAL(page->tuple_count(), 2);
+	BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), 23);
+	BOOST_CHECK_EQUAL(tuples[2].field(0).get_int(), 17);
 
-	Record r = page->add_record();
+	BackedTuple t = page->add_tuple();
 
-	// Check that adding a record when there is a record on the free list
-	// increases the record count of the page and reuses the record on
+	// Check that adding a tuple when there is a tuple on the free list
+	// increases the tuple count of the page and reuses the tuple on
 	// the free list (note that this is a white-box test that relies on
 	// knowing details of the implementation).
-	BOOST_CHECK_EQUAL(page->record_count(), 3);
-	BOOST_CHECK_EQUAL(r.location(), records[1].location());
+	BOOST_CHECK_EQUAL(page->tuple_count(), 3);
+	BOOST_CHECK_EQUAL(t.location(), tuples[1].location());
 
-	r = page->add_record();
+	t = page->add_tuple();
 
-	// Check that adding a record when there is no record on the free list
-	// increases the record count and allocates a new record.
-	BOOST_CHECK_EQUAL(page->record_count(), 4);
+	// Check that adding a tuple when there is no tuple on the free list
+	// increases the tuple count and allocates a new tuple.
+	BOOST_CHECK_EQUAL(page->tuple_count(), 4);
 	for(int i = 0; i < 3; ++i)
 	{
-		BOOST_CHECK_NE(r.location(), records[i].location());
+		BOOST_CHECK_NE(t.location(), tuples[i].location());
 	}
 }
 
-BOOST_AUTO_TEST_CASE(records_by_value)
+BOOST_AUTO_TEST_CASE(tuples_by_value)
 {
 	DataPage_Ptr page = make_data_page();
 
 	ValueKey key(page->field_manipulators(), list_of(0));
 	key.field(0).set_int(7);
-	std::vector<Record> results = page->records_by_value(key);
+	std::vector<BackedTuple> results = page->tuples_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 1);
 	BOOST_CHECK_CLOSE(results[0].field(1).get_double(), 8.0, Constants::SMALL_EPSILON);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 
 	key = ValueKey(page->field_manipulators(), list_of(1));
 	key.field(0).set_double(9.0);
-	results = page->records_by_value(key);
+	results = page->tuples_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 1);
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 23);
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 
 	key = ValueKey(page->field_manipulators(), list_of(2));
 	key.field(0).set_int(51);
-	results = page->records_by_value(key);
+	results = page->tuples_by_value(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 2);
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 7);

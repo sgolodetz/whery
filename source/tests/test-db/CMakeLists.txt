@@ -16,10 +16,10 @@ SET(sources
 DataPageTest.cpp
 FieldManipulatorTest.cpp
 FieldTest.cpp
-FreshRecordTest.cpp
-RecordManipulatorTest.cpp
-RecordProjectionTest.cpp
+FreshTupleTest.cpp
 TestRunner.cpp
+TupleManipulatorTest.cpp
+TupleProjectionTest.cpp
 )
 
 SET(headers

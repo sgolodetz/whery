@@ -12,7 +12,7 @@ namespace whery {
 ValueKey::ValueKey(
 	const std::vector<const FieldManipulator*>& fieldManipulators,
 	const std::vector<unsigned int>& fieldIndices)
-:	FreshRecord(RecordManipulator(fieldManipulators, fieldIndices)),
+:	FreshTuple(TupleManipulator(fieldManipulators, fieldIndices)),
 	m_fieldIndices(fieldIndices)
 {}
 

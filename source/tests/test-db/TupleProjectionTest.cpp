@@ -1,5 +1,5 @@
 /**
- * test-db: RecordProjectionTest.cpp
+ * test-db: TupleProjectionTest.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -9,28 +9,28 @@
 using namespace boost::assign;
 
 #include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/FreshRecord.h"
+#include "whery/db/FreshTuple.h"
 #include "whery/db/IntFieldManipulator.h"
-#include "whery/db/RecordProjection.h"
+#include "whery/db/TupleProjection.h"
 using namespace whery;
 
 #include "Constants.h"
 
 //#################### TESTS ####################
 
-BOOST_AUTO_TEST_SUITE(RecordProjectionTest)
+BOOST_AUTO_TEST_SUITE(TupleProjectionTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
-	std::vector<const FieldManipulator*> fms = list_of<const FieldManipulator*>
+	std::vector<const FieldManipulator*> fieldManipulators = list_of<const FieldManipulator*>
 		(&DoubleFieldManipulator::instance())
 		(&IntFieldManipulator::instance());
 
-	FreshRecord record(fms);
-	record.field(0).set_double(7.0);
-	record.field(1).set_int(8);
+	FreshTuple tuple(fieldManipulators);
+	tuple.field(0).set_double(7.0);
+	tuple.field(1).set_int(8);
 
-	RecordProjection projection(record, list_of(1)(0)(0)(1));
+	TupleProjection projection(tuple, list_of(1)(0)(0)(1));
 
 	// Check that we can retrieve the field values from the projection correctly.
 	BOOST_CHECK_EQUAL(projection.field(0).get_int(), 8);
