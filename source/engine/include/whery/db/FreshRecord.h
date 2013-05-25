@@ -66,6 +66,22 @@ public:
 	\param rhs	The record from which to assign.
 	*/
 	FreshRecord& operator=(const FreshRecord& rhs);
+
+	//#################### PRIVATE METHODS ####################
+private:
+	/**
+	Sets the buffer backing the record to the specified buffer.
+
+	\param buffer	The buffer to copy.
+	*/
+	void set_buffer(const std::vector<char>& buffer);
+
+	/**
+	Sets the buffer backing the record to a fresh buffer of the specified size.
+
+	\param size	The size of the fresh buffer.
+	*/
+	void set_fresh_buffer(unsigned int size);
 };
 
 }
