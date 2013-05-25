@@ -41,10 +41,8 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 	record.field(2).set_int(51);
 
 	std::vector<unsigned int> projectedFields;
-	std::vector<const FieldManipulator*> keyFieldManipulators;
 	projectedFields.push_back(0);
-	keyFieldManipulators.push_back(&IntFieldManipulator::instance());
-	FreshRecord key(keyFieldManipulators);
+	FreshRecord key(recordFieldManipulators, projectedFields);
 	key.field(0).set_int(7);
 	std::vector<Record> results = page.records_by_value(projectedFields, key);
 
@@ -54,9 +52,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 
 	projectedFields.clear();
 	projectedFields.push_back(1);
-	keyFieldManipulators.clear();
-	keyFieldManipulators.push_back(&DoubleFieldManipulator::instance());
-	key = FreshRecord(keyFieldManipulators);
+	key = FreshRecord(recordFieldManipulators, projectedFields);
 	key.field(0).set_double(9.0);
 	results = page.records_by_value(projectedFields, key);
 
@@ -66,9 +62,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 
 	projectedFields.clear();
 	projectedFields.push_back(2);
-	keyFieldManipulators.clear();
-	keyFieldManipulators.push_back(&IntFieldManipulator::instance());
-	key = FreshRecord(keyFieldManipulators);
+	key = FreshRecord(recordFieldManipulators, projectedFields);
 	key.field(0).set_int(51);
 	results = page.records_by_value(projectedFields, key);
 

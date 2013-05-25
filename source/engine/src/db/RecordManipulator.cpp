@@ -15,26 +15,24 @@ namespace whery {
 //#################### CONSTRUCTORS ####################
 
 RecordManipulator::RecordManipulator(const std::vector<const FieldManipulator*>& fieldManipulators)
-:	m_fieldManipulators(fieldManipulators)
 {
-	if(fieldManipulators.empty())
+	initialise(fieldManipulators);
+}
+
+RecordManipulator::RecordManipulator(
+	const std::vector<const FieldManipulator*>& fieldManipulators,
+	const std::vector<unsigned int>& projectedFields)
+{
+	std::vector<const FieldManipulator*> projectedFieldManipulators;
+	size_t projectedFieldCount = projectedFields.size();
+	projectedFieldManipulators.reserve(projectedFieldCount);
+	for(size_t i = 0; i < projectedFieldCount; ++i)
 	{
-		throw std::invalid_argument("Records must contain at least one field.");
+		assert(projectedFields[i] < fieldManipulators.size());
+		projectedFieldManipulators.push_back(fieldManipulators[projectedFields[i]]);
 	}
 
-	// Calculate the memory offsets of the fields (in bytes) from the start of a target record.
-	AlignmentTracker alignmentTracker;
-	m_fieldOffsets.reserve(m_fieldManipulators.size());
-	for(size_t i = 0, size = m_fieldManipulators.size(); i < size; ++i)
-	{
-		alignmentTracker.advance_to_boundary(m_fieldManipulators[i]->alignment_requirement());
-		m_fieldOffsets.push_back(alignmentTracker.offset());
-		alignmentTracker.advance(m_fieldManipulators[i]->size());
-	}
-
-	// Advance to the next maximum-alignment boundary and store the size of the record.
-	alignmentTracker.advance_to_boundary(alignmentTracker.max_alignment());
-	m_size = alignmentTracker.offset();
+	initialise(projectedFieldManipulators);
 }
 
 //#################### PUBLIC METHODS ####################
@@ -53,6 +51,32 @@ Field RecordManipulator::field(char *recordLocation, unsigned int i) const
 unsigned int RecordManipulator::size() const
 {
 	return m_size;
+}
+
+//#################### PRIVATE METHODS ####################
+
+void RecordManipulator::initialise(const std::vector<const FieldManipulator*>& fieldManipulators)
+{
+	if(fieldManipulators.empty())
+	{
+		throw std::invalid_argument("Records must contain at least one field.");
+	}
+
+	m_fieldManipulators = fieldManipulators;
+
+	// Calculate the memory offsets of the fields (in bytes) from the start of a target record.
+	AlignmentTracker alignmentTracker;
+	m_fieldOffsets.reserve(m_fieldManipulators.size());
+	for(size_t i = 0, size = m_fieldManipulators.size(); i < size; ++i)
+	{
+		alignmentTracker.advance_to_boundary(m_fieldManipulators[i]->alignment_requirement());
+		m_fieldOffsets.push_back(alignmentTracker.offset());
+		alignmentTracker.advance(m_fieldManipulators[i]->size());
+	}
+
+	// Advance to the next maximum-alignment boundary and store the size of the record.
+	alignmentTracker.advance_to_boundary(alignmentTracker.max_alignment());
+	m_size = alignmentTracker.offset();
 }
 
 }
