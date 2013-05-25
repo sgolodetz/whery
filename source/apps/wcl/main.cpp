@@ -38,11 +38,13 @@ void output(const DataPage& page, std::vector<std::pair<unsigned int,SortDirecti
 
 int main()
 {
+	const int PAGE_BUFFER_SIZE = 1024;
+
 	std::vector<const FieldManipulator*> fms;
 	fms.push_back(&IntFieldManipulator::instance());
 	fms.push_back(&DoubleFieldManipulator::instance());
 	fms.push_back(&IntFieldManipulator::instance());
-	DataPage page(fms);
+	DataPage page(fms, PAGE_BUFFER_SIZE);
 
 	output(page);
 

@@ -12,12 +12,9 @@
 
 namespace whery {
 
-DataPage::DataPage(const std::vector<const FieldManipulator*>& fieldManipulators)
-:	m_recordManipulator(fieldManipulators)
-{
-	// TODO: Determine the size properly.
-	m_buffer.resize(1024);
-}
+DataPage::DataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
+:	m_buffer(bufferSize), m_recordManipulator(fieldManipulators)
+{}
 
 Record DataPage::add_record()
 {

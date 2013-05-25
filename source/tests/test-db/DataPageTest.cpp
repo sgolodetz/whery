@@ -25,11 +25,13 @@ namespace {
 
 DataPage_Ptr make_data_page()
 {
+	const int PAGE_BUFFER_SIZE = 1024;
+
 	std::vector<const FieldManipulator*> recordFieldManipulators;
 	recordFieldManipulators.push_back(&IntFieldManipulator::instance());
 	recordFieldManipulators.push_back(&DoubleFieldManipulator::instance());
 	recordFieldManipulators.push_back(&IntFieldManipulator::instance());
-	DataPage_Ptr page(new DataPage(recordFieldManipulators));
+	DataPage_Ptr page(new DataPage(recordFieldManipulators, PAGE_BUFFER_SIZE));
 
 	Record record = page->add_record();
 	record.field(0).set_int(23);
