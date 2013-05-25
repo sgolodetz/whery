@@ -5,6 +5,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/assign/list_of.hpp>
+using namespace boost::assign;
+
 #include "whery/db/DoubleFieldManipulator.h"
 #include "whery/db/IntFieldManipulator.h"
 #include "whery/db/RecordManipulator.h"
@@ -18,9 +21,9 @@ BOOST_AUTO_TEST_SUITE(RecordManipulatorTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
-	std::vector<const FieldManipulator*> fms;
-	fms.push_back(&IntFieldManipulator::instance());
-	fms.push_back(&DoubleFieldManipulator::instance());
+	std::vector<const FieldManipulator*> fms = list_of<const FieldManipulator*>
+		(&IntFieldManipulator::instance())
+		(&DoubleFieldManipulator::instance());
 	RecordManipulator rm(fms);
 
 	// Check that the record size is at least the sum of the field sizes.

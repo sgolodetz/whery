@@ -5,6 +5,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/assign/list_of.hpp>
+using namespace boost::assign;
+
 #include "whery/db/DoubleFieldManipulator.h"
 #include "whery/db/FreshRecord.h"
 #include "whery/db/IntFieldManipulator.h"
@@ -19,20 +22,15 @@ BOOST_AUTO_TEST_SUITE(RecordProjectionTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
-	std::vector<const FieldManipulator*> fms;
-	fms.push_back(&DoubleFieldManipulator::instance());
-	fms.push_back(&IntFieldManipulator::instance());
+	std::vector<const FieldManipulator*> fms = list_of<const FieldManipulator*>
+		(&DoubleFieldManipulator::instance())
+		(&IntFieldManipulator::instance());
 
 	FreshRecord record(fms);
 	record.field(0).set_double(7.0);
 	record.field(1).set_int(8);
 
-	std::vector<unsigned int> projectedFields;
-	projectedFields.push_back(1);
-	projectedFields.push_back(0);
-	projectedFields.push_back(0);
-	projectedFields.push_back(1);
-	RecordProjection projection(record, projectedFields);
+	RecordProjection projection(record, list_of(1)(0)(0)(1));
 
 	// Check that we can retrieve the field values from the projection correctly.
 	BOOST_CHECK_EQUAL(projection.field(0).get_int(), 8);

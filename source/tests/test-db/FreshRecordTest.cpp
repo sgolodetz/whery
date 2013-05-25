@@ -5,6 +5,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/assign/list_of.hpp>
+using namespace boost::assign;
+
 #include "whery/db/DoubleFieldManipulator.h"
 #include "whery/db/FreshRecord.h"
 #include "whery/db/IntFieldManipulator.h"
@@ -18,10 +21,10 @@ BOOST_AUTO_TEST_SUITE(FreshRecordTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
-	std::vector<const FieldManipulator*> fms;
-	fms.push_back(&IntFieldManipulator::instance());
-	fms.push_back(&DoubleFieldManipulator::instance());
-	fms.push_back(&IntFieldManipulator::instance());
+	std::vector<const FieldManipulator*> fms = list_of<const FieldManipulator*>
+		(&IntFieldManipulator::instance())
+		(&DoubleFieldManipulator::instance())
+		(&IntFieldManipulator::instance());
 
 	FreshRecord record(fms);
 	record.field(0).set_int(23);

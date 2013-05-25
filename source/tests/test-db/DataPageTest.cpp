@@ -5,7 +5,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/assign/list_of.hpp>
 #include <boost/shared_ptr.hpp>
+using namespace boost::assign;
 
 #include "whery/db/DataPage.h"
 #include "whery/db/DoubleFieldManipulator.h"
@@ -27,11 +29,12 @@ DataPage_Ptr make_data_page()
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
-	std::vector<const FieldManipulator*> recordFieldManipulators;
-	recordFieldManipulators.push_back(&IntFieldManipulator::instance());
-	recordFieldManipulators.push_back(&DoubleFieldManipulator::instance());
-	recordFieldManipulators.push_back(&IntFieldManipulator::instance());
-	DataPage_Ptr page(new DataPage(recordFieldManipulators, PAGE_BUFFER_SIZE));
+	DataPage_Ptr page(new DataPage(list_of<const FieldManipulator*>
+		(&IntFieldManipulator::instance())
+		(&DoubleFieldManipulator::instance())
+		(&IntFieldManipulator::instance()),
+		PAGE_BUFFER_SIZE
+	));
 
 	Record record = page->add_record();
 	record.field(0).set_int(23);
@@ -97,8 +100,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 {
 	DataPage_Ptr page = make_data_page();
 
-	std::vector<unsigned int> projectedFields;
-	projectedFields.push_back(0);
+	std::vector<unsigned int> projectedFields = list_of(0);
 	FreshRecord key(page->field_manipulators(), projectedFields);
 	key.field(0).set_int(7);
 	std::vector<Record> results = page->records_by_value(projectedFields, key);
@@ -107,8 +109,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 	BOOST_CHECK_CLOSE(results[0].field(1).get_double(), 8.0, Constants::SMALL_EPSILON);
 	BOOST_CHECK_EQUAL(results[0].field(2).get_int(), 51);
 
-	projectedFields.clear();
-	projectedFields.push_back(1);
+	projectedFields = list_of(1);
 	key = FreshRecord(page->field_manipulators(), projectedFields);
 	key.field(0).set_double(9.0);
 	results = page->records_by_value(projectedFields, key);
@@ -117,8 +118,7 @@ BOOST_AUTO_TEST_CASE(records_by_value)
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 23);
 	BOOST_CHECK_EQUAL(results[0].field(2).get_int(), 84);
 
-	projectedFields.clear();
-	projectedFields.push_back(2);
+	projectedFields = list_of(2);
 	key = FreshRecord(page->field_manipulators(), projectedFields);
 	key.field(0).set_int(51);
 	results = page->records_by_value(projectedFields, key);
