@@ -31,11 +31,11 @@ Field Record::field(unsigned int i) const
 
 //#################### PUBLIC METHODS ####################
 
-void Record::copy_from(const Record& source) const
+void Record::copy_from(const FieldTuple& source) const
 {
 	if(source.arity() != arity())
 	{
-		throw std::invalid_argument("It is not possible to copy from a record whose arity differs from this record.");
+		throw std::invalid_argument("It is not possible to copy from a tuple whose arity differs from this record.");
 	}
 
 	// Copy the individual fields across. If the field types are not compatible, an exception will be thrown.
