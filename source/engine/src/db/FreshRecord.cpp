@@ -22,4 +22,20 @@ FreshRecord::FreshRecord(const RecordManipulator& manipulator)
 	m_location = &m_buffer[0];
 }
 
+//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
+
+FreshRecord::FreshRecord(const FreshRecord& rhs)
+:	Record(rhs.m_manipulator), m_buffer(rhs.m_buffer)
+{
+	m_location = &m_buffer[0];
+}
+
+FreshRecord& FreshRecord::operator=(const FreshRecord& rhs)
+{
+	m_buffer = rhs.m_buffer;
+	m_location = &m_buffer[0];
+	m_manipulator = rhs.m_manipulator;
+	return *this;
+}
+
 }

@@ -24,6 +24,13 @@ FieldTupleComparator::FieldTupleComparator(const std::vector<std::pair<unsigned 
 
 bool FieldTupleComparator::operator()(const FieldTuple& lhs, const FieldTuple& rhs) const
 {
+	return compare(lhs, rhs) == -1;
+}
+
+//#################### PUBLIC METHODS ####################
+
+int FieldTupleComparator::compare(const FieldTuple& lhs, const FieldTuple& rhs) const
+{
 	// Check that the arities of the two tuples match.
 	if(lhs.arity() != rhs.arity())
 	{
@@ -38,17 +45,17 @@ bool FieldTupleComparator::operator()(const FieldTuple& lhs, const FieldTuple& r
 		switch(lhs.field(fieldIndex).compare_to(rhs.field(fieldIndex)))
 		{
 		case -1:
-			return sortDirection == ASC;
+			return sortDirection == ASC ? -1 : 1;
 		case 0:
 			continue;
 		case 1:
-			return sortDirection == DESC;
+			return sortDirection == DESC ? -1 : 1;
 		}
 	}
 
 	// If the field tuples are equivalent after all of the relevant fields have been compared,
-	// then their ordering is arbitrary.
-	return false;
+	// then they compare equal.
+	return 0;
 }
 
 }

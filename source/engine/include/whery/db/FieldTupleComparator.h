@@ -55,6 +55,20 @@ public:
 	\throw std::invalid_argument	If the arities of the tuples being compared do not match.
 	*/
 	bool operator()(const FieldTuple& lhs, const FieldTuple& rhs) const;
+
+	//#################### PUBLIC METHODS ####################
+public:
+	/**
+	Compares two field tuples based on the fields specified when constructing the comparator.
+
+	\param lhs						The left-hand tuple.
+	\param rhs						The right-hand tuple.
+	\return							-1, if lhs is ordered before rhs;
+									1, if lhs is ordered after rhs;
+									0, otherwise.
+	\throw std::invalid_argument	If the arities of the tuples being compared do not match.
+	*/
+	int compare(const FieldTuple& lhs, const FieldTuple& rhs) const;
 };
 
 }

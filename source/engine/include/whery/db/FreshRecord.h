@@ -37,6 +37,22 @@ public:
 	\param manipulator	The manipulator used to interact with the buffer.
 	*/
 	explicit FreshRecord(const RecordManipulator& manipulator);
+
+	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
+public:
+	/**
+	Constructs a fresh record that is a copy of rhs.
+
+	\param rhs	The record to copy.
+	*/
+	FreshRecord(const FreshRecord& rhs);
+
+	/**
+	Overwrites the contents of this record with the contents of rhs.
+
+	\param rhs	The record from which to assign.
+	*/
+	FreshRecord& operator=(const FreshRecord& rhs);
 };
 
 }
