@@ -45,6 +45,11 @@ void DataPage::delete_record(const Record& record)
 	m_freeList.push_back(record);
 }
 
+unsigned int DataPage::empty_records() const
+{
+	return max_records() - record_count();
+}
+
 const std::vector<const FieldManipulator*>& DataPage::field_manipulators() const
 {
 	return m_recordManipulator.field_manipulators();

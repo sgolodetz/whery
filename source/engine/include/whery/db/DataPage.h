@@ -77,6 +77,13 @@ public:
 	void delete_record(const Record& record);
 
 	/**
+	Gets the number of additional records that can fit on the page.
+
+	\return	The number of additional records that can fit on the page.
+	*/
+	unsigned int empty_records() const;
+
+	/**
 	Gets the manipulators for the fields in records on the page.
 
 	\return	The manipulators for the fields in records on the page.
@@ -117,6 +124,13 @@ public:
 		const FieldTuple& upperBound
 	) const;
 
+	/**
+	Performs a value-based lookup to find the records on the page that match
+	the specified key after projecting them on the specified fields.
+
+	\param projectedFields	The fields on which to project the records on the page.
+	\param key				The key against which to match the record projections.
+	*/
 	std::vector<Record> records_by_value(
 		const std::vector<unsigned int>& projectedFields,
 		const FieldTuple& key
