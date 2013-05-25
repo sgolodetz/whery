@@ -55,6 +55,42 @@ DataPage_Ptr make_data_page()
 
 BOOST_AUTO_TEST_SUITE(DataPageTest)
 
+BOOST_AUTO_TEST_CASE(delete_record)
+{
+	DataPage_Ptr page = make_data_page();
+	std::vector<Record> records = page->records();
+
+	// Check that the page has the right number of records to start with.
+	BOOST_CHECK_EQUAL(page->record_count(), 3);
+
+	page->delete_record(records[1]);
+
+	// Check that deleting a record decreases the record count of the page
+	// and leaves the other records unaffected.
+	BOOST_CHECK_EQUAL(page->record_count(), 2);
+	BOOST_CHECK_EQUAL(records[0].field(0).get_int(), 23);
+	BOOST_CHECK_EQUAL(records[2].field(0).get_int(), 17);
+
+	Record r = page->add_record();
+
+	// Check that adding a record when there is a record on the free list
+	// increases the record count of the page and reuses the record on
+	// the free list (note that this is a white-box test that relies on
+	// knowing details of the implementation).
+	BOOST_CHECK_EQUAL(page->record_count(), 3);
+	BOOST_CHECK_EQUAL(r.location(), records[1].location());
+
+	r = page->add_record();
+
+	// Check that adding a record when there is no record on the free list
+	// increases the record count and allocates a new record.
+	BOOST_CHECK_EQUAL(page->record_count(), 4);
+	for(int i = 0; i < 3; ++i)
+	{
+		BOOST_CHECK_NE(r.location(), records[i].location());
+	}
+}
+
 BOOST_AUTO_TEST_CASE(records_by_value)
 {
 	DataPage_Ptr page = make_data_page();

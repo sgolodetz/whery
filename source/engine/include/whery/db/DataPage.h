@@ -26,6 +26,9 @@ private:
 	/** The memory buffer used by the page to hold the record data. */
 	std::vector<char> m_buffer;
 
+	/** A free list of records that have been deleted - these can be reallocated by add_record(). */
+	std::vector<Record> m_freeList;
+
 	/** The manipulator used to interact with the records in the buffer. */
 	RecordManipulator m_recordManipulator;
 

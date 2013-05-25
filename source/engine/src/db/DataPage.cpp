@@ -26,23 +26,26 @@ Record DataPage::add_record()
 		throw std::out_of_range("It is not possible to add an additional record to a full data page.");
 	}
 
-	char *location = &m_buffer[0] + record_count() * m_recordManipulator.size();
-	Record record(location, m_recordManipulator);
-	m_records.insert(std::make_pair(location, record));
-	return record;
+	if(!m_freeList.empty())
+	{
+		Record record = m_freeList.back();
+		m_freeList.pop_back();
+		m_records.insert(std::make_pair(record.location(), record));
+		return record;
+	}
+	else
+	{
+		char *location = &m_buffer[0] + record_count() * m_recordManipulator.size();
+		Record record(location, m_recordManipulator);
+		m_records.insert(std::make_pair(location, record));
+		return record;
+	}
 }
 
 void DataPage::delete_record(const Record& record)
 {
-	// If the record is not actually in the page, early out.
-	if(m_records.find(record.location()) == m_records.end()) return;
-
-	// Copy the last record over the top of this one.
-	Record lastRecord(&m_buffer[0] + (record_count() - 1) * m_recordManipulator.size(), m_recordManipulator);
-	record.copy_from(lastRecord);
-
-	// Remove the last record from the map.
-	m_records.erase(lastRecord.location());
+	m_records.erase(record.location());
+	m_freeList.push_back(record);
 }
 
 const std::vector<const FieldManipulator*>& DataPage::field_manipulators() const
