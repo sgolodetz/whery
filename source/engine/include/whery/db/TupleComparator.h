@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "whery/util/SortDirection.h"
+#include "SortDirection.h"
 
 namespace whery {
 

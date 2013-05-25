@@ -11,7 +11,7 @@
 namespace whery {
 
 /**
-An instance of this class represents a key used for value lookups on database relations.
+\brief An instance of this class represents a key used for value lookups on database relations.
 */
 class ValueKey : public FreshTuple
 {

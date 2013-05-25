@@ -21,6 +21,7 @@ src/db/Field.cpp
 src/db/FieldManipulator.cpp
 src/db/FreshTuple.cpp
 src/db/IntFieldManipulator.cpp
+src/db/RangeEndpoint.cpp
 src/db/RangeKey.cpp
 src/db/TupleComparator.cpp
 src/db/TupleManipulator.cpp
@@ -36,7 +37,9 @@ include/whery/db/Field.h
 include/whery/db/FieldManipulator.h
 include/whery/db/FreshTuple.h
 include/whery/db/IntFieldManipulator.h
+include/whery/db/RangeEndpoint.h
 include/whery/db/RangeKey.h
+include/whery/db/SortDirection.h
 include/whery/db/Tuple.h
 include/whery/db/TupleComparator.h
 include/whery/db/TupleManipulator.h
@@ -51,7 +54,6 @@ src/util/AlignmentTracker.cpp
 
 SET(util_headers
 include/whery/util/AlignmentTracker.h
-include/whery/util/SortDirection.h
 )
 
 #################################################################
