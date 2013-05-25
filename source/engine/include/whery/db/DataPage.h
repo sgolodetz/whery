@@ -44,11 +44,23 @@ public:
 	*/
 	explicit DataPage(const std::vector<const FieldManipulator*>& fieldManipulators);
 
+	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
+private:
+	/**
+	Private and unimplemented for now - the compiler-generated defaults
+	would be inadequate, because the copied records map would refer to
+	the buffer on the original data page.
+	*/
+	DataPage(const DataPage&);
+	DataPage& operator=(const DataPage&);
+
 	//#################### PUBLIC METHODS ####################
 public:
 	Record add_record();
 
 	void delete_record(const Record& record);
+
+	const std::vector<const FieldManipulator*>& field_manipulators() const;
 
 	unsigned int max_records() const;
 

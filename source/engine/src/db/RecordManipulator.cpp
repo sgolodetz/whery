@@ -48,6 +48,11 @@ Field RecordManipulator::field(char *recordLocation, unsigned int i) const
 	return Field(recordLocation + m_fieldOffsets[i], *m_fieldManipulators[i]);
 }
 
+const std::vector<const FieldManipulator*>& RecordManipulator::field_manipulators() const
+{
+	return m_fieldManipulators;
+}
+
 unsigned int RecordManipulator::size() const
 {
 	return m_size;

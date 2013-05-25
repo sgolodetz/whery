@@ -81,6 +81,13 @@ public:
 	Field field(char *recordLocation, unsigned int i) const;
 
 	/**
+	Gets the manipulators for the fields in a target record.
+
+	\return	The manipulators for the fields in a target record.
+	*/
+	const std::vector<const FieldManipulator*>& field_manipulators() const;
+
+	/**
 	Gets the overall size of a target record.
 
 	\return	The overall size of a target record.

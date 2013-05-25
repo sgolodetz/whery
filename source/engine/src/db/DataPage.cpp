@@ -45,6 +45,11 @@ void DataPage::delete_record(const Record& record)
 	m_records.erase(lastRecord.location());
 }
 
+const std::vector<const FieldManipulator*>& DataPage::field_manipulators() const
+{
+	return m_recordManipulator.field_manipulators();
+}
+
 unsigned int DataPage::max_records() const
 {
 	return m_buffer.size() / m_recordManipulator.size();
