@@ -44,6 +44,16 @@ public:
 	*/
 	explicit TupleComparator(const std::vector<std::pair<unsigned int,SortDirection> >& fieldIndices);
 
+	//#################### PUBLIC STATIC METHODS ####################
+public:
+	/**
+	Makes a default tuple comparator that sorts (in ascending order) on the first n columns.
+
+	\param n	The number of columns on which to sort.
+	\return		The tuple comparator.
+	*/
+	static TupleComparator make_default(unsigned int n);
+
 	//#################### PUBLIC OPERATORS ####################
 public:
 	/**

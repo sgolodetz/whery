@@ -7,6 +7,7 @@
 
 #include <cassert>
 
+#include "whery/db/RangeKey.h"
 #include "whery/db/TupleComparator.h"
 #include "whery/db/TupleProjection.h"
 #include "whery/db/ValueKey.h"
@@ -84,21 +85,58 @@ std::vector<BackedTuple> DataPage::tuples() const
 
 std::vector<BackedTuple> DataPage::tuples_by_range(const RangeKey& key) const
 {
-	// TODO
-	throw 23;
+	std::vector<BackedTuple> results;
+	results.reserve(m_tuples.size());
+
+	TupleComparator comparator = TupleComparator::make_default(key.arity());
+
+	// Filter the tuples for those whose projection on the key's field indices
+	// falls within the range specified by the key.
+	for(std::map<const char*,BackedTuple>::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
+	{
+		const BackedTuple& tuple = it->second;
+		TupleProjection projection(tuple, key.field_indices());
+
+		// Check whether the tuple is excluded by the low end of the range.
+		const RangeEndpoint *lowEndpoint = key.low_endpoint();
+		if(lowEndpoint != NULL)
+		{
+			int comp = comparator.compare(projection, lowEndpoint->value());
+			if((lowEndpoint->kind() == CLOSED && comp < 0) ||
+			   (lowEndpoint->kind() == OPEN && comp <= 0))
+			{
+				continue;
+			}
+		}
+
+		// Check whether the tuple is excluded by the high end of the range.
+		const RangeEndpoint *highEndpoint = key.high_endpoint();
+		if(highEndpoint != NULL)
+		{
+			int comp = comparator.compare(projection, highEndpoint->value());
+			if((highEndpoint->kind() == CLOSED && comp > 0) ||
+			   (highEndpoint->kind() == OPEN && comp >= 0))
+			{
+				continue;
+			}
+		}
+
+		// If we get here, the tuple was not excluded by either the low
+		// or high end of the range, so we add it to the results.
+		results.push_back(tuple);
+	}
+
+	return results;
 }
 
 std::vector<BackedTuple> DataPage::tuples_by_value(const ValueKey& key) const
 {
-	// Make the comparator.
-	std::vector<std::pair<unsigned int,SortDirection> > comparisonFields;
-	comparisonFields.reserve(key.arity());
-	for(size_t i = 0; i < key.arity(); ++i) comparisonFields.push_back(std::make_pair(i, ASC));
-	TupleComparator comparator(comparisonFields);
-
-	// Filter the tuples for those whose projection on the key's field indices equals the key.
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
+
+	TupleComparator comparator = TupleComparator::make_default(key.arity());
+
+	// Filter the tuples for those whose projection on the key's field indices equals the key.
 	for(std::map<const char*,BackedTuple>::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
 	{
 		const BackedTuple& tuple = it->second;

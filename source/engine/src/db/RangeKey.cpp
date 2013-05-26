@@ -15,6 +15,11 @@ RangeKey::RangeKey(const std::vector<unsigned int>& fieldIndices)
 
 //#################### PUBLIC METHODS ####################
 
+unsigned int RangeKey::arity() const
+{
+	return m_fieldIndices.size();
+}
+
 const std::vector<unsigned int>& RangeKey::field_indices() const
 {
 	return m_fieldIndices;

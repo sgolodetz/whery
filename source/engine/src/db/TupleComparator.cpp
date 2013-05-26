@@ -20,6 +20,16 @@ TupleComparator::TupleComparator(const std::vector<std::pair<unsigned int,SortDi
 	}
 }
 
+//#################### PUBLIC STATIC METHODS ####################
+
+TupleComparator TupleComparator::make_default(unsigned int n)
+{
+	std::vector<std::pair<unsigned int,SortDirection> > fieldIndices;
+	fieldIndices.reserve(n);
+	for(size_t i = 0; i < n; ++i) fieldIndices.push_back(std::make_pair(i, ASC));
+	return TupleComparator(fieldIndices);
+}
+
 //#################### PUBLIC OPERATORS ####################
 
 bool TupleComparator::operator()(const Tuple& lhs, const Tuple& rhs) const

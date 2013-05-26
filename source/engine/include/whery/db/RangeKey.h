@@ -39,6 +39,13 @@ public:
 	//#################### PUBLIC METHODS ####################
 public:
 	/**
+	Gets the arity (number of fields) of the key. This must be strictly greater than zero.
+
+	\return	The arity of the key.
+	*/
+	unsigned int arity() const;
+
+	/**
 	Gets the indices of the fields to be used for the key.
 
 	\return	The indices of the fields to be used for the key.
