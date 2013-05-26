@@ -19,6 +19,11 @@ TupleManipulator::TupleManipulator(const std::vector<const FieldManipulator*>& f
 	initialise(fieldManipulators);
 }
 
+TupleManipulator::TupleManipulator(const boost::assign_detail::generic_list<const FieldManipulator*>& fieldManipulators)
+{
+	initialise(fieldManipulators);
+}
+
 TupleManipulator::TupleManipulator(
 	const std::vector<const FieldManipulator*>& fieldManipulators,
 	const std::vector<unsigned int>& fieldIndices)

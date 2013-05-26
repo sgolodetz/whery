@@ -12,6 +12,7 @@ using namespace boost::assign;
 #include "whery/db/DataPage.h"
 #include "whery/db/DoubleFieldManipulator.h"
 #include "whery/db/IntFieldManipulator.h"
+#include "whery/db/RangeKey.h"
 #include "whery/db/ValueKey.h"
 using namespace whery;
 
@@ -25,7 +26,28 @@ typedef boost::shared_ptr<DataPage> DataPage_Ptr;
 
 namespace {
 
-DataPage_Ptr make_data_page()
+DataPage_Ptr make_big_data_page()
+{
+	const unsigned int TUPLE_COUNT = 20;
+
+	TupleManipulator tupleManipulator(list_of<const FieldManipulator*>
+		(&IntFieldManipulator::instance())
+		(&IntFieldManipulator::instance())
+	);
+
+	DataPage_Ptr page(new DataPage(tupleManipulator.size() * TUPLE_COUNT, tupleManipulator));
+
+	for(unsigned int i = 0; i < TUPLE_COUNT; ++i)
+	{
+		BackedTuple tuple = page->add_tuple();
+		tuple.field(0).set_int(i);
+		tuple.field(1).set_int(TUPLE_COUNT - 1 - i);
+	}
+
+	return page;
+}
+
+DataPage_Ptr make_small_data_page()
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
@@ -62,7 +84,7 @@ BOOST_AUTO_TEST_SUITE(DataPageTest)
 
 BOOST_AUTO_TEST_CASE(delete_tuple)
 {
-	DataPage_Ptr page = make_data_page();
+	DataPage_Ptr page = make_small_data_page();
 	std::vector<BackedTuple> tuples = page->tuples();
 
 	// Check that the page has the right number of tuples to start with.
@@ -96,9 +118,29 @@ BOOST_AUTO_TEST_CASE(delete_tuple)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(tuples_by_range)
+{
+	DataPage_Ptr page = make_big_data_page();
+
+	std::vector<unsigned int> fieldIndices = list_of(0);
+	TupleManipulator tupleManipulator(page->field_manipulators(), fieldIndices);
+	FreshTuple lowValue(tupleManipulator), highValue(tupleManipulator);
+	lowValue.field(0).set_int(7);
+	highValue.field(0).set_int(9);
+	RangeKey key(fieldIndices);
+	key.set_endpoints(RangeEndpoint(lowValue, CLOSED), RangeEndpoint(highValue, OPEN));
+	std::vector<BackedTuple> results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), 2);
+	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 7);
+	BOOST_CHECK_EQUAL(results[1].field(0).get_int(), 8);
+
+	// TODO
+}
+
 BOOST_AUTO_TEST_CASE(tuples_by_value)
 {
-	DataPage_Ptr page = make_data_page();
+	DataPage_Ptr page = make_small_data_page();
 
 	ValueKey key(page->field_manipulators(), list_of(0));
 	key.field(0).set_int(7);

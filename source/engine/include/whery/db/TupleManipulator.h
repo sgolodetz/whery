@@ -8,6 +8,8 @@
 
 #include <vector>
 
+#include <boost/assign/list_of.hpp>
+
 #include "Field.h"
 
 namespace whery {
@@ -45,6 +47,14 @@ public:
 	\throw std::invalid_argument	If fieldManipulators is empty.
 	*/
 	explicit TupleManipulator(const std::vector<const FieldManipulator*>& fieldManipulators);
+
+	/**
+	Constructs a tuple manipulator.
+
+	\param fieldManipulators		A non-empty list of manipulators for the fields in a target tuple.
+	\throw std::invalid_argument	If fieldManipulators is empty.
+	*/
+	explicit TupleManipulator(const boost::assign_detail::generic_list<const FieldManipulator*>& fieldManipulators);
 
 	/**
 	Constructs a tuple manipulator. This constructor is used when constructing tuple

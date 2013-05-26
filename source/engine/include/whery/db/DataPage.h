@@ -52,6 +52,14 @@ public:
 	*/
 	DataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
 
+	/**
+	Constructs a data page to contain tuples that can be manipulated by the specified manipulator.
+
+	\param bufferSize		The size (in bytes) to use for the page's memory buffer.
+	\param tupleManipulator	The manipulator to be used to interact with tuples on the page.
+	*/
+	DataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
+
 	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
 private:
 	/**

@@ -14,9 +14,17 @@
 
 namespace whery {
 
+//#################### CONSTRUCTORS ####################
+
 DataPage::DataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
 :	m_buffer(bufferSize), m_tupleManipulator(fieldManipulators)
 {}
+
+DataPage::DataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
+:	m_buffer(bufferSize), m_tupleManipulator(tupleManipulator)
+{}
+
+//#################### PUBLIC METHODS ####################
 
 BackedTuple DataPage::add_tuple()
 {
@@ -43,6 +51,7 @@ BackedTuple DataPage::add_tuple()
 
 void DataPage::delete_tuple(const BackedTuple& tuple)
 {
+	// TODO: Consider not putting the tuple on the free list if it's the last one in the map.
 	m_tuples.erase(tuple.location());
 	m_freeList.push_back(tuple);
 }
