@@ -49,13 +49,11 @@ include/whery/db/base/ValueKey.h
 SET(db_btrees_sources
 src/db/btrees/BTree.cpp
 src/db/btrees/BTreeDataPage.cpp
-src/db/btrees/BTreeIndexPage.cpp
 )
 
 SET(db_btrees_headers
 include/whery/db/btrees/BTree.h
 include/whery/db/btrees/BTreeDataPage.h
-include/whery/db/btrees/BTreeIndexPage.h
 )
 
 ##

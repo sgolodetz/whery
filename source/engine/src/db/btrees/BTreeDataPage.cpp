@@ -146,6 +146,7 @@ std::vector<BackedTuple> BTreeDataPage::tuples_by_value(const ValueKey& key) con
 {
 	// TODO:	If the key's fields are a prefix of the fields on which the data page is sorted,
 	//			we can (and should) avoid the expensive linear lookup here.
+
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
 

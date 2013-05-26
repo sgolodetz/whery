@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+#include <boost/shared_ptr.hpp>
+
 #include "whery/db/base/BackedTuple.h"
 #include "whery/db/base/TupleComparator.h"
 
@@ -155,6 +157,9 @@ public:
 	*/
 	unsigned int size() const;
 };
+
+typedef boost::shared_ptr<BTreeDataPage> BTreeDataPage_Ptr;
+typedef boost::shared_ptr<const BTreeDataPage> BTreeDataPage_CPtr;
 
 }
 

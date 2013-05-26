@@ -18,10 +18,6 @@ using namespace whery;
 
 #include "Constants.h"
 
-//#################### TYPEDEFS ####################
-
-typedef boost::shared_ptr<BTreeDataPage> BTreeDataPage_Ptr;
-
 //#################### HELPER FUNCTIONS ####################
 
 namespace {
