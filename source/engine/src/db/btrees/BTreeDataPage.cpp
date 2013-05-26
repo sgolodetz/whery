@@ -53,10 +53,14 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 	}
 }
 
-void BTreeDataPage::delete_tuple(BackedTuple tuple)
+void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 {
-	m_freeList.push_back(tuple);
-	m_tuples.erase(tuple);
+	TupleSet::iterator it = m_tuples.find(tuple);
+	if(it != m_tuples.end())
+	{
+		m_freeList.push_back(*it);
+		m_tuples.erase(it);
+	}
 }
 
 unsigned int BTreeDataPage::empty_tuples() const

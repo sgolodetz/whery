@@ -67,11 +67,7 @@ public:
 
 	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
 private:
-	/**
-	Private and unimplemented for now - the compiler-generated defaults
-	would be inadequate, because the copied tuples map would refer to
-	the buffer on the original data page.
-	*/
+	/** Private and unimplemented for now - the compiler-generated defaults would be inadequate. */
 	BTreeDataPage(const BTreeDataPage&);
 	BTreeDataPage& operator=(const BTreeDataPage&);
 
@@ -86,12 +82,11 @@ public:
 	void add_tuple(const Tuple& tuple);
 
 	/**
-	Deletes the specified tuple from the page, if it is present. The BackedTuple object
-	is invalid after the deletion and should no longer be used by the calling code.
+	Deletes the specified tuple from the page, if it is present.
 
-	\param tuple	A BackedTuple object referring to the tuple to delete.
+	\param tuple	The tuple to delete.
 	*/
-	void delete_tuple(BackedTuple tuple);
+	void delete_tuple(const BackedTuple& tuple);
 
 	/**
 	Gets the number of additional tuples that can fit on the page.
