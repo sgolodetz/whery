@@ -7,7 +7,10 @@
 #include <iostream>
 #include <utility>
 
+#include <boost/utility.hpp>
+
 #include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/TupleComparator.h"
 #include "whery/db/btrees/BTreeDataPage.h"
@@ -17,7 +20,7 @@ void output(const BTreeDataPage& page, std::vector<std::pair<unsigned int,SortDi
 {
 	std::cout << page.tuple_count() << ' ' << page.percentage_full() << '\n';
 
-	std::vector<BackedTuple> tuples = page.tuples();
+	std::vector<BackedTuple> tuples(page.tuples().begin(), page.tuples().end());
 	if(fieldIndices != NULL)
 	{
 		std::sort(tuples.begin(), tuples.end(), TupleComparator(*fieldIndices));
@@ -48,42 +51,43 @@ int main()
 
 	output(page);
 
-	BackedTuple tuple = page.add_tuple();
+	FreshTuple tuple(page.field_manipulators());
 	tuple.field(0).set_int(0);
 	tuple.field(1).set_double(23.0);
 	tuple.field(2).set_int(9);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(1);
 	tuple.field(1).set_double(7.0);
 	tuple.field(2).set_int(8);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(2);
 	tuple.field(1).set_double(17.0);
-	tuple.field(2).set_int(51);
+	tuple.field(2).set_int(10);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(3);
 	tuple.field(1).set_double(24.0);
 	tuple.field(2).set_int(12);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	page.delete_tuple(page.tuples()[2]);
+	page.delete_tuple(*boost::next(page.tuples().begin(), 2));
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(2);
 	tuple.field(1).set_double(17.0);
 	tuple.field(2).set_int(51);
+	page.add_tuple(tuple);
 
 	output(page);
 

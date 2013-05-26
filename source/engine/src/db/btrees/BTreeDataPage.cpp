@@ -9,7 +9,6 @@
 #include <stdexcept>
 
 #include "whery/db/base/RangeKey.h"
-#include "whery/db/base/TupleComparator.h"
 #include "whery/db/base/TupleProjection.h"
 #include "whery/db/base/ValueKey.h"
 
@@ -18,16 +17,20 @@ namespace whery {
 //#################### CONSTRUCTORS ####################
 
 BTreeDataPage::BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
-:	m_buffer(bufferSize), m_tupleManipulator(fieldManipulators)
+:	m_buffer(bufferSize),
+	m_tupleManipulator(fieldManipulators),
+	m_tuples(TupleComparator::make_default(fieldManipulators.size()))
 {}
 
 BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
-:	m_buffer(bufferSize), m_tupleManipulator(tupleManipulator)
+:	m_buffer(bufferSize),
+	m_tupleManipulator(tupleManipulator),
+	m_tuples(TupleComparator::make_default(tupleManipulator.arity()))
 {}
 
 //#################### PUBLIC METHODS ####################
 
-BackedTuple BTreeDataPage::add_tuple()
+void BTreeDataPage::add_tuple(const Tuple& tuple)
 {
 	if(tuple_count() >= max_tuples())
 	{
@@ -36,25 +39,24 @@ BackedTuple BTreeDataPage::add_tuple()
 
 	if(!m_freeList.empty())
 	{
-		BackedTuple tuple = m_freeList.back();
+		BackedTuple backedTuple = m_freeList.back();
 		m_freeList.pop_back();
-		m_tuples.insert(std::make_pair(tuple.location(), tuple));
-		return tuple;
+		backedTuple.copy_from(tuple);
+		m_tuples.insert(backedTuple);
 	}
 	else
 	{
 		char *location = &m_buffer[0] + tuple_count() * m_tupleManipulator.size();
-		BackedTuple tuple(location, m_tupleManipulator);
-		m_tuples.insert(std::make_pair(location, tuple));
-		return tuple;
+		BackedTuple backedTuple(location, m_tupleManipulator);
+		backedTuple.copy_from(tuple);
+		m_tuples.insert(backedTuple);
 	}
 }
 
-void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
+void BTreeDataPage::delete_tuple(BackedTuple tuple)
 {
-	// TODO: Consider not putting the tuple on the free list if it's the last one in the map.
-	m_tuples.erase(tuple.location());
 	m_freeList.push_back(tuple);
+	m_tuples.erase(tuple);
 }
 
 unsigned int BTreeDataPage::empty_tuples() const
@@ -82,19 +84,16 @@ unsigned int BTreeDataPage::tuple_count() const
 	return m_tuples.size();
 }
 
-std::vector<BackedTuple> BTreeDataPage::tuples() const
+const BTreeDataPage::TupleSet& BTreeDataPage::tuples() const
 {
-	std::vector<BackedTuple> result;
-	result.reserve(m_tuples.size());
-	for(std::map<const char*,BackedTuple>::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
-	{
-		result.push_back(it->second);
-	}
-	return result;
+	return m_tuples;
 }
 
 std::vector<BackedTuple> BTreeDataPage::tuples_by_range(const RangeKey& key) const
 {
+	// TODO:	If the key's fields are a prefix of the fields on which the data page is sorted,
+	//			we can (and should) avoid the expensive linear lookup here.
+
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
 
@@ -102,9 +101,9 @@ std::vector<BackedTuple> BTreeDataPage::tuples_by_range(const RangeKey& key) con
 
 	// Filter the tuples for those whose projection on the key's field indices
 	// falls within the range specified by the key.
-	for(std::map<const char*,BackedTuple>::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
+	for(TupleSet::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
 	{
-		const BackedTuple& tuple = it->second;
+		const BackedTuple& tuple = *it;
 		TupleProjection projection(tuple, key.field_indices());
 
 		// Check whether the tuple is excluded by the low end of the range.
@@ -139,15 +138,17 @@ std::vector<BackedTuple> BTreeDataPage::tuples_by_range(const RangeKey& key) con
 
 std::vector<BackedTuple> BTreeDataPage::tuples_by_value(const ValueKey& key) const
 {
+	// TODO:	If the key's fields are a prefix of the fields on which the data page is sorted,
+	//			we can (and should) avoid the expensive linear lookup here.
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
 
 	TupleComparator comparator = TupleComparator::make_default(key.arity());
 
 	// Filter the tuples for those whose projection on the key's field indices equals the key.
-	for(std::map<const char*,BackedTuple>::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
+	for(TupleSet::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
 	{
-		const BackedTuple& tuple = it->second;
+		const BackedTuple& tuple = *it;
 		TupleProjection projection(tuple, key.field_indices());
 		if(comparator.compare(projection, key) == 0)
 		{

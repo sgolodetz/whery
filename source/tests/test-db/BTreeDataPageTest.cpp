@@ -36,10 +36,11 @@ BTreeDataPage_Ptr make_big_data_page()
 
 	BTreeDataPage_Ptr page(new BTreeDataPage(tupleManipulator.size() * TUPLE_COUNT, tupleManipulator));
 
+	FreshTuple tuple(page->field_manipulators());
 	for(unsigned int i = 0; i < TUPLE_COUNT; ++i)
 	{
-		BackedTuple tuple = page->add_tuple();
 		tuple.field(0).set_int(i);
+		page->add_tuple(tuple);
 	}
 
 	return page;
@@ -56,20 +57,22 @@ BTreeDataPage_Ptr make_small_data_page()
 		PAGE_BUFFER_SIZE
 	));
 
-	BackedTuple tuple = page->add_tuple();
+	FreshTuple tuple(page->field_manipulators());
+
 	tuple.field(0).set_int(23);
 	tuple.field(1).set_double(9.0);
 	tuple.field(2).set_int(84);
+	page->add_tuple(tuple);
 
-	tuple = page->add_tuple();
 	tuple.field(0).set_int(7);
 	tuple.field(1).set_double(8.0);
 	tuple.field(2).set_int(51);
+	page->add_tuple(tuple);
 
-	tuple = page->add_tuple();
 	tuple.field(0).set_int(17);
 	tuple.field(1).set_double(10.0);
 	tuple.field(2).set_int(51);
+	page->add_tuple(tuple);
 
 	return page;
 }
@@ -83,37 +86,32 @@ BOOST_AUTO_TEST_SUITE(BTreeDataPageTest)
 BOOST_AUTO_TEST_CASE(delete_tuple)
 {
 	BTreeDataPage_Ptr page = make_small_data_page();
-	std::vector<BackedTuple> tuples = page->tuples();
+	std::vector<BackedTuple> tuples(page->tuples().begin(), page->tuples().end());
 
 	// Check that the page has the right number of tuples to start with.
 	BOOST_CHECK_EQUAL(page->tuple_count(), 3);
 
+	// Delete the second tuple in the page, i.e. (17,10.0,51) since the page is sorted.
 	page->delete_tuple(tuples[1]);
 
 	// Check that deleting a tuples decreases the tuple count of the page
 	// and leaves the other tuples unaffected.
 	BOOST_CHECK_EQUAL(page->tuple_count(), 2);
-	BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), 23);
-	BOOST_CHECK_EQUAL(tuples[2].field(0).get_int(), 17);
+	BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), 7);
+	BOOST_CHECK_EQUAL(tuples[2].field(0).get_int(), 23);
 
-	BackedTuple t = page->add_tuple();
+	FreshTuple t(page->field_manipulators());
+	page->add_tuple(t);
 
 	// Check that adding a tuple when there is a tuple on the free list
-	// increases the tuple count of the page and reuses the tuple on
-	// the free list (note that this is a white-box test that relies on
-	// knowing details of the implementation).
+	// increases the tuple count of the page.
 	BOOST_CHECK_EQUAL(page->tuple_count(), 3);
-	BOOST_CHECK_EQUAL(t.location(), tuples[1].location());
 
-	t = page->add_tuple();
+	page->add_tuple(t);
 
 	// Check that adding a tuple when there is no tuple on the free list
-	// increases the tuple count and allocates a new tuple.
+	// increases the tuple count of the page.
 	BOOST_CHECK_EQUAL(page->tuple_count(), 4);
-	for(int i = 0; i < 3; ++i)
-	{
-		BOOST_CHECK_NE(t.location(), tuples[i].location());
-	}
 }
 
 BOOST_AUTO_TEST_CASE(tuples_by_range)

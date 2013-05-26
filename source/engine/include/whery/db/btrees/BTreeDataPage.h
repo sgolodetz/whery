@@ -6,10 +6,11 @@
 #ifndef H_WHERY_BTREEDATAPAGE
 #define H_WHERY_BTREEDATAPAGE
 
-#include <map>
+#include <set>
 #include <vector>
 
 #include "whery/db/base/BackedTuple.h"
+#include "whery/db/base/TupleComparator.h"
 
 namespace whery {
 
@@ -25,6 +26,10 @@ When they are full, additional pages must be allocated.
 */
 class BTreeDataPage
 {
+	//#################### TYPEDEFS ####################
+private:
+	typedef std::multiset<BackedTuple,TupleComparator> TupleSet;
+
 	//#################### PRIVATE VARIABLES ####################
 private:
 	/** The memory buffer used by the page to hold the tuple data. */
@@ -36,8 +41,8 @@ private:
 	/** The manipulator used to interact with the tuples in the buffer. */
 	TupleManipulator m_tupleManipulator;
 
-	/** A map from tuple locations to the corresponding tuples. */
-	std::map<const char*,BackedTuple> m_tuples;
+	/** The set of tuples on the page (sorted lexicographically in ascending order). */
+	TupleSet m_tuples;
 
 	//#################### CONSTRUCTORS ####################
 public:
@@ -75,10 +80,10 @@ public:
 	/**
 	Adds a tuple to the page, provided there is enough space to do so.
 
-	\return						A BackedTuple object referring to the newly-added tuple, if the add succeeds.
+	\param tuple				The tuple to add.
 	\throw std::out_of_range	If there is not enough space on the page to add a tuple.
 	*/
-	BackedTuple add_tuple();
+	void add_tuple(const Tuple& tuple);
 
 	/**
 	Deletes the specified tuple from the page, if it is present. The BackedTuple object
@@ -86,7 +91,7 @@ public:
 
 	\param tuple	A BackedTuple object referring to the tuple to delete.
 	*/
-	void delete_tuple(const BackedTuple& tuple);
+	void delete_tuple(BackedTuple tuple);
 
 	/**
 	Gets the number of additional tuples that can fit on the page.
@@ -124,11 +129,11 @@ public:
 	unsigned int tuple_count() const;
 
 	/**
-	Gets an array of BackedTuple objects that refer to the tuples on the page.
+	Gets the set of tuples on the page.
 
-	\return	An array of BackedTuple objects that refer to the tuples on the page.
+	\return	The set of tuples on the page.
 	*/
-	std::vector<BackedTuple> tuples() const;
+	const TupleSet& tuples() const;
 
 	/**
 	Performs a range-based lookup to find the tuples on the page that lie in the
