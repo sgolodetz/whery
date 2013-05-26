@@ -48,6 +48,17 @@ include/whery/db/base/ValueKey.h
 )
 
 ##
+SET(db_btrees_sources
+src/db/btrees/BTree.cpp
+src/db/btrees/BTreeIndexPage.cpp
+)
+
+SET(db_btrees_headers
+include/whery/db/btrees/BTree.h
+include/whery/db/btrees/BTreeIndexPage.h
+)
+
+##
 SET(util_sources
 src/util/AlignmentTracker.cpp
 )
@@ -62,11 +73,13 @@ include/whery/util/AlignmentTracker.h
 
 SET(sources
 ${db_base_sources}
+${db_btrees_sources}
 ${util_sources}
 )
 
 SET(headers
 ${db_base_headers}
+${db_btrees_headers}
 ${util_headers}
 )
 
@@ -80,6 +93,10 @@ SET(templates
 ##
 SOURCE_GROUP(db\\base\\.cpp FILES ${db_base_sources})
 SOURCE_GROUP(db\\base\\.h FILES ${db_base_headers})
+
+##
+SOURCE_GROUP(db\\btrees\\.cpp FILES ${db_btrees_sources})
+SOURCE_GROUP(db\\btrees\\.h FILES ${db_btrees_headers})
 
 ##
 SOURCE_GROUP(util\\.cpp FILES ${util_sources})
