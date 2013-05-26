@@ -13,38 +13,38 @@ SET(targetname whery)
 #############################
 
 ##
-SET(db_sources
-src/db/BackedTuple.cpp
-src/db/DataPage.cpp
-src/db/DoubleFieldManipulator.cpp
-src/db/Field.cpp
-src/db/FieldManipulator.cpp
-src/db/FreshTuple.cpp
-src/db/IntFieldManipulator.cpp
-src/db/RangeEndpoint.cpp
-src/db/RangeKey.cpp
-src/db/TupleComparator.cpp
-src/db/TupleManipulator.cpp
-src/db/TupleProjection.cpp
-src/db/ValueKey.cpp
+SET(db_base_sources
+src/db/base/BackedTuple.cpp
+src/db/base/DataPage.cpp
+src/db/base/DoubleFieldManipulator.cpp
+src/db/base/Field.cpp
+src/db/base/FieldManipulator.cpp
+src/db/base/FreshTuple.cpp
+src/db/base/IntFieldManipulator.cpp
+src/db/base/RangeEndpoint.cpp
+src/db/base/RangeKey.cpp
+src/db/base/TupleComparator.cpp
+src/db/base/TupleManipulator.cpp
+src/db/base/TupleProjection.cpp
+src/db/base/ValueKey.cpp
 )
 
-SET(db_headers
-include/whery/db/BackedTuple.h
-include/whery/db/DataPage.h
-include/whery/db/DoubleFieldManipulator.h
-include/whery/db/Field.h
-include/whery/db/FieldManipulator.h
-include/whery/db/FreshTuple.h
-include/whery/db/IntFieldManipulator.h
-include/whery/db/RangeEndpoint.h
-include/whery/db/RangeKey.h
-include/whery/db/SortDirection.h
-include/whery/db/Tuple.h
-include/whery/db/TupleComparator.h
-include/whery/db/TupleManipulator.h
-include/whery/db/TupleProjection.h
-include/whery/db/ValueKey.h
+SET(db_base_headers
+include/whery/db/base/BackedTuple.h
+include/whery/db/base/DataPage.h
+include/whery/db/base/DoubleFieldManipulator.h
+include/whery/db/base/Field.h
+include/whery/db/base/FieldManipulator.h
+include/whery/db/base/FreshTuple.h
+include/whery/db/base/IntFieldManipulator.h
+include/whery/db/base/RangeEndpoint.h
+include/whery/db/base/RangeKey.h
+include/whery/db/base/SortDirection.h
+include/whery/db/base/Tuple.h
+include/whery/db/base/TupleComparator.h
+include/whery/db/base/TupleManipulator.h
+include/whery/db/base/TupleProjection.h
+include/whery/db/base/ValueKey.h
 )
 
 ##
@@ -61,12 +61,12 @@ include/whery/util/AlignmentTracker.h
 #################################################################
 
 SET(sources
-${db_sources}
+${db_base_sources}
 ${util_sources}
 )
 
 SET(headers
-${db_headers}
+${db_base_headers}
 ${util_headers}
 )
 
@@ -78,8 +78,8 @@ SET(templates
 #############################
 
 ##
-SOURCE_GROUP(db\\.cpp FILES ${db_sources})
-SOURCE_GROUP(db\\.h FILES ${db_headers})
+SOURCE_GROUP(db\\base\\.cpp FILES ${db_base_sources})
+SOURCE_GROUP(db\\base\\.h FILES ${db_base_headers})
 
 ##
 SOURCE_GROUP(util\\.cpp FILES ${util_sources})

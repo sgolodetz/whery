@@ -3,11 +3,11 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/TupleManipulator.h"
+#include "whery/db/base/TupleManipulator.h"
 
 #include <cassert>
 
-#include "whery/db/FieldManipulator.h"
+#include "whery/db/base/FieldManipulator.h"
 #include "whery/util/AlignmentTracker.h"
 
 namespace whery {

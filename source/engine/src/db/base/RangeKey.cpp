@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/RangeKey.h"
+#include "whery/db/base/RangeKey.h"
 
 #include <cassert>
 

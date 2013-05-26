@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/BackedTuple.h"
+#include "whery/db/base/BackedTuple.h"
 
 namespace whery {
 

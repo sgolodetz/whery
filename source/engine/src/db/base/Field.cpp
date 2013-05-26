@@ -3,9 +3,9 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/Field.h"
+#include "whery/db/base/Field.h"
 
-#include "whery/db/FieldManipulator.h"
+#include "whery/db/base/FieldManipulator.h"
 
 namespace whery {
 

@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/TupleProjection.h"
+#include "whery/db/base/TupleProjection.h"
 
 #include <cassert>
 

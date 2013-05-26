@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/DoubleFieldManipulator.h"
+#include "whery/db/base/DoubleFieldManipulator.h"
 
 #include <functional>
 #include <boost/lexical_cast.hpp>
