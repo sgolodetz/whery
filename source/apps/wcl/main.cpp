@@ -7,10 +7,10 @@
 #include <iostream>
 #include <utility>
 
-#include "whery/db/DataPage.h"
-#include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/IntFieldManipulator.h"
-#include "whery/db/TupleComparator.h"
+#include "whery/db/base/DataPage.h"
+#include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/IntFieldManipulator.h"
+#include "whery/db/base/TupleComparator.h"
 using namespace whery;
 
 void output(const DataPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)

@@ -3,14 +3,14 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/DataPage.h"
+#include "whery/db/base/DataPage.h"
 
 #include <cassert>
 
-#include "whery/db/RangeKey.h"
-#include "whery/db/TupleComparator.h"
-#include "whery/db/TupleProjection.h"
-#include "whery/db/ValueKey.h"
+#include "whery/db/base/RangeKey.h"
+#include "whery/db/base/TupleComparator.h"
+#include "whery/db/base/TupleProjection.h"
+#include "whery/db/base/ValueKey.h"
 
 namespace whery {
 

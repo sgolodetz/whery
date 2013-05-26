@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/Field.h"
-#include "whery/db/IntFieldManipulator.h"
+#include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/Field.h"
+#include "whery/db/base/IntFieldManipulator.h"
 using namespace whery;
 
 #include "Constants.h"

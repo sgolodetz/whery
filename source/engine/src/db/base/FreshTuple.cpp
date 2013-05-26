@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/FreshTuple.h"
+#include "whery/db/base/FreshTuple.h"
 
 namespace whery {
 

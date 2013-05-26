@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/IntFieldManipulator.h"
+#include "whery/db/base/IntFieldManipulator.h"
 
 #include <functional>
 #include <boost/lexical_cast.hpp>
