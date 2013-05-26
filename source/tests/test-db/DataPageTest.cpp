@@ -32,7 +32,6 @@ DataPage_Ptr make_big_data_page()
 
 	TupleManipulator tupleManipulator(list_of<const FieldManipulator*>
 		(&IntFieldManipulator::instance())
-		(&IntFieldManipulator::instance())
 	);
 
 	DataPage_Ptr page(new DataPage(tupleManipulator.size() * TUPLE_COUNT, tupleManipulator));
@@ -41,7 +40,6 @@ DataPage_Ptr make_big_data_page()
 	{
 		BackedTuple tuple = page->add_tuple();
 		tuple.field(0).set_int(i);
-		tuple.field(1).set_int(TUPLE_COUNT - 1 - i);
 	}
 
 	return page;
@@ -122,6 +120,7 @@ BOOST_AUTO_TEST_CASE(tuples_by_range)
 {
 	DataPage_Ptr page = make_big_data_page();
 
+	// Check a [) range.
 	RangeKey key(page->field_manipulators(), list_of(0));
 	key.low_kind() = CLOSED;
 	key.low_value().field(0).set_int(7);
@@ -133,7 +132,45 @@ BOOST_AUTO_TEST_CASE(tuples_by_range)
 	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 7);
 	BOOST_CHECK_EQUAL(results[1].field(0).get_int(), 8);
 
-	// TODO
+	// Check a [] range.
+	key.high_kind() = CLOSED;
+	results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), 3);
+	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 7);
+	BOOST_CHECK_EQUAL(results[1].field(0).get_int(), 8);
+	BOOST_CHECK_EQUAL(results[2].field(0).get_int(), 9);
+
+	// Check a (] range.
+	key.low_kind() = OPEN;
+	results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), 2);
+	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 8);
+	BOOST_CHECK_EQUAL(results[1].field(0).get_int(), 9);
+
+	// Check a () range.
+	key.high_kind() = OPEN;
+	results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), 1);
+	BOOST_CHECK_EQUAL(results[0].field(0).get_int(), 8);
+
+	// Check a half-bounded range.
+	key.clear_low_endpoint();
+	results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), 9);
+	BOOST_CHECK_EQUAL(results.front().field(0).get_int(), 0);
+	BOOST_CHECK_EQUAL(results.back().field(0).get_int(), 8);
+
+	// Check an unbounded range.
+	key.clear_high_endpoint();
+	results = page->tuples_by_range(key);
+
+	BOOST_CHECK_EQUAL(results.size(), page->tuple_count());
+	BOOST_CHECK_EQUAL(results.front().field(0).get_int(), 0);
+	BOOST_CHECK_EQUAL(results.back().field(0).get_int(), page->tuple_count() - 1);
 }
 
 BOOST_AUTO_TEST_CASE(tuples_by_value)
