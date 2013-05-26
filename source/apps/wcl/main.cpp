@@ -7,13 +7,13 @@
 #include <iostream>
 #include <utility>
 
-#include "whery/db/base/DataPage.h"
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/TupleComparator.h"
+#include "whery/db/btrees/BTreeDataPage.h"
 using namespace whery;
 
-void output(const DataPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
+void output(const BTreeDataPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
 {
 	std::cout << page.tuple_count() << ' ' << page.percentage_full() << '\n';
 
@@ -44,7 +44,7 @@ int main()
 	fms.push_back(&IntFieldManipulator::instance());
 	fms.push_back(&DoubleFieldManipulator::instance());
 	fms.push_back(&IntFieldManipulator::instance());
-	DataPage page(fms, PAGE_BUFFER_SIZE);
+	BTreeDataPage page(fms, PAGE_BUFFER_SIZE);
 
 	output(page);
 

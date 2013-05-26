@@ -1,15 +1,15 @@
 /**
- * whery: DataPage.h
+ * whery: BTreeDataPage.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_DATAPAGE
-#define H_WHERY_DATAPAGE
+#ifndef H_WHERY_BTREEDATAPAGE
+#define H_WHERY_BTREEDATAPAGE
 
 #include <map>
 #include <vector>
 
-#include "BackedTuple.h"
+#include "whery/db/base/BackedTuple.h"
 
 namespace whery {
 
@@ -18,12 +18,12 @@ class RangeKey;
 class ValueKey;
 
 /**
-\brief An instance of this class represents a page of tuples for a database relation.
+\brief An instance of this class represents a (sorted) page of tuples in a B+-tree.
 
 Pages of tuples are of a fixed size, and as such can hold a maximum number of tuples.
 When they are full, additional pages must be allocated.
 */
-class DataPage
+class BTreeDataPage
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -50,7 +50,7 @@ public:
 	\param bufferSize				The size (in bytes) to use for the page's memory buffer.
 	\throw std::invalid_argument	If fieldManipulators is empty.
 	*/
-	DataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
+	BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
 
 	/**
 	Constructs a data page to contain tuples that can be manipulated by the specified manipulator.
@@ -58,7 +58,7 @@ public:
 	\param bufferSize		The size (in bytes) to use for the page's memory buffer.
 	\param tupleManipulator	The manipulator to be used to interact with tuples on the page.
 	*/
-	DataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
+	BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
 
 	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
 private:
@@ -67,8 +67,8 @@ private:
 	would be inadequate, because the copied tuples map would refer to
 	the buffer on the original data page.
 	*/
-	DataPage(const DataPage&);
-	DataPage& operator=(const DataPage&);
+	BTreeDataPage(const BTreeDataPage&);
+	BTreeDataPage& operator=(const BTreeDataPage&);
 
 	//#################### PUBLIC METHODS ####################
 public:

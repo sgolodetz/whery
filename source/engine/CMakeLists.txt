@@ -15,7 +15,6 @@ SET(targetname whery)
 ##
 SET(db_base_sources
 src/db/base/BackedTuple.cpp
-src/db/base/DataPage.cpp
 src/db/base/DoubleFieldManipulator.cpp
 src/db/base/Field.cpp
 src/db/base/FieldManipulator.cpp
@@ -31,7 +30,6 @@ src/db/base/ValueKey.cpp
 
 SET(db_base_headers
 include/whery/db/base/BackedTuple.h
-include/whery/db/base/DataPage.h
 include/whery/db/base/DoubleFieldManipulator.h
 include/whery/db/base/Field.h
 include/whery/db/base/FieldManipulator.h
@@ -50,11 +48,13 @@ include/whery/db/base/ValueKey.h
 ##
 SET(db_btrees_sources
 src/db/btrees/BTree.cpp
+src/db/btrees/BTreeDataPage.cpp
 src/db/btrees/BTreeIndexPage.cpp
 )
 
 SET(db_btrees_headers
 include/whery/db/btrees/BTree.h
+include/whery/db/btrees/BTreeDataPage.h
 include/whery/db/btrees/BTreeIndexPage.h
 )
 

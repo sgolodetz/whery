@@ -1,5 +1,5 @@
 /**
- * test-db: DataPageTest.cpp
+ * test-db: BTreeDataPageTest.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -9,24 +9,24 @@
 #include <boost/shared_ptr.hpp>
 using namespace boost::assign;
 
-#include "whery/db/base/DataPage.h"
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/RangeKey.h"
 #include "whery/db/base/ValueKey.h"
+#include "whery/db/btrees/BTreeDataPage.h"
 using namespace whery;
 
 #include "Constants.h"
 
 //#################### TYPEDEFS ####################
 
-typedef boost::shared_ptr<DataPage> DataPage_Ptr;
+typedef boost::shared_ptr<BTreeDataPage> BTreeDataPage_Ptr;
 
 //#################### HELPER FUNCTIONS ####################
 
 namespace {
 
-DataPage_Ptr make_big_data_page()
+BTreeDataPage_Ptr make_big_data_page()
 {
 	const unsigned int TUPLE_COUNT = 20;
 
@@ -34,7 +34,7 @@ DataPage_Ptr make_big_data_page()
 		(&IntFieldManipulator::instance())
 	);
 
-	DataPage_Ptr page(new DataPage(tupleManipulator.size() * TUPLE_COUNT, tupleManipulator));
+	BTreeDataPage_Ptr page(new BTreeDataPage(tupleManipulator.size() * TUPLE_COUNT, tupleManipulator));
 
 	for(unsigned int i = 0; i < TUPLE_COUNT; ++i)
 	{
@@ -45,11 +45,11 @@ DataPage_Ptr make_big_data_page()
 	return page;
 }
 
-DataPage_Ptr make_small_data_page()
+BTreeDataPage_Ptr make_small_data_page()
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
-	DataPage_Ptr page(new DataPage(list_of<const FieldManipulator*>
+	BTreeDataPage_Ptr page(new BTreeDataPage(list_of<const FieldManipulator*>
 		(&IntFieldManipulator::instance())
 		(&DoubleFieldManipulator::instance())
 		(&IntFieldManipulator::instance()),
@@ -78,11 +78,11 @@ DataPage_Ptr make_small_data_page()
 
 //#################### TESTS ####################
 
-BOOST_AUTO_TEST_SUITE(DataPageTest)
+BOOST_AUTO_TEST_SUITE(BTreeDataPageTest)
 
 BOOST_AUTO_TEST_CASE(delete_tuple)
 {
-	DataPage_Ptr page = make_small_data_page();
+	BTreeDataPage_Ptr page = make_small_data_page();
 	std::vector<BackedTuple> tuples = page->tuples();
 
 	// Check that the page has the right number of tuples to start with.
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(delete_tuple)
 
 BOOST_AUTO_TEST_CASE(tuples_by_range)
 {
-	DataPage_Ptr page = make_big_data_page();
+	BTreeDataPage_Ptr page = make_big_data_page();
 
 	// Check a [) range.
 	RangeKey key(page->field_manipulators(), list_of(0));
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(tuples_by_range)
 
 BOOST_AUTO_TEST_CASE(tuples_by_value)
 {
-	DataPage_Ptr page = make_small_data_page();
+	BTreeDataPage_Ptr page = make_small_data_page();
 
 	ValueKey key(page->field_manipulators(), list_of(0));
 	key.field(0).set_int(7);

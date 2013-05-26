@@ -1,9 +1,9 @@
 /**
- * whery: DataPage.cpp
+ * whery: BTreeDataPage.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/base/DataPage.h"
+#include "whery/db/btrees/BTreeDataPage.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -17,17 +17,17 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-DataPage::DataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
+BTreeDataPage::BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
 :	m_buffer(bufferSize), m_tupleManipulator(fieldManipulators)
 {}
 
-DataPage::DataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
+BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
 :	m_buffer(bufferSize), m_tupleManipulator(tupleManipulator)
 {}
 
 //#################### PUBLIC METHODS ####################
 
-BackedTuple DataPage::add_tuple()
+BackedTuple BTreeDataPage::add_tuple()
 {
 	if(tuple_count() >= max_tuples())
 	{
@@ -50,39 +50,39 @@ BackedTuple DataPage::add_tuple()
 	}
 }
 
-void DataPage::delete_tuple(const BackedTuple& tuple)
+void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 {
 	// TODO: Consider not putting the tuple on the free list if it's the last one in the map.
 	m_tuples.erase(tuple.location());
 	m_freeList.push_back(tuple);
 }
 
-unsigned int DataPage::empty_tuples() const
+unsigned int BTreeDataPage::empty_tuples() const
 {
 	return max_tuples() - tuple_count();
 }
 
-const std::vector<const FieldManipulator*>& DataPage::field_manipulators() const
+const std::vector<const FieldManipulator*>& BTreeDataPage::field_manipulators() const
 {
 	return m_tupleManipulator.field_manipulators();
 }
 
-unsigned int DataPage::max_tuples() const
+unsigned int BTreeDataPage::max_tuples() const
 {
 	return m_buffer.size() / m_tupleManipulator.size();
 }
 
-double DataPage::percentage_full() const
+double BTreeDataPage::percentage_full() const
 {
 	return tuple_count() * 100.0 / max_tuples();
 }
 
-unsigned int DataPage::tuple_count() const
+unsigned int BTreeDataPage::tuple_count() const
 {
 	return m_tuples.size();
 }
 
-std::vector<BackedTuple> DataPage::tuples() const
+std::vector<BackedTuple> BTreeDataPage::tuples() const
 {
 	std::vector<BackedTuple> result;
 	result.reserve(m_tuples.size());
@@ -93,7 +93,7 @@ std::vector<BackedTuple> DataPage::tuples() const
 	return result;
 }
 
-std::vector<BackedTuple> DataPage::tuples_by_range(const RangeKey& key) const
+std::vector<BackedTuple> BTreeDataPage::tuples_by_range(const RangeKey& key) const
 {
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
@@ -137,7 +137,7 @@ std::vector<BackedTuple> DataPage::tuples_by_range(const RangeKey& key) const
 	return results;
 }
 
-std::vector<BackedTuple> DataPage::tuples_by_value(const ValueKey& key) const
+std::vector<BackedTuple> BTreeDataPage::tuples_by_value(const ValueKey& key) const
 {
 	std::vector<BackedTuple> results;
 	results.reserve(m_tuples.size());
@@ -158,7 +158,7 @@ std::vector<BackedTuple> DataPage::tuples_by_value(const ValueKey& key) const
 	return results;
 }
 
-unsigned int DataPage::size() const
+unsigned int BTreeDataPage::size() const
 {
 	return m_buffer.size();
 }
