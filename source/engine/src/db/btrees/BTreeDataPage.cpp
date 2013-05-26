@@ -39,9 +39,10 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 
 	if(!m_freeList.empty())
 	{
-		BackedTuple backedTuple = m_freeList.back();
+		BackedTuple backedTuple(m_freeList.back(), m_tupleManipulator);
 		m_freeList.pop_back();
 		backedTuple.copy_from(tuple);
+		backedTuple.make_read_only();
 		m_tuples.insert(backedTuple);
 	}
 	else
@@ -49,6 +50,7 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 		char *location = &m_buffer[0] + tuple_count() * m_tupleManipulator.size();
 		BackedTuple backedTuple(location, m_tupleManipulator);
 		backedTuple.copy_from(tuple);
+		backedTuple.make_read_only();
 		m_tuples.insert(backedTuple);
 	}
 }
@@ -58,7 +60,7 @@ void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 	TupleSet::iterator it = m_tuples.find(tuple);
 	if(it != m_tuples.end())
 	{
-		m_freeList.push_back(*it);
+		m_freeList.push_back(const_cast<char*>(it->location()));
 		m_tuples.erase(it);
 	}
 }

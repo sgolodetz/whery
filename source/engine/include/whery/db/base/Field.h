@@ -29,6 +29,9 @@ private:
 	/** The manipulator used to interact with the memory containing the field. */
 	const FieldManipulator& m_manipulator;
 
+	/** Whether or not the field is read-only. If so, attempting to modify it will fail. */
+	bool m_readOnly;
+
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
@@ -37,10 +40,11 @@ public:
 
 	\param location		The location of the field in memory.
 	\param manipulator	The manipulator used to interact with the memory containing the field.
+	\param readOnly		Whether or not the field should be read-only.
 	*/
-	Field(char *location, const FieldManipulator& manipulator);
+	Field(char *location, const FieldManipulator& manipulator, bool readOnly = false);
 
-	//#################### PUBLIC MEMBER FUNCTIONS ####################
+	//#################### PUBLIC METHODS ####################
 public:
 	/**
 	Compares this field with other. The value of the other field is first converted to the type
@@ -108,6 +112,15 @@ public:
 	\throw std::bad_cast	If the type conversion fails.
 	*/
 	void set_int(int value) const;
+
+	//#################### PRIVATE METHODS ####################
+private:
+	/**
+	Checks that the field is not read-only.
+
+	\throw std::logic_error	If the field is read-only.
+	*/
+	void ensure_writable() const;
 };
 
 }

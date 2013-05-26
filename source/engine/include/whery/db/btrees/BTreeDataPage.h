@@ -36,7 +36,7 @@ private:
 	std::vector<char> m_buffer;
 
 	/** A free list of tuples that have been deleted - these can be reallocated by add_tuple(). */
-	std::vector<BackedTuple> m_freeList;
+	std::vector<char *> m_freeList;
 
 	/** The manipulator used to interact with the tuples in the buffer. */
 	TupleManipulator m_tupleManipulator;

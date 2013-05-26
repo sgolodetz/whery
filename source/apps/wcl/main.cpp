@@ -40,6 +40,7 @@ void output(const BTreeDataPage& page, std::vector<std::pair<unsigned int,SortDi
 }
 
 int main()
+try
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
@@ -96,4 +97,8 @@ int main()
 	output(page, &fieldIndices);
 
 	return 0;
+}
+catch(std::exception& e)
+{
+	std::cout << "ERROR: " << e.what() << '\n';
 }
