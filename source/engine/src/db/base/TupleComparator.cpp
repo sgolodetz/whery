@@ -3,9 +3,9 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/TupleComparator.h"
+#include "whery/db/base/TupleComparator.h"
 
-#include "whery/db/Tuple.h"
+#include "whery/db/base/Tuple.h"
 
 namespace whery {
 

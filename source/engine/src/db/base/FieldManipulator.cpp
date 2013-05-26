@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/FieldManipulator.h"
+#include "whery/db/base/FieldManipulator.h"
 
 #include <typeinfo>
 

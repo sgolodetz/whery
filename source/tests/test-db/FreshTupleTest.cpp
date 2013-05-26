@@ -8,9 +8,9 @@
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign;
 
-#include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/FreshTuple.h"
-#include "whery/db/IntFieldManipulator.h"
+#include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/FreshTuple.h"
+#include "whery/db/base/IntFieldManipulator.h"
 using namespace whery;
 
 #include "Constants.h"

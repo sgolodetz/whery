@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/RangeEndpoint.h"
+#include "whery/db/base/RangeEndpoint.h"
 
 namespace whery {
 

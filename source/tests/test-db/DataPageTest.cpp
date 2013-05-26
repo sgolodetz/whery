@@ -9,11 +9,11 @@
 #include <boost/shared_ptr.hpp>
 using namespace boost::assign;
 
-#include "whery/db/DataPage.h"
-#include "whery/db/DoubleFieldManipulator.h"
-#include "whery/db/IntFieldManipulator.h"
-#include "whery/db/RangeKey.h"
-#include "whery/db/ValueKey.h"
+#include "whery/db/base/DataPage.h"
+#include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/IntFieldManipulator.h"
+#include "whery/db/base/RangeKey.h"
+#include "whery/db/base/ValueKey.h"
 using namespace whery;
 
 #include "Constants.h"

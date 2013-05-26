@@ -3,7 +3,7 @@
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/ValueKey.h"
+#include "whery/db/base/ValueKey.h"
 
 namespace whery {
 
