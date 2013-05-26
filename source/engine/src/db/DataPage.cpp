@@ -107,24 +107,22 @@ std::vector<BackedTuple> DataPage::tuples_by_range(const RangeKey& key) const
 		TupleProjection projection(tuple, key.field_indices());
 
 		// Check whether the tuple is excluded by the low end of the range.
-		const RangeEndpoint *lowEndpoint = key.low_endpoint();
-		if(lowEndpoint != NULL)
+		if(key.has_low_endpoint())
 		{
-			int comp = comparator.compare(projection, lowEndpoint->value());
-			if((lowEndpoint->kind() == CLOSED && comp < 0) ||
-			   (lowEndpoint->kind() == OPEN && comp <= 0))
+			int comp = comparator.compare(projection, key.low_value());
+			if((key.low_kind() == CLOSED && comp < 0) ||
+			   (key.low_kind() == OPEN && comp <= 0))
 			{
 				continue;
 			}
 		}
 
 		// Check whether the tuple is excluded by the high end of the range.
-		const RangeEndpoint *highEndpoint = key.high_endpoint();
-		if(highEndpoint != NULL)
+		if(key.has_high_endpoint())
 		{
-			int comp = comparator.compare(projection, highEndpoint->value());
-			if((highEndpoint->kind() == CLOSED && comp > 0) ||
-			   (highEndpoint->kind() == OPEN && comp >= 0))
+			int comp = comparator.compare(projection, key.high_value());
+			if((key.high_kind() == CLOSED && comp > 0) ||
+			   (key.high_kind() == OPEN && comp >= 0))
 			{
 				continue;
 			}

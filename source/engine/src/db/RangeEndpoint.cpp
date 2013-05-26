@@ -15,12 +15,12 @@ RangeEndpoint::RangeEndpoint(const FreshTuple& value, RangeEndpointKind kind)
 
 //#################### PUBLIC METHODS ####################
 
-RangeEndpointKind RangeEndpoint::kind() const
+RangeEndpointKind& RangeEndpoint::kind()
 {
 	return m_kind;
 }
 
-const FreshTuple& RangeEndpoint::value() const
+FreshTuple& RangeEndpoint::value()
 {
 	return m_value;
 }

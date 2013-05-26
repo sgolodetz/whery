@@ -122,13 +122,11 @@ BOOST_AUTO_TEST_CASE(tuples_by_range)
 {
 	DataPage_Ptr page = make_big_data_page();
 
-	std::vector<unsigned int> fieldIndices = list_of(0);
-	TupleManipulator tupleManipulator(page->field_manipulators(), fieldIndices);
-	FreshTuple lowValue(tupleManipulator), highValue(tupleManipulator);
-	lowValue.field(0).set_int(7);
-	highValue.field(0).set_int(9);
-	RangeKey key(fieldIndices);
-	key.set_endpoints(RangeEndpoint(lowValue, CLOSED), RangeEndpoint(highValue, OPEN));
+	RangeKey key(page->field_manipulators(), list_of(0));
+	key.low_kind() = CLOSED;
+	key.low_value().field(0).set_int(7);
+	key.high_kind() = OPEN;
+	key.high_value().field(0).set_int(9);
 	std::vector<BackedTuple> results = page->tuples_by_range(key);
 
 	BOOST_CHECK_EQUAL(results.size(), 2);

@@ -20,21 +20,28 @@ private:
 	/** A non-empty array specifying the indices of the fields to be used for the key. */
 	std::vector<unsigned int> m_fieldIndices;
 
+	/** A non-empty array of manipulators for the fields in the tuples being keyed. */
+	std::vector<const FieldManipulator*> m_fieldManipulators;
+
 	/** The high end of the range (if any). */
-	RangeEndpoint_CPtr m_highEndpoint;
+	RangeEndpoint_Ptr m_highEndpoint;
 
 	/** The low end of the range (if any). */
-	RangeEndpoint_CPtr m_lowEndpoint;
+	RangeEndpoint_Ptr m_lowEndpoint;
 
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
 	Constructs a range key.
 
+	\param fieldManipulators		A non-empty array of manipulators for the fields in the tuples being keyed.
 	\param fieldIndices				A non-empty array specifying the indices of the fields to be used for the key.
-	\throw std::invalid_argument	If fieldIndices is empty.
+	\throw std::invalid_argument	If fieldManipulators or fieldIndices is empty.
 	*/
-	explicit RangeKey(const std::vector<unsigned int>& fieldIndices);
+	explicit RangeKey(
+		const std::vector<const FieldManipulator*>& fieldManipulators,
+		const std::vector<unsigned int>& fieldIndices
+	);
 
 	//#################### PUBLIC METHODS ####################
 public:
@@ -46,6 +53,16 @@ public:
 	unsigned int arity() const;
 
 	/**
+	Clears the high endpoint of the range.
+	*/
+	void clear_high_endpoint();
+
+	/**
+	Clears the low endpoint of the range.
+	*/
+	void clear_low_endpoint();
+
+	/**
 	Gets the indices of the fields to be used for the key.
 
 	\return	The indices of the fields to be used for the key.
@@ -53,40 +70,83 @@ public:
 	const std::vector<unsigned int>& field_indices() const;
 
 	/**
-	Gets the high endpoint of the range (if any).
+	Returns whether or not the range has a high endpoint.
 
-	\return	The high endpoint of the range, if it exists, or NULL otherwise.
+	\return	true, if the range has a high endpoint, or false otherwise.
 	*/
-	const RangeEndpoint *high_endpoint() const;
+	bool has_high_endpoint() const;
 
 	/**
-	Gets the low endpoint of the range (if any).
+	Returns whether or not the range has a low endpoint.
 
-	\return	The low endpoint of the range, if it exists, or NULL otherwise.
+	\return	true, if the range has a low endpoint, or false otherwise.
 	*/
-	const RangeEndpoint *low_endpoint() const;
+	bool has_low_endpoint() const;
 
 	/**
-	Sets the low and high endpoints of the range.
+	Gets the kind (open or closed) of the range's high endpoint (if any).
 
-	\param lowEndpoint	The low endpoint of the range.
-	\param highEndpoint	The high endpoint of the range.
+	\return	The kind (open or closed) of the range's high endpoint (if any).
 	*/
-	void set_endpoints(const RangeEndpoint& lowEndpoint, const RangeEndpoint& highEndpoint);
+	RangeEndpointKind& high_kind();
 
 	/**
-	Sets the high endpoint of the range.
+	Gets the kind (open or closed) of the range's high endpoint (if any).
 
-	\param endpoint	The high endpoint of the range.
+	\return	The kind (open or closed) of the range's high endpoint (if any).
 	*/
-	void set_high_endpoint(const RangeEndpoint& endpoint);
+	RangeEndpointKind high_kind() const;
 
 	/**
-	Sets the low endpoint of the range.
+	Gets the value of the range's high endpoint (if any).
 
-	\param endpoint	The low endpoint of the range.
+	\return	The value of the range's high endpoint (if any).
 	*/
-	void set_low_endpoint(const RangeEndpoint& endpoint);
+	FreshTuple& high_value();
+
+	/**
+	Gets the value of the range's high endpoint (if any).
+
+	\return	The value of the range's high endpoint (if any).
+	*/
+	const FreshTuple& high_value() const;
+
+	/**
+	Gets the kind (open or closed) of the range's low endpoint (if any).
+
+	\return	The kind (open or closed) of the range's low endpoint (if any).
+	*/
+	RangeEndpointKind& low_kind();
+
+	/**
+	Gets the kind (open or closed) of the range's low endpoint (if any).
+
+	\return	The kind (open or closed) of the range's low endpoint (if any).
+	*/
+	RangeEndpointKind low_kind() const;
+
+	/**
+	Gets the value of the range's low endpoint (if any).
+
+	\return	The value of the range's low endpoint (if any).
+	*/
+	FreshTuple& low_value();
+
+	/**
+	Gets the value of the range's low endpoint (if any).
+
+	\return	The value of the range's low endpoint (if any).
+	*/
+	const FreshTuple& low_value() const;
+
+	//#################### PRIVATE METHODS ####################
+private:
+	/**
+	Ensures that the specified endpoint is non-NULL.
+
+	\param endpoint	The endpoint that we want to ensure is non-NULL.
+	*/
+	void ensure_endpoint(RangeEndpoint_Ptr& endpoint);
 };
 
 }

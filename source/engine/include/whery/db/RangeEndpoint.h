@@ -60,17 +60,17 @@ public:
 
 	\return	The kind of endpoint (open or closed).
 	*/
-	RangeEndpointKind kind() const;
+	RangeEndpointKind& kind();
 
 	/**
 	Gets the value at the endpoint.
 
 	\return	The value at the endpoint.
 	*/
-	const FreshTuple& value() const;
+	FreshTuple& value();
 };
 
-typedef boost::shared_ptr<const RangeEndpoint> RangeEndpoint_CPtr;
+typedef boost::shared_ptr<RangeEndpoint> RangeEndpoint_Ptr;
 
 }
 
