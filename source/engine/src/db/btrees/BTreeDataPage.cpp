@@ -9,7 +9,6 @@
 #include <stdexcept>
 
 #include "whery/db/base/RangeKey.h"
-#include "whery/db/base/TupleComparator.h"
 #include "whery/db/base/TupleProjection.h"
 #include "whery/db/base/ValueKey.h"
 
@@ -132,77 +131,6 @@ unsigned int BTreeDataPage::tuple_count() const
 const BTreeDataPage::TupleSet& BTreeDataPage::tuples() const
 {
 	return m_tuples;
-}
-
-std::vector<BackedTuple> BTreeDataPage::tuples_by_range(const RangeKey& key) const
-{
-	// TODO:	If the key's fields are a prefix of the fields on which the data page is sorted,
-	//			we can (and should) avoid the expensive linear lookup here.
-
-	std::vector<BackedTuple> results;
-	results.reserve(m_tuples.size());
-
-	TupleComparator comparator = TupleComparator::make_default(key.arity());
-
-	// Filter the tuples for those whose projection on the key's field indices
-	// falls within the range specified by the key.
-	for(TupleSet::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
-	{
-		const BackedTuple& tuple = *it;
-		TupleProjection projection(tuple, key.field_indices());
-
-		// Check whether the tuple is excluded by the low end of the range.
-		if(key.has_low_endpoint())
-		{
-			int comp = comparator.compare(projection, key.low_value());
-			if((key.low_kind() == CLOSED && comp < 0) ||
-			   (key.low_kind() == OPEN && comp <= 0))
-			{
-				continue;
-			}
-		}
-
-		// Check whether the tuple is excluded by the high end of the range.
-		if(key.has_high_endpoint())
-		{
-			int comp = comparator.compare(projection, key.high_value());
-			if((key.high_kind() == CLOSED && comp > 0) ||
-			   (key.high_kind() == OPEN && comp >= 0))
-			{
-				continue;
-			}
-		}
-
-		// If we get here, the tuple was not excluded by either the low
-		// or high end of the range, so we add it to the results.
-		results.push_back(tuple);
-	}
-
-	return results;
-}
-
-std::vector<BackedTuple> BTreeDataPage::tuples_by_value(const ValueKey& key) const
-{
-	// TODO:	If the key's fields are a prefix of the fields on which the data page is sorted,
-	//			we can (and should) avoid the expensive linear lookup here.
-
-	std::vector<BackedTuple> results;
-	results.reserve(m_tuples.size());
-
-	TupleComparator comparator = TupleComparator::make_default(key.arity());
-
-	// Filter the tuples for those whose projection on the key's field indices equals the key.
-	for(TupleSet::const_iterator it = m_tuples.begin(), iend = m_tuples.end(); it != iend; ++it)
-	{
-		const BackedTuple& tuple = *it;
-		TupleProjection projection(tuple, key.field_indices());
-		if(comparator.compare(projection, key) == 0)
-		{
-			results.push_back(tuple);
-		}
-	}
-
-	return results;
 }
 
 BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const RangeKey& key) const

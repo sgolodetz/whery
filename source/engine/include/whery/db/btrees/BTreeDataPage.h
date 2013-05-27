@@ -184,24 +184,6 @@ public:
 	const TupleSet& tuples() const;
 
 	/**
-	Performs a range-based lookup to find the tuples on the page that lie in the
-	range specified by the key.
-
-	\param key	The key specifying the range in which matching tuples should lie.
-	\return		An array of BackedTuple objects that refer to the matching tuples on the page.
-	*/
-	std::vector<BackedTuple> tuples_by_range(const RangeKey& key) const;
-
-	/**
-	Performs a value-based lookup to find the tuples on the page that match
-	the specified key.
-
-	\param key	The key against which to match the tuples.
-	\return		An array of BackedTuple objects that refer to the matching tuples on the page.
-	*/
-	std::vector<BackedTuple> tuples_by_value(const ValueKey& key) const;
-
-	/**
 	Returns an iterator pointing one beyond the tuple at the higher end of the
 	range specified by key.
 
