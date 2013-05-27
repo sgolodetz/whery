@@ -17,6 +17,7 @@ BTreeDataPageTest.cpp
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshTupleTest.cpp
+PrefixTupleComparatorTest.cpp
 TestRunner.cpp
 TupleManipulatorTest.cpp
 TupleProjectionTest.cpp

@@ -20,6 +20,7 @@ src/db/base/Field.cpp
 src/db/base/FieldManipulator.cpp
 src/db/base/FreshTuple.cpp
 src/db/base/IntFieldManipulator.cpp
+src/db/base/PrefixTupleComparator.cpp
 src/db/base/RangeEndpoint.cpp
 src/db/base/RangeKey.cpp
 src/db/base/TupleComparator.cpp
@@ -35,6 +36,7 @@ include/whery/db/base/Field.h
 include/whery/db/base/FieldManipulator.h
 include/whery/db/base/FreshTuple.h
 include/whery/db/base/IntFieldManipulator.h
+include/whery/db/base/PrefixTupleComparator.h
 include/whery/db/base/RangeEndpoint.h
 include/whery/db/base/RangeKey.h
 include/whery/db/base/SortDirection.h
