@@ -104,7 +104,7 @@ public:
 
 	\return	The number of additional tuples that can fit on the page.
 	*/
-	unsigned int empty_tuples() const;
+	unsigned int empty_tuple_count() const;
 
 	/**
 	Returns an iterator pointing to the end of the set of tuples on the page.
@@ -114,16 +114,16 @@ public:
 	TupleSetCIter end() const;
 
 	/**
-	Returns the pair (lower_bound(key), upper_bound(key)).
+	Returns the pair [lower_bound(key), upper_bound(key)].
 
-	\return	The pair (lower_bound(key), upper_bound(key)).
+	\return	The pair [lower_bound(key), upper_bound(key)].
 	*/
 	EqualRangeResult equal_range(const RangeKey& key) const;
 
 	/**
-	Returns the pair (lower_bound(key), upper_bound(key)).
+	Returns the pair [lower_bound(key), upper_bound(key)].
 
-	\return	The pair (lower_bound(key), upper_bound(key)).
+	\return	The pair [lower_bound(key), upper_bound(key)].
 	*/
 	EqualRangeResult equal_range(const ValueKey& key) const;
 
@@ -160,7 +160,7 @@ public:
 
 	\return	The maximum number of tuples that can be stored on the page.
 	*/
-	unsigned int max_tuples() const;
+	unsigned int max_tuple_count() const;
 
 	/**
 	Gets the percentage of the page's buffer that currently contains tuples.
@@ -175,13 +175,6 @@ public:
 	\return	The number of tuples that are currently stored on the page.
 	*/
 	unsigned int tuple_count() const;
-
-	/**
-	Gets the set of tuples on the page.
-
-	\return	The set of tuples on the page.
-	*/
-	const TupleSet& tuples() const;
 
 	/**
 	Returns an iterator pointing one beyond the tuple at the higher end of the

@@ -30,7 +30,7 @@ BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tu
 
 void BTreeDataPage::add_tuple(const Tuple& tuple)
 {
-	if(tuple_count() >= max_tuples())
+	if(tuple_count() >= max_tuple_count())
 	{
 		throw std::out_of_range("It is not possible to add an additional tuple to a full data page.");
 	}
@@ -68,9 +68,9 @@ void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 	}
 }
 
-unsigned int BTreeDataPage::empty_tuples() const
+unsigned int BTreeDataPage::empty_tuple_count() const
 {
-	return max_tuples() - tuple_count();
+	return max_tuple_count() - tuple_count();
 }
 
 BTreeDataPage::TupleSetCIter BTreeDataPage::end() const
@@ -113,24 +113,19 @@ BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const ValueKey& key) con
 	return m_tuples.lower_bound(key);
 }
 
-unsigned int BTreeDataPage::max_tuples() const
+unsigned int BTreeDataPage::max_tuple_count() const
 {
 	return m_buffer.size() / m_tupleManipulator.size();
 }
 
 double BTreeDataPage::percentage_full() const
 {
-	return tuple_count() * 100.0 / max_tuples();
+	return tuple_count() * 100.0 / max_tuple_count();
 }
 
 unsigned int BTreeDataPage::tuple_count() const
 {
 	return m_tuples.size();
-}
-
-const BTreeDataPage::TupleSet& BTreeDataPage::tuples() const
-{
-	return m_tuples;
 }
 
 BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const RangeKey& key) const

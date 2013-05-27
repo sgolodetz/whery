@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_SUITE(BTreeDataPageTest)
 BOOST_AUTO_TEST_CASE(delete_tuple)
 {
 	BTreeDataPage_Ptr page = make_small_data_page();
-	std::vector<BackedTuple> tuples(page->tuples().begin(), page->tuples().end());
+	std::vector<BackedTuple> tuples(page->begin(), page->end());
 
 	// Check that the page has the right number of tuples to start with.
 	BOOST_CHECK_EQUAL(page->tuple_count(), 3);

@@ -20,7 +20,7 @@ void output(const BTreeDataPage& page, std::vector<std::pair<unsigned int,SortDi
 {
 	std::cout << page.tuple_count() << ' ' << page.percentage_full() << '\n';
 
-	std::vector<BackedTuple> tuples(page.tuples().begin(), page.tuples().end());
+	std::vector<BackedTuple> tuples(page.begin(), page.end());
 	if(fieldIndices != NULL)
 	{
 		std::sort(tuples.begin(), tuples.end(), TupleComparator(*fieldIndices));
@@ -81,7 +81,7 @@ try
 
 	output(page);
 
-	page.delete_tuple(*boost::next(page.tuples().begin(), 2));
+	page.delete_tuple(*boost::next(page.begin(), 2));
 
 	output(page);
 
