@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "whery/db/base/RangeKey.h"
+#include "whery/db/base/TupleComparator.h"
 #include "whery/db/base/TupleProjection.h"
 #include "whery/db/base/ValueKey.h"
 
@@ -18,14 +19,12 @@ namespace whery {
 
 BTreeDataPage::BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
 :	m_buffer(bufferSize),
-	m_tupleManipulator(fieldManipulators),
-	m_tuples(TupleComparator::make_default(fieldManipulators.size()))
+	m_tupleManipulator(fieldManipulators)
 {}
 
 BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
 :	m_buffer(bufferSize),
-	m_tupleManipulator(tupleManipulator),
-	m_tuples(TupleComparator::make_default(tupleManipulator.arity()))
+	m_tupleManipulator(tupleManipulator)
 {}
 
 //#################### PUBLIC METHODS ####################
@@ -55,6 +54,11 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 	}
 }
 
+BTreeDataPage::TupleSetCIter BTreeDataPage::begin() const
+{
+	return m_tuples.begin();
+}
+
 void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 {
 	TupleSet::iterator it = m_tuples.find(tuple);
@@ -70,9 +74,44 @@ unsigned int BTreeDataPage::empty_tuples() const
 	return max_tuples() - tuple_count();
 }
 
+BTreeDataPage::TupleSetCIter BTreeDataPage::end() const
+{
+	return m_tuples.end();
+}
+
+BTreeDataPage::EqualRangeResult BTreeDataPage::equal_range(const RangeKey& key) const
+{
+	return std::make_pair(lower_bound(key), upper_bound(key));
+}
+
+BTreeDataPage::EqualRangeResult BTreeDataPage::equal_range(const ValueKey& key) const
+{
+	return std::make_pair(lower_bound(key), upper_bound(key));
+}
+
 const std::vector<const FieldManipulator*>& BTreeDataPage::field_manipulators() const
 {
 	return m_tupleManipulator.field_manipulators();
+}
+
+BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const RangeKey& key) const
+{
+	if(key.has_low_endpoint())
+	{
+		TupleSetCIter it = m_tuples.lower_bound(key.low_value());
+		if(key.low_kind() == OPEN)
+		{
+			PrefixTupleComparator comp;
+			while(it != m_tuples.end() && comp.compare(*it, key.low_value()) == 0) ++it;
+		}
+		return it;
+	}
+	else return m_tuples.begin();
+}
+
+BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const ValueKey& key) const
+{
+	return m_tuples.lower_bound(key);
 }
 
 unsigned int BTreeDataPage::max_tuples() const
@@ -164,6 +203,28 @@ std::vector<BackedTuple> BTreeDataPage::tuples_by_value(const ValueKey& key) con
 	}
 
 	return results;
+}
+
+BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const RangeKey& key) const
+{
+	if(key.has_high_endpoint())
+	{
+		TupleSetCIter it = m_tuples.upper_bound(key.high_value());
+		if(key.high_kind() == OPEN)
+		{
+			PrefixTupleComparator comp;
+			TupleSet::const_reverse_iterator rit(it);
+			while(rit != m_tuples.rend() && comp.compare(*rit, key.high_value()) == 0) ++rit;
+			it = rit.base();
+		}
+		return it;
+	}
+	else return m_tuples.end();
+}
+
+BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const ValueKey& key) const
+{
+	return m_tuples.upper_bound(key);
 }
 
 unsigned int BTreeDataPage::size() const

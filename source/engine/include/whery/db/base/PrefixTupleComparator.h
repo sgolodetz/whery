@@ -17,7 +17,7 @@ class Tuple;
 \brief An instance of this class is used to perform prefix comparisons on tuples (e.g. database records).
 
 Note that the types of the tuples' corresponding fields must be compatible for the comparison to succeed.
-As an example of such a comparison: (7,8) < (7,8,51) < (17) < (17,10) < (23,9) < (23,9,84).
+As an example of such a comparison: (7,8) = (7,8,51) < (17) = (17,10) < (23,9) = (23,9,84).
 */
 class PrefixTupleComparator : std::binary_function<Tuple,Tuple,bool>
 {

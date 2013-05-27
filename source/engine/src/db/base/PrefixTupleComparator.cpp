@@ -33,10 +33,8 @@ int PrefixTupleComparator::compare(const Tuple& lhs, const Tuple& rhs) const
 		}
 	}
 
-	// If the tuples are equivalent up to this point, the result depends on their arities.
-	if(lhs.arity() < rhs.arity()) return -1;
-	else if(lhs.arity() > rhs.arity()) return 1;
-	else return 0;
+	// If the tuples are equivalent up to this point, they compare equal.
+	return 0;
 }
 
 }

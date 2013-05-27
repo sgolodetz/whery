@@ -59,9 +59,9 @@ BOOST_AUTO_TEST_CASE(compare)
 			int actual = c.compare(t[i], t[j]);
 
 			int expected;
-			if(i < j) expected = -1;
-			else if(i > j) expected = 1;
-			else expected = 0;
+			if(i / 2 == j / 2) expected = 0;
+			else if(i < j) expected = -1;
+			else expected = 1;
 
 			std::stringstream ss;
 			ss << '(' << i << ',' << j << ") check actual == " << expected << " failed [" << actual << " != " << expected << ']';
