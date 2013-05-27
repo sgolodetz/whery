@@ -17,12 +17,12 @@ namespace whery {
 //#################### CONSTRUCTORS ####################
 
 BTreeDataPage::BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
-:	m_buffer(bufferSize),
+:	m_buffer(new std::vector<char>(bufferSize)),
 	m_tupleManipulator(fieldManipulators)
 {}
 
 BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
-:	m_buffer(bufferSize),
+:	m_buffer(new std::vector<char>(bufferSize)),
 	m_tupleManipulator(tupleManipulator)
 {}
 
@@ -45,7 +45,7 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 	}
 	else
 	{
-		char *location = &m_buffer[0] + tuple_count() * m_tupleManipulator.size();
+		char *location = &(*m_buffer)[0] + tuple_count() * m_tupleManipulator.size();
 		BackedTuple backedTuple(location, m_tupleManipulator);
 		backedTuple.copy_from(tuple);
 		backedTuple.make_read_only();
@@ -115,7 +115,7 @@ BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const ValueKey& key) con
 
 unsigned int BTreeDataPage::max_tuple_count() const
 {
-	return m_buffer.size() / m_tupleManipulator.size();
+	return size() / m_tupleManipulator.size();
 }
 
 double BTreeDataPage::percentage_full() const
@@ -152,7 +152,7 @@ BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const ValueKey& key) con
 
 unsigned int BTreeDataPage::size() const
 {
-	return m_buffer.size();
+	return m_buffer->size();
 }
 
 }

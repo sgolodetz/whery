@@ -54,7 +54,7 @@ private:
 
 	//#################### PUBLIC METHODS ####################
 public:
-	void bulk_load(const std::vector<BTreeDataPage_CPtr>& pages);
+	void bulk_load(const std::vector<BTreeDataPage>& pages);
 	void clear();
 
 	//#################### PRIVATE METHODS ####################

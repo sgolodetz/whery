@@ -37,10 +37,10 @@ public:
 	//#################### PRIVATE VARIABLES ####################
 private:
 	/** The memory buffer used by the page to hold the tuple data. */
-	std::vector<char> m_buffer;
+	boost::shared_ptr<std::vector<char> > m_buffer;
 
 	/** A free list of tuples that have been deleted - these can be reallocated by add_tuple(). */
-	std::vector<char *> m_freeList;
+	std::vector<char*> m_freeList;
 
 	/** The manipulator used to interact with the tuples in the buffer. */
 	TupleManipulator m_tupleManipulator;
@@ -68,12 +68,6 @@ public:
 	\param tupleManipulator	The manipulator to be used to interact with tuples on the page.
 	*/
 	BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
-
-	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
-private:
-	/** Private and unimplemented for now - the compiler-generated defaults would be inadequate. */
-	BTreeDataPage(const BTreeDataPage&);
-	BTreeDataPage& operator=(const BTreeDataPage&);
 
 	//#################### PUBLIC METHODS ####################
 public:
@@ -203,9 +197,6 @@ public:
 	*/
 	unsigned int size() const;
 };
-
-typedef boost::shared_ptr<BTreeDataPage> BTreeDataPage_Ptr;
-typedef boost::shared_ptr<const BTreeDataPage> BTreeDataPage_CPtr;
 
 }
 
