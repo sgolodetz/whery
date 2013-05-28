@@ -5,6 +5,8 @@
 
 #include "whery/db/base/Field.h"
 
+#include <stdexcept>
+
 #include "whery/db/base/FieldManipulator.h"
 
 namespace whery {
