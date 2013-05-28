@@ -5,6 +5,8 @@
 
 #include "whery/db/base/TupleComparator.h"
 
+#include <stdexcept>
+
 #include "whery/db/base/Tuple.h"
 
 namespace whery {

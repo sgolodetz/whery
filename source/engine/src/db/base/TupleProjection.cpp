@@ -6,6 +6,7 @@
 #include "whery/db/base/TupleProjection.h"
 
 #include <cassert>
+#include <stdexcept>
 
 namespace whery {
 

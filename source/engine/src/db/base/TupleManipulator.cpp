@@ -6,6 +6,7 @@
 #include "whery/db/base/TupleManipulator.h"
 
 #include <cassert>
+#include <stdexcept>
 
 #include "whery/db/base/FieldManipulator.h"
 #include "whery/util/AlignmentTracker.h"

@@ -6,6 +6,7 @@
 #include "whery/db/base/DataPage.h"
 
 #include <cassert>
+#include <stdexcept>
 
 #include "whery/db/base/RangeKey.h"
 #include "whery/db/base/TupleComparator.h"

@@ -5,6 +5,8 @@
 
 #include "whery/db/base/BackedTuple.h"
 
+#include <stdexcept>
+
 namespace whery {
 
 //#################### CONSTRUCTORS ####################

@@ -41,10 +41,15 @@ Windows (Visual Studio 2010):
 bootstrap
 b2 -j2 --libdir=..\boost_1_53_0\lib --includedir=..\boost_1_53_0\include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete toolset=msvc-10.0 install
 
-Linux or Mac:
+Linux:
 
-bootstrap
-b2 -j2 --libdir=../boost_1_53_0/lib --includedir=../boost_1_53_0/include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete --layout=versioned toolset=gcc install
+./bootstrap.sh
+./b2 -j2 --libdir=../boost_1_53_0/lib --includedir=../boost_1_53_0/include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete --layout=tagged toolset=gcc install
+
+Mac:
+
+./bootstrap.sh
+./b2 -j2 --libdir=../boost_1_53_0/lib --includedir=../boost_1_53_0/include --abbreviate-paths --with-chrono --with-date_time --with-filesystem --with-test --with-thread --build-type=complete --layout=tagged toolset=darwin install
 
 The -j2 option is added to help improve the speed of the builds; it can be modified/removed as desired.
 
