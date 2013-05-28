@@ -13,10 +13,10 @@
 #include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/TupleComparator.h"
-#include "whery/db/btrees/BTreeDataPage.h"
+#include "whery/db/pages/SortedPage.h"
 using namespace whery;
 
-void output(const BTreeDataPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
+void output(const SortedPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
 {
 	std::cout << page.tuple_count() << ' ' << page.percentage_full() << '\n';
 
@@ -48,7 +48,7 @@ try
 	fms.push_back(&IntFieldManipulator::instance());
 	fms.push_back(&DoubleFieldManipulator::instance());
 	fms.push_back(&IntFieldManipulator::instance());
-	BTreeDataPage page(fms, PAGE_BUFFER_SIZE);
+	SortedPage page(fms, PAGE_BUFFER_SIZE);
 
 	output(page);
 

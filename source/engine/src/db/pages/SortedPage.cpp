@@ -1,9 +1,9 @@
 /**
- * whery: BTreeDataPage.cpp
+ * whery: SortedPage.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#include "whery/db/btrees/BTreeDataPage.h"
+#include "whery/db/pages/SortedPage.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -16,23 +16,23 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-BTreeDataPage::BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
+SortedPage::SortedPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize)
 :	m_buffer(new std::vector<char>(bufferSize)),
 	m_tupleManipulator(fieldManipulators)
 {}
 
-BTreeDataPage::BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
+SortedPage::SortedPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator)
 :	m_buffer(new std::vector<char>(bufferSize)),
 	m_tupleManipulator(tupleManipulator)
 {}
 
 //#################### PUBLIC METHODS ####################
 
-void BTreeDataPage::add_tuple(const Tuple& tuple)
+void SortedPage::add_tuple(const Tuple& tuple)
 {
 	if(tuple_count() >= max_tuple_count())
 	{
-		throw std::out_of_range("It is not possible to add an additional tuple to a full data page.");
+		throw std::out_of_range("It is not possible to add an additional tuple to a full page.");
 	}
 
 	if(!m_freeList.empty())
@@ -53,12 +53,12 @@ void BTreeDataPage::add_tuple(const Tuple& tuple)
 	}
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::begin() const
+SortedPage::TupleSetCIter SortedPage::begin() const
 {
 	return m_tuples.begin();
 }
 
-void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
+void SortedPage::delete_tuple(const BackedTuple& tuple)
 {
 	TupleSet::iterator it = m_tuples.find(tuple);
 	if(it != m_tuples.end())
@@ -68,32 +68,32 @@ void BTreeDataPage::delete_tuple(const BackedTuple& tuple)
 	}
 }
 
-unsigned int BTreeDataPage::empty_tuple_count() const
+unsigned int SortedPage::empty_tuple_count() const
 {
 	return max_tuple_count() - tuple_count();
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::end() const
+SortedPage::TupleSetCIter SortedPage::end() const
 {
 	return m_tuples.end();
 }
 
-BTreeDataPage::EqualRangeResult BTreeDataPage::equal_range(const RangeKey& key) const
+SortedPage::EqualRangeResult SortedPage::equal_range(const RangeKey& key) const
 {
 	return std::make_pair(lower_bound(key), upper_bound(key));
 }
 
-BTreeDataPage::EqualRangeResult BTreeDataPage::equal_range(const ValueKey& key) const
+SortedPage::EqualRangeResult SortedPage::equal_range(const ValueKey& key) const
 {
 	return std::make_pair(lower_bound(key), upper_bound(key));
 }
 
-const std::vector<const FieldManipulator*>& BTreeDataPage::field_manipulators() const
+const std::vector<const FieldManipulator*>& SortedPage::field_manipulators() const
 {
 	return m_tupleManipulator.field_manipulators();
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const RangeKey& key) const
+SortedPage::TupleSetCIter SortedPage::lower_bound(const RangeKey& key) const
 {
 	if(key.has_low_endpoint())
 	{
@@ -108,27 +108,27 @@ BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const RangeKey& key) con
 	else return m_tuples.begin();
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::lower_bound(const ValueKey& key) const
+SortedPage::TupleSetCIter SortedPage::lower_bound(const ValueKey& key) const
 {
 	return m_tuples.lower_bound(key);
 }
 
-unsigned int BTreeDataPage::max_tuple_count() const
+unsigned int SortedPage::max_tuple_count() const
 {
 	return size() / m_tupleManipulator.size();
 }
 
-double BTreeDataPage::percentage_full() const
+double SortedPage::percentage_full() const
 {
 	return tuple_count() * 100.0 / max_tuple_count();
 }
 
-unsigned int BTreeDataPage::tuple_count() const
+unsigned int SortedPage::tuple_count() const
 {
 	return m_tuples.size();
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const RangeKey& key) const
+SortedPage::TupleSetCIter SortedPage::upper_bound(const RangeKey& key) const
 {
 	if(key.has_high_endpoint())
 	{
@@ -145,12 +145,12 @@ BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const RangeKey& key) con
 	else return m_tuples.end();
 }
 
-BTreeDataPage::TupleSetCIter BTreeDataPage::upper_bound(const ValueKey& key) const
+SortedPage::TupleSetCIter SortedPage::upper_bound(const ValueKey& key) const
 {
 	return m_tuples.upper_bound(key);
 }
 
-unsigned int BTreeDataPage::size() const
+unsigned int SortedPage::size() const
 {
 	return m_buffer->size();
 }

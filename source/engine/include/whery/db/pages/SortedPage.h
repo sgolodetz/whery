@@ -1,10 +1,10 @@
 /**
- * whery: BTreeDataPage.h
+ * whery: SortedPage.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_BTREEDATAPAGE
-#define H_WHERY_BTREEDATAPAGE
+#ifndef H_WHERY_SORTEDPAGE
+#define H_WHERY_SORTEDPAGE
 
 #include <set>
 #include <vector>
@@ -21,12 +21,12 @@ class RangeKey;
 class ValueKey;
 
 /**
-\brief An instance of this class represents a (sorted) page of tuples in a B+-tree.
+\brief An instance of this class represents a sorted page of tuples.
 
 Pages of tuples are of a fixed size, and as such can hold a maximum number of tuples.
 When they are full, additional pages must be allocated.
 */
-class BTreeDataPage
+class SortedPage
 {
 	//#################### TYPEDEFS ####################
 public:
@@ -51,23 +51,22 @@ private:
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
-	Constructs a data page to contain tuples whose fields can be manipulated
-	by the specified manipulators.
+	Constructs a page to contain tuples whose fields can be manipulated by the specified manipulators.
 
 	\param fieldManipulators		A non-empty array of manipulators to be used to manipulate
 									the fields of each tuple on the page.
 	\param bufferSize				The size (in bytes) to use for the page's memory buffer.
 	\throw std::invalid_argument	If fieldManipulators is empty.
 	*/
-	BTreeDataPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
+	SortedPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
 
 	/**
-	Constructs a data page to contain tuples that can be manipulated by the specified manipulator.
+	Constructs a page to contain tuples that can be manipulated by the specified manipulator.
 
 	\param bufferSize		The size (in bytes) to use for the page's memory buffer.
 	\param tupleManipulator	The manipulator to be used to interact with tuples on the page.
 	*/
-	BTreeDataPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
+	SortedPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
 
 	//#################### PUBLIC METHODS ####################
 public:

@@ -13,11 +13,11 @@ SET(targetname test-db)
 #############################
 
 SET(sources
-BTreeDataPageTest.cpp
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshTupleTest.cpp
 PrefixTupleComparatorTest.cpp
+SortedPageTest.cpp
 TestRunner.cpp
 TupleManipulatorTest.cpp
 TupleProjectionTest.cpp
