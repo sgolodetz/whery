@@ -71,6 +71,8 @@ public:
 	virtual TupleSetCIter upper_bound(const ValueKey& key) const;
 };
 
+typedef boost::shared_ptr<SortedPage> SortedPage_Ptr;
+
 }
 
 #endif
