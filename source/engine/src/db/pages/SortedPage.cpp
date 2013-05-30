@@ -58,6 +58,11 @@ SortedPage::TupleSetCIter SortedPage::begin() const
 	return m_tuples.begin();
 }
 
+unsigned int SortedPage::buffer_size() const
+{
+	return m_buffer->size();
+}
+
 void SortedPage::delete_tuple(const BackedTuple& tuple)
 {
 	TupleSet::iterator it = m_tuples.find(tuple);
@@ -115,7 +120,7 @@ SortedPage::TupleSetCIter SortedPage::lower_bound(const ValueKey& key) const
 
 unsigned int SortedPage::max_tuple_count() const
 {
-	return size() / m_tupleManipulator.size();
+	return buffer_size() / m_tupleManipulator.size();
 }
 
 double SortedPage::percentage_full() const
@@ -148,11 +153,6 @@ SortedPage::TupleSetCIter SortedPage::upper_bound(const RangeKey& key) const
 SortedPage::TupleSetCIter SortedPage::upper_bound(const ValueKey& key) const
 {
 	return m_tuples.upper_bound(key);
-}
-
-unsigned int SortedPage::size() const
-{
-	return m_buffer->size();
 }
 
 }

@@ -62,6 +62,7 @@ src/db/pages/SortedPage.cpp
 )
 
 SET(db_pages_headers
+include/whery/db/pages/ISortedPage.h
 include/whery/db/pages/SortedPage.h
 )
 
