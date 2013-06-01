@@ -8,6 +8,8 @@
 
 #include <map>
 
+#include <boost/thread/mutex.hpp>
+
 #include "InMemorySortedPage.h"
 
 namespace whery {
@@ -64,6 +66,9 @@ private:
 	(a soft limit in practice).
 	*/
 	unsigned int m_maxBytes;
+
+	/** A mutex used to serialise accesses to the cache. */
+	mutable boost::mutex m_mutex;
 
 	/**
 	A map from persisters to IDs of pages in the cache. This is used to ensure that
