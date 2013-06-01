@@ -8,14 +8,14 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ISortedPage.h"
+#include "SortedPage.h"
 
 namespace whery {
 
 /**
 \brief An instance of this class represents a sorted page of tuples that resides in memory.
 */
-class InMemorySortedPage : public ISortedPage
+class InMemorySortedPage : public SortedPage
 {
 	//#################### PRIVATE VARIABLES ####################
 private:

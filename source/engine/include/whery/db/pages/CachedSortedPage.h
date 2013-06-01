@@ -6,15 +6,15 @@
 #ifndef H_WHERY_CACHEDSORTEDPAGE
 #define H_WHERY_CACHEDSORTEDPAGE
 
-#include "ISortedPage.h"
 #include "PageCache.h"
+#include "SortedPage.h"
 
 namespace whery {
 
 /**
 \brief An instance of this class represents a sorted page of tuples that is backed by the page cache.
 */
-class CachedSortedPage : public ISortedPage
+class CachedSortedPage : public SortedPage
 {
 	//#################### PRIVATE VARIABLES ####################
 private:

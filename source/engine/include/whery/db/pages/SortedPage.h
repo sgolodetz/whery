@@ -1,10 +1,10 @@
 /**
- * whery: ISortedPage.h
+ * whery: SortedPage.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_ISORTEDPAGE
-#define H_WHERY_ISORTEDPAGE
+#ifndef H_WHERY_SORTEDPAGE
+#define H_WHERY_SORTEDPAGE
 
 #include <set>
 #include <vector>
@@ -25,7 +25,7 @@ class ValueKey;
 Pages of tuples are of a fixed size, and as such can hold a maximum number of tuples.
 When they are full, additional pages must be allocated.
 */
-class ISortedPage
+class SortedPage
 {
 	//#################### TYPEDEFS ####################
 public:
@@ -38,7 +38,7 @@ public:
 	/**
 	Destroys the sorted page.
 	*/
-	virtual ~ISortedPage() {}
+	virtual ~SortedPage() {}
 
 	//#################### PUBLIC ABSTRACT METHODS ####################
 public:

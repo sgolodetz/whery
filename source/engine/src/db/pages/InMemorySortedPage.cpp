@@ -53,7 +53,7 @@ void InMemorySortedPage::add_tuple(const Tuple& tuple)
 	}
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::begin() const
+SortedPage::TupleSetCIter InMemorySortedPage::begin() const
 {
 	return m_tuples.begin();
 }
@@ -78,17 +78,17 @@ unsigned int InMemorySortedPage::empty_tuple_count() const
 	return max_tuple_count() - tuple_count();
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::end() const
+SortedPage::TupleSetCIter InMemorySortedPage::end() const
 {
 	return m_tuples.end();
 }
 
-InMemorySortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key) const
+SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key) const
 {
 	return std::make_pair(lower_bound(key), upper_bound(key));
 }
 
-InMemorySortedPage::EqualRangeResult InMemorySortedPage::equal_range(const ValueKey& key) const
+SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const ValueKey& key) const
 {
 	return std::make_pair(lower_bound(key), upper_bound(key));
 }
@@ -98,7 +98,7 @@ const std::vector<const FieldManipulator*>& InMemorySortedPage::field_manipulato
 	return m_tupleManipulator.field_manipulators();
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const RangeKey& key) const
+SortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const RangeKey& key) const
 {
 	if(key.has_low_endpoint())
 	{
@@ -113,7 +113,7 @@ InMemorySortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const RangeKey
 	else return m_tuples.begin();
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const ValueKey& key) const
+SortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const ValueKey& key) const
 {
 	return m_tuples.lower_bound(key);
 }
@@ -133,7 +133,7 @@ unsigned int InMemorySortedPage::tuple_count() const
 	return m_tuples.size();
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const RangeKey& key) const
+SortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const RangeKey& key) const
 {
 	if(key.has_high_endpoint())
 	{
@@ -150,7 +150,7 @@ InMemorySortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const RangeKey
 	else return m_tuples.end();
 }
 
-InMemorySortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const ValueKey& key) const
+SortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const ValueKey& key) const
 {
 	return m_tuples.upper_bound(key);
 }

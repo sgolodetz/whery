@@ -43,7 +43,7 @@ public:
 	{
 	private:
 		Node *m_node;
-		InMemorySortedPage::TupleSetCIter m_it;
+		SortedPage::TupleSetCIter m_it;
 	public:
 		// TODO
 	};
