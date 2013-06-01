@@ -6,8 +6,8 @@
 #ifndef H_WHERY_CACHEDSORTEDPAGE
 #define H_WHERY_CACHEDSORTEDPAGE
 
-#include "IPageCache.h"
 #include "ISortedPage.h"
+#include "PageCache.h"
 
 namespace whery {
 
