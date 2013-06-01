@@ -1,5 +1,5 @@
 /**
- * test-db: SortedPageTest.cpp
+ * test-db: InMemorySortedPageTest.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -12,7 +12,7 @@ using namespace boost::assign;
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/RangeKey.h"
 #include "whery/db/base/ValueKey.h"
-#include "whery/db/pages/SortedPage.h"
+#include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
 
 #include "Constants.h"
@@ -28,7 +28,7 @@ void check_tuple(const BackedTuple& tuple, int i, int j, int k)
 	BOOST_CHECK_EQUAL(tuple.field(2).get_int(), k);
 }
 
-SortedPage make_prefix_page()
+InMemorySortedPage make_prefix_page()
 {
 	const unsigned int N = 5;
 
@@ -38,7 +38,7 @@ SortedPage make_prefix_page()
 		(&IntFieldManipulator::instance())
 	);
 
-	SortedPage page(tupleManipulator.size() * N * N * N, tupleManipulator);
+	InMemorySortedPage page(tupleManipulator.size() * N * N * N, tupleManipulator);
 
 	FreshTuple tuple(page.field_manipulators());
 	for(unsigned int i = 0; i < N; ++i)
@@ -58,11 +58,11 @@ SortedPage make_prefix_page()
 	return page;
 }
 
-SortedPage make_small_page()
+InMemorySortedPage make_small_page()
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
-	SortedPage page(list_of<const FieldManipulator*>
+	InMemorySortedPage page(list_of<const FieldManipulator*>
 		(&IntFieldManipulator::instance())
 		(&DoubleFieldManipulator::instance())
 		(&IntFieldManipulator::instance()),
@@ -93,11 +93,11 @@ SortedPage make_small_page()
 
 //#################### TESTS ####################
 
-BOOST_AUTO_TEST_SUITE(SortedPageTest)
+BOOST_AUTO_TEST_SUITE(InMemorySortedPageTest)
 
 BOOST_AUTO_TEST_CASE(delete_tuple)
 {
-	SortedPage page = make_small_page();
+	InMemorySortedPage page = make_small_page();
 	std::vector<BackedTuple> tuples(page.begin(), page.end());
 
 	// Check that the page has the right number of tuples to start with.
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(delete_tuple)
 
 BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 {
-	SortedPage page = make_prefix_page();
+	InMemorySortedPage page = make_prefix_page();
 
 	// Check a [] range.
 	RangeKey key(page.field_manipulators(), list_of(0)(1));
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 	key.high_kind() = CLOSED;
 	key.high_value().field(0).set_int(3);
 	key.high_value().field(1).set_int(0);
-	SortedPage::EqualRangeResult result = page.equal_range(key);
+	InMemorySortedPage::EqualRangeResult result = page.equal_range(key);
 	std::vector<BackedTuple> tuples(result.first, result.second);
 
 	BOOST_CHECK_EQUAL(tuples.size(), 10);
@@ -191,11 +191,11 @@ BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 
 BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 {
-	SortedPage page = make_prefix_page();
+	InMemorySortedPage page = make_prefix_page();
 
 	ValueKey key(page.field_manipulators(), list_of(0));
 	key.field(0).set_int(2);
-	SortedPage::EqualRangeResult result = page.equal_range(key);
+	InMemorySortedPage::EqualRangeResult result = page.equal_range(key);
 	std::vector<BackedTuple> tuples(result.first, result.second);
 
 	BOOST_CHECK_EQUAL(tuples.size(), 25);

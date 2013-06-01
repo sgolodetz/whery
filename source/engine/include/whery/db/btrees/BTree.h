@@ -6,7 +6,7 @@
 #ifndef H_WHERY_BTREE
 #define H_WHERY_BTREE
 
-#include "whery/db/pages/SortedPage.h"
+#include "whery/db/pages/InMemorySortedPage.h"
 
 namespace whery {
 
@@ -26,7 +26,7 @@ private:
 		std::vector<Node*> m_children;
 
 		/** The page used to store the tuple data for the node. */
-		SortedPage m_page;
+		InMemorySortedPage m_page;
 
 		/** The node's parent in the B+-tree (if any). */
 		Node *m_parent;
@@ -43,7 +43,7 @@ public:
 	{
 	private:
 		Node *m_node;
-		SortedPage::TupleSetCIter m_it;
+		InMemorySortedPage::TupleSetCIter m_it;
 	public:
 		// TODO
 	};
@@ -54,7 +54,7 @@ private:
 
 	//#################### PUBLIC METHODS ####################
 public:
-	void bulk_load(const std::vector<SortedPage>& pages);
+	void bulk_load(const std::vector<InMemorySortedPage>& pages);
 	void clear();
 
 	//#################### PRIVATE METHODS ####################

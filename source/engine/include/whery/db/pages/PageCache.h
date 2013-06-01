@@ -6,7 +6,7 @@
 #ifndef H_WHERY_PAGECACHE
 #define H_WHERY_PAGECACHE
 
-#include "SortedPage.h"
+#include "InMemorySortedPage.h"
 
 namespace whery {
 
@@ -31,7 +31,7 @@ public:
 	\return							The retrieved page.
 	\throw std::invalid_argument	If the ID does not refer to a page that is in the cache.
 	*/
-	SortedPage_Ptr page(const PageCacheID& id);
+	InMemorySortedPage_Ptr page(const PageCacheID& id);
 };
 
 }

@@ -16,8 +16,8 @@ SET(sources
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshTupleTest.cpp
+InMemorySortedPageTest.cpp
 PrefixTupleComparatorTest.cpp
-SortedPageTest.cpp
 TestRunner.cpp
 TupleManipulatorTest.cpp
 TupleProjectionTest.cpp

@@ -59,14 +59,14 @@ include/whery/db/btrees/BTree.h
 ##
 SET(db_pages_sources
 src/db/pages/CachedSortedPage.cpp
-src/db/pages/SortedPage.cpp
+src/db/pages/InMemorySortedPage.cpp
 )
 
 SET(db_pages_headers
 include/whery/db/pages/CachedSortedPage.h
+include/whery/db/pages/InMemorySortedPage.h
 include/whery/db/pages/ISortedPage.h
 include/whery/db/pages/PageCache.h
-include/whery/db/pages/SortedPage.h
 )
 
 ##

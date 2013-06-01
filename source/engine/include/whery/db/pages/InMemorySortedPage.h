@@ -1,10 +1,10 @@
 /**
- * whery: SortedPage.h
+ * whery: InMemorySortedPage.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_SORTEDPAGE
-#define H_WHERY_SORTEDPAGE
+#ifndef H_WHERY_INMEMORYSORTEDPAGE
+#define H_WHERY_INMEMORYSORTEDPAGE
 
 #include <boost/shared_ptr.hpp>
 
@@ -13,9 +13,9 @@
 namespace whery {
 
 /**
-\brief An instance of this class represents a sorted page of tuples.
+\brief An instance of this class represents a sorted page of tuples that resides in memory.
 */
-class SortedPage : public ISortedPage
+class InMemorySortedPage : public ISortedPage
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -41,7 +41,7 @@ public:
 	\param bufferSize				The size (in bytes) to use for the page's memory buffer.
 	\throw std::invalid_argument	If fieldManipulators is empty.
 	*/
-	SortedPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
+	InMemorySortedPage(const std::vector<const FieldManipulator*>& fieldManipulators, unsigned int bufferSize);
 
 	/**
 	Constructs a page to contain tuples that can be manipulated by the specified manipulator.
@@ -49,7 +49,7 @@ public:
 	\param bufferSize		The size (in bytes) to use for the page's memory buffer.
 	\param tupleManipulator	The manipulator to be used to interact with tuples on the page.
 	*/
-	SortedPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
+	InMemorySortedPage(unsigned int bufferSize, const TupleManipulator& tupleManipulator);
 
 	//#################### PUBLIC INHERITED METHODS ####################
 public:
@@ -71,7 +71,7 @@ public:
 	virtual TupleSetCIter upper_bound(const ValueKey& key) const;
 };
 
-typedef boost::shared_ptr<SortedPage> SortedPage_Ptr;
+typedef boost::shared_ptr<InMemorySortedPage> InMemorySortedPage_Ptr;
 
 }
 
