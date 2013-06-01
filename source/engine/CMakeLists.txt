@@ -60,6 +60,7 @@ include/whery/db/btrees/BTree.h
 SET(db_pages_sources
 src/db/pages/CachedSortedPage.cpp
 src/db/pages/InMemorySortedPage.cpp
+src/db/pages/PageCache.cpp
 )
 
 SET(db_pages_headers
