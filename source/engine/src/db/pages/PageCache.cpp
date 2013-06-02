@@ -20,9 +20,7 @@ PageCache::PageCache(unsigned int maxBytes)
 PageCacheID PageCache::add_page(const InMemorySortedPage_Ptr& page)
 {
 	boost::lock_guard<boost::mutex> guard(m_mutex);
-
-	// TODO: Implement an ID allocator.
-	PageCacheID id(23);
+	PageCacheID id = m_idAllocator.allocate();
 	m_pinnedPages.insert(std::make_pair(id, std::make_pair(page, PagePersister_CPtr())));
 	return id;
 }

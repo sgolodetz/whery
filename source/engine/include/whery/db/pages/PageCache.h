@@ -10,6 +10,7 @@
 
 #include <boost/thread/mutex.hpp>
 
+#include "whery/util/IDAllocator.h"
 #include "InMemorySortedPage.h"
 
 namespace whery {
@@ -61,6 +62,9 @@ private:
 
 	//#################### PRIVATE VARIABLES ####################
 private:
+	/** An ID allocator used to allocate IDs for pages in the cache. */
+	IDAllocator m_idAllocator;
+
 	/**
 	The maximum total number of bytes we want to use for pages in the cache
 	(a soft limit in practice).
