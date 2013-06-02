@@ -152,7 +152,7 @@ public:
 	\param id						The ID of the page to flush.
 	\throw std::invalid_argument	If the ID refers to a non-persistable page.
 	*/
-	void flush_page(const PageCacheID& id);
+	void flush_page(const PageCacheID& id) const;
 
 	/**
 	Returns whether or not the specified page is persistable.
@@ -207,6 +207,8 @@ public:
 	*/
 	void unpin_page(const PageCacheID& id);
 };
+
+typedef boost::shared_ptr<const PageCache> PageCache_CPtr;
 
 }
 
