@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+#include <boost/shared_ptr.hpp>
+
 #include "whery/db/base/BackedTuple.h"
 #include "whery/db/base/PrefixTupleComparator.h"
 
@@ -168,6 +170,8 @@ public:
 	*/
 	virtual TupleSetCIter upper_bound(const ValueKey& key) const = 0;
 };
+
+typedef boost::shared_ptr<SortedPage> SortedPage_Ptr;
 
 }
 

@@ -6,8 +6,6 @@
 #ifndef H_WHERY_INMEMORYSORTEDPAGE
 #define H_WHERY_INMEMORYSORTEDPAGE
 
-#include <boost/shared_ptr.hpp>
-
 #include "SortedPage.h"
 
 namespace whery {
