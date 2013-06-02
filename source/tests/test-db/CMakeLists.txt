@@ -16,6 +16,7 @@ SET(sources
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshTupleTest.cpp
+IDAllocatorTest.cpp
 InMemorySortedPageTest.cpp
 PrefixTupleComparatorTest.cpp
 TestRunner.cpp

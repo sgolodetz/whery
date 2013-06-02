@@ -22,7 +22,7 @@ int IDAllocator::allocate()
 	}
 	else
 	{
-		n = m_used.size();
+		n = static_cast<int>(m_used.size());
 	}
 
 	m_used.insert(n);
