@@ -4,3 +4,9 @@
  */
 
 #include "whery/db/btrees/BTree.h"
+
+namespace whery {
+
+// TODO
+
+}
