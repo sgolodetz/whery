@@ -208,6 +208,7 @@ public:
 	void unpin_page(const PageCacheID& id);
 };
 
+typedef boost::shared_ptr<PageCache> PageCache_Ptr;
 typedef boost::shared_ptr<const PageCache> PageCache_CPtr;
 
 }
