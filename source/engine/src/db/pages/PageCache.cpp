@@ -42,7 +42,7 @@ InMemorySortedPage_Ptr PageCache::retrieve_page(const PageCacheID& id) const
 	}
 
 	// TODO
-	throw std::exception("Support for unpinned pages is not yet implemented");
+	throw std::exception(/*"Support for unpinned pages is not yet implemented"*/);
 }
 
 }
