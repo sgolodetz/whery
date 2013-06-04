@@ -8,7 +8,7 @@
 
 #include "whery/db/pages/SortedPage.h"
 #include "whery/util/IDAllocator.h"
-#include "BTreePageFactory.h"
+#include "BTreePageController.h"
 
 namespace whery {
 
@@ -76,8 +76,8 @@ private:
 	/** The nodes in the B+-tree. */
 	std::vector<Node> m_nodes;
 
-	/** A page factory used to make pages for the B+-tree. */
-	BTreePageFactory_CPtr m_pageFactory;
+	/** The page controller used to construct/destroy pages for the B+-tree. */
+	BTreePageController_CPtr m_pageController;
 
 	/** The ID of the root node. */
 	int m_rootID;
@@ -85,11 +85,11 @@ private:
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
-	Constructs a B+-tree whose pages are to be made using the specified factory.
+	Constructs a B+-tree whose pages are to be constructed/destroyed using the specified controller.
 
-	\param pageFactory	A page factory to be used to make pages for the B+-tree.
+	\param pageController	The page controller to be used to construct/destroy pages for the B+-tree.
 	*/
-	explicit BTree(const BTreePageFactory_CPtr& pageFactory);
+	explicit BTree(const BTreePageController_CPtr& pageController);
 
 	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
 private:

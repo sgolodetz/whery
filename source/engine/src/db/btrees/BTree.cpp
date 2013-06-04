@@ -9,8 +9,8 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-BTree::BTree(const BTreePageFactory_CPtr& pageFactory)
-:	m_pageFactory(pageFactory)
+BTree::BTree(const BTreePageController_CPtr& pageController)
+:	m_pageController(pageController)
 {
 	m_rootID = add_leaf_node();
 }
@@ -23,7 +23,7 @@ int BTree::add_branch_node()
 
 	Node& n = m_nodes[id];
 	n.m_isLeaf = false;
-	n.m_page = m_pageFactory->make_branch_page();	
+	n.m_page = m_pageController->make_btree_branch_page();
 
 	return id;
 }
@@ -34,7 +34,7 @@ int BTree::add_leaf_node()
 
 	Node& n = m_nodes[id];
 	n.m_isLeaf = true;
-	n.m_page = m_pageFactory->make_leaf_page();
+	n.m_page = m_pageController->make_btree_leaf_page();
 
 	return id;
 }

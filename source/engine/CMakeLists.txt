@@ -54,7 +54,7 @@ src/db/btrees/BTree.cpp
 
 SET(db_btrees_headers
 include/whery/db/btrees/BTree.h
-include/whery/db/btrees/BTreePageFactory.h
+include/whery/db/btrees/BTreePageController.h
 )
 
 ##
