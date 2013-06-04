@@ -47,6 +47,11 @@ BTree::ConstIterator BTree::end() const
 	return ConstIterator(this, id, page_end(id));
 }
 
+void BTree::insert_tuple(const Tuple& tuple)
+{
+	insert_tuple_sub(tuple, m_rootID);
+}
+
 unsigned int BTree::tuple_count()
 {
 	return m_tupleCount;
@@ -96,16 +101,42 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	return id;
 }
 
+int BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
+{
+	Node& n = m_nodes[nodeID];
+	if(n.has_children())
+	{
+		// TODO
+		throw 23;
+	}
+	else
+	{
+		if(n.m_page->empty_tuple_count() > 0)
+		{
+			// If we reach a leaf page with spare capacity, simply insert the tuple into it.
+			n.m_page->add_tuple(tuple);
+			return -1;
+		}
+		else
+		{
+			// TODO
+			throw 23;
+		}
+	}
+}
+
 SortedPage::TupleSetCIter BTree::page_begin(int nodeID) const
 {
-	assert(m_nodes[nodeID].m_page.get() != NULL);
-	return m_nodes[nodeID].m_page->begin();
+	SortedPage_Ptr page = m_nodes[nodeID].m_page;
+	assert(page.get() != NULL);
+	return page->begin();
 }
 
 SortedPage::TupleSetCIter BTree::page_end(int nodeID) const
 {
-	assert(m_nodes[nodeID].m_page.get() != NULL);
-	return m_nodes[nodeID].m_page->end();
+	SortedPage_Ptr page = m_nodes[nodeID].m_page;
+	assert(page.get() != NULL);
+	return page->end();
 }
 
 }

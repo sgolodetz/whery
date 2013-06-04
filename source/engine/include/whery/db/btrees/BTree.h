@@ -138,7 +138,14 @@ public:
 	// TODO: equal_range
 	void erase_tuple(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
+
+	/**
+	Inserts a tuple into the B+-tree.
+
+	\param tuple	The tuple to insert.
+	*/
 	void insert_tuple(const Tuple& tuple);
+
 	ConstIterator lower_bound(const RangeKey& key) const;
 	ConstIterator lower_bound(const ValueKey& key) const;
 
@@ -183,6 +190,18 @@ private:
 	\return				The child node ID from the tuple.
 	*/
 	int child_node_id(const BackedTuple& branchTuple) const;
+
+	/**
+	Inserts a tuple into the subtree rooted at the specified node. This may ultimately cause
+	the specified node to be split, in which case the ID of the additional page created by
+	the split will be returned.
+
+	\param tuple	The tuple to insert.
+	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
+	\return			-1, if the specified node was not split as a result of the insert,
+					or the ID of the additional page created by the split, otherwise.
+	*/
+	int insert_tuple_sub(const Tuple& tuple, int nodeID);
 
 	/**
 	Returns an iterator pointing to the start of the set of tuples on the specified node's page.
