@@ -21,11 +21,11 @@ src/db/base/FieldManipulator.cpp
 src/db/base/FreshTuple.cpp
 src/db/base/IntFieldManipulator.cpp
 src/db/base/PrefixTupleComparator.cpp
+src/db/base/ProjectedTuple.cpp
 src/db/base/RangeEndpoint.cpp
 src/db/base/RangeKey.cpp
 src/db/base/TupleComparator.cpp
 src/db/base/TupleManipulator.cpp
-src/db/base/TupleProjection.cpp
 src/db/base/ValueKey.cpp
 )
 
@@ -37,13 +37,13 @@ include/whery/db/base/FieldManipulator.h
 include/whery/db/base/FreshTuple.h
 include/whery/db/base/IntFieldManipulator.h
 include/whery/db/base/PrefixTupleComparator.h
+include/whery/db/base/ProjectedTuple.h
 include/whery/db/base/RangeEndpoint.h
 include/whery/db/base/RangeKey.h
 include/whery/db/base/SortDirection.h
 include/whery/db/base/Tuple.h
 include/whery/db/base/TupleComparator.h
 include/whery/db/base/TupleManipulator.h
-include/whery/db/base/TupleProjection.h
 include/whery/db/base/ValueKey.h
 )
 

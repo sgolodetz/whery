@@ -21,9 +21,9 @@ FreshTupleTest.cpp
 IDAllocatorTest.cpp
 InMemorySortedPageTest.cpp
 PrefixTupleComparatorTest.cpp
+ProjectedTupleTest.cpp
 TestRunner.cpp
 TupleManipulatorTest.cpp
-TupleProjectionTest.cpp
 )
 
 SET(headers

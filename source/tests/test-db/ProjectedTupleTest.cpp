@@ -1,5 +1,5 @@
 /**
- * test-db: TupleProjectionTest.cpp
+ * test-db: ProjectedTupleTest.cpp
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -11,14 +11,14 @@ using namespace boost::assign;
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
-#include "whery/db/base/TupleProjection.h"
+#include "whery/db/base/ProjectedTuple.h"
 using namespace whery;
 
 #include "Constants.h"
 
 //#################### TESTS ####################
 
-BOOST_AUTO_TEST_SUITE(TupleProjectionTest)
+BOOST_AUTO_TEST_SUITE(ProjectedTupleTest)
 
 BOOST_AUTO_TEST_CASE(field)
 {
@@ -30,13 +30,13 @@ BOOST_AUTO_TEST_CASE(field)
 	tuple.field(0).set_double(7.0);
 	tuple.field(1).set_int(8);
 
-	TupleProjection projection(tuple, list_of(1)(0)(0)(1));
+	ProjectedTuple projected(tuple, list_of(1)(0)(0)(1));
 
 	// Check that we can retrieve the field values from the projection correctly.
-	BOOST_CHECK_EQUAL(projection.field(0).get_int(), 8);
-	BOOST_CHECK_CLOSE(projection.field(1).get_double(), 7.0, Constants::SMALL_EPSILON);
-	BOOST_CHECK_CLOSE(projection.field(2).get_double(), 7.0, Constants::SMALL_EPSILON);
-	BOOST_CHECK_EQUAL(projection.field(3).get_int(), 8);
+	BOOST_CHECK_EQUAL(projected.field(0).get_int(), 8);
+	BOOST_CHECK_CLOSE(projected.field(1).get_double(), 7.0, Constants::SMALL_EPSILON);
+	BOOST_CHECK_CLOSE(projected.field(2).get_double(), 7.0, Constants::SMALL_EPSILON);
+	BOOST_CHECK_EQUAL(projected.field(3).get_int(), 8);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

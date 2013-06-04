@@ -9,7 +9,6 @@
 #include <stdexcept>
 
 #include "whery/db/base/RangeKey.h"
-#include "whery/db/base/TupleProjection.h"
 #include "whery/db/base/ValueKey.h"
 
 namespace whery {
