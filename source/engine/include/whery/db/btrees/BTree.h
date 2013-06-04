@@ -24,8 +24,8 @@ private:
 	*/
 	struct Node
 	{
-		/** Whether or not the specified node is a leaf of the B+-tree. */
-		bool m_isLeaf;
+		/** The ID of the node's last child, if it has one. The IDs of any other children are stored in the tuples on the data page. */
+		int m_lastChildID;
 
 		/** The page used to store the tuple data for the node. */
 		SortedPage_Ptr m_page;
@@ -43,18 +43,27 @@ private:
 		Constructs a node.
 		*/
 		Node()
-		:	m_isLeaf(false), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		:	m_lastChildID(-1), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
 		{}
 
 		/**
 		Constructs a node.
 
-		\param isLeaf	Whether or not the specified node is a leaf of the B+-tree.
 		\param page	The page to be used to store the tuple data for the node.
 		*/
-		Node(bool isLeaf, const SortedPage_Ptr& page)
-		:	m_isLeaf(isLeaf), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		explicit Node(const SortedPage_Ptr& page)
+		:	m_lastChildID(-1), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
 		{}
+
+		/**
+		Returns whether or not the node has any children.
+
+		\return	true, if the node has children, or false otherwise.
+		*/
+		bool has_children() const
+		{
+			return m_lastChildID != -1;
+		}
 	};
 
 public:
@@ -65,7 +74,14 @@ public:
 		int m_nodeID;
 		SortedPage::TupleSetCIter m_it;
 	public:
-		// TODO
+		ConstIterator(const BTree *tree, int nodeID, SortedPage::TupleSetCIter it)
+		:	m_tree(tree), m_nodeID(nodeID), m_it(it)
+		{}
+
+		bool operator==(const ConstIterator& rhs) const
+		{
+			return m_tree == rhs.m_tree && m_nodeID == rhs.m_nodeID && m_it == rhs.m_it;
+		}
 	};
 
 	//#################### PRIVATE VARIABLES ####################
@@ -102,10 +118,23 @@ private:
 
 	//#################### PUBLIC METHODS ####################
 public:
+	/**
+	Returns an iterator pointing to the start of the set of tuples in the B+-tree.
+
+	\return	An iterator pointing to the start of the set of tuples in the B+-tree.
+	*/
 	ConstIterator begin() const;
+
 	void bulk_load(const std::vector<SortedPage_Ptr>& pages);
 	void clear();
+
+	/**
+	Returns an iterator pointing to the end of the set of tuples in the B+-tree.
+
+	\return	An iterator pointing to the end of the set of tuples in the B+-tree.
+	*/
 	ConstIterator end() const;
+
 	// TODO: equal_range
 	void erase_tuple(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
@@ -146,6 +175,30 @@ private:
 	\return	The ID of the node.
 	*/
 	int add_node();
+
+	/**
+	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.
+
+	\param branchTuple	The tuple from which to extract the child node ID.
+	\return				The child node ID from the tuple.
+	*/
+	int child_node_id(const BackedTuple& branchTuple) const;
+
+	/**
+	Returns an iterator pointing to the start of the set of tuples on the specified node's page.
+
+	\param nodeID	The ID of a node in the B+-tree.
+	\return			An iterator pointing to the start of the set of tuples on the specified node's page.
+	*/
+	SortedPage::TupleSetCIter page_begin(int nodeID) const;
+
+	/**
+	Returns an iterator pointing to the end of the set of tuples on the specified node's page.
+
+	\param nodeID	The ID of a node in the B+-tree.
+	\return			An iterator pointing to the end of the set of tuples on the specified node's page.
+	*/
+	SortedPage::TupleSetCIter page_end(int nodeID) const;
 };
 
 }

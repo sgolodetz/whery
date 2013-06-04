@@ -56,6 +56,7 @@ BOOST_AUTO_TEST_CASE(constructor)
 {
 	BTree tree(BTreePageController_CPtr(new TestPageController));
 	BOOST_CHECK_EQUAL(tree.tuple_count(), 0);
+	BOOST_CHECK(tree.begin() == tree.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
