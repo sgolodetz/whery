@@ -82,6 +82,9 @@ private:
 	/** The ID of the root node. */
 	int m_rootID;
 
+	/** The number of tuples currently stored in the leaf nodes. */
+	unsigned int m_tupleCount;
+
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
@@ -109,7 +112,14 @@ public:
 	void insert_tuple(const Tuple& tuple);
 	ConstIterator lower_bound(const RangeKey& key) const;
 	ConstIterator lower_bound(const ValueKey& key) const;
+
+	/**
+	Gets the number of tuples currently stored in the B+-tree's leaf nodes.
+
+	\return	The number of tuples currently stored in the B+-tree's leaf nodes.
+	*/
 	unsigned int tuple_count();
+
 	ConstIterator upper_bound(const RangeKey& key) const;
 	ConstIterator upper_bound(const ValueKey& key) const;
 

@@ -10,7 +10,7 @@ namespace whery {
 //#################### CONSTRUCTORS ####################
 
 BTree::BTree(const BTreePageController_CPtr& pageController)
-:	m_pageController(pageController)
+:	m_pageController(pageController), m_tupleCount(0)
 {
 	m_rootID = add_leaf_node();
 }
@@ -52,6 +52,11 @@ int BTree::add_node()
 	n.m_parentID = n.m_siblingLeftID = n.m_siblingRightID = -1;
 
 	return id;
+}
+
+unsigned int BTree::tuple_count()
+{
+	return m_tupleCount;
 }
 
 }
