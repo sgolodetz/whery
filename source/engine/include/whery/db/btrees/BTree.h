@@ -7,11 +7,10 @@
 #define H_WHERY_BTREE
 
 #include "whery/db/pages/SortedPage.h"
+#include "whery/util/IDAllocator.h"
+#include "BTreePageFactory.h"
 
 namespace whery {
-
-//#################### FORWARD DECLARATIONS ####################
-class BTreePageFactory;
 
 /**
 An instance of this class represents a B+-tree.
@@ -25,27 +24,45 @@ private:
 	*/
 	struct Node
 	{
-		/** The node's children in the B+-tree (if any). */
-		std::vector<Node*> m_children;
+		/** Whether or not the specified node is a leaf of the B+-tree. */
+		bool m_isLeaf;
 
 		/** The page used to store the tuple data for the node. */
 		SortedPage_Ptr m_page;
 
-		/** The node's parent in the B+-tree (if any). */
-		Node *m_parent;
+		/** The ID of the node's parent in the B+-tree (if any). */
+		int m_parentID;
 
-		/** The node's left sibling in the B+-tree (if any). */
-		Node *m_siblingLeft;
+		/** The ID of the node's left sibling in the B+-tree (if any). */
+		int m_siblingLeftID;
 
-		/** The node's right sibling in the B+-tree (if any). */
-		Node *m_siblingRight;
+		/** The ID of the node's right sibling in the B+-tree (if any). */
+		int m_siblingRightID;
+
+		/**
+		Constructs a node.
+		*/
+		Node()
+		:	m_isLeaf(false), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		{}
+
+		/**
+		Constructs a node.
+
+		\param isLeaf	Whether or not the specified node is a leaf of the B+-tree.
+		\param page	The page to be used to store the tuple data for the node.
+		*/
+		Node(bool isLeaf, const SortedPage_Ptr& page)
+		:	m_isLeaf(isLeaf), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		{}
 	};
 
 public:
 	class ConstIterator
 	{
 	private:
-		Node *m_node;
+		const BTree *m_tree;
+		int m_nodeID;
 		SortedPage::TupleSetCIter m_it;
 	public:
 		// TODO
@@ -53,14 +70,26 @@ public:
 
 	//#################### PRIVATE VARIABLES ####################
 private:
-	// TODO: Set of B+-tree nodes.
+	/** An ID allocator used to allocate IDs for the nodes. */
+	IDAllocator m_nodeIDAllocator;
 
-	/** The root node of the B+-tree. */
-	Node *m_root;
+	/** The nodes in the B+-tree. */
+	std::vector<Node> m_nodes;
+
+	/** A page factory used to make pages for the B+-tree. */
+	BTreePageFactory_CPtr m_pageFactory;
+
+	/** The ID of the root node. */
+	int m_rootID;
 
 	//#################### CONSTRUCTORS ####################
 public:
-	BTree(const BTreePageFactory& pageFactory);
+	/**
+	Constructs a B+-tree whose pages are to be made using the specified factory.
+
+	\param pageFactory	A page factory to be used to make pages for the B+-tree.
+	*/
+	explicit BTree(const BTreePageFactory_CPtr& pageFactory);
 
 	//#################### COPY CONSTRUCTOR & ASSIGNMENT OPERATOR ####################
 private:
@@ -83,6 +112,30 @@ public:
 	unsigned int tuple_count();
 	ConstIterator upper_bound(const RangeKey& key) const;
 	ConstIterator upper_bound(const ValueKey& key) const;
+
+	//#################### PRIVATE METHODS ####################
+private:
+	/**
+	Adds a branch (index) node that can be connected to the rest of the B+-tree.
+
+	\return	The ID of the branch node.
+	*/
+	int add_branch_node();
+
+	/**
+	Adds a leaf (data) node that can be connected to the rest of the B+-tree.
+
+	\return	The ID of the leaf node.
+	*/
+	int add_leaf_node();
+
+	/**
+	Adds a node that can be connected to the rest of the B+-tree. The internals of the node will
+	be set by add_branch_node() or add_leaf_node(), which use this function as a helper.
+
+	\return	The ID of the node.
+	*/
+	int add_node();
 };
 
 }
