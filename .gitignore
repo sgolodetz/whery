@@ -3,3 +3,4 @@ docs/
 install/
 libraries/boost_1_53_0/
 libraries/boost-setup
+libraries/*.log
