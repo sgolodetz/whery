@@ -22,6 +22,21 @@ class BTree
 {
 	//#################### NESTED TYPES ####################
 private:
+	struct InsertResult
+	{
+		int m_leftChildID;
+		int m_middleChildID;
+		int m_rightChildID;
+
+		InsertResult()
+		:	m_leftChildID(-1), m_middleChildID(-1), m_rightChildID(-1)
+		{}
+
+		InsertResult(int leftChildID, int middleChildID, int rightChildID)
+		:	m_leftChildID(leftChildID), m_middleChildID(middleChildID), m_rightChildID(rightChildID)
+		{}
+	};
+
 	/**
 	An instance of this struct represents a node in a B+-tree.
 	*/
@@ -208,10 +223,9 @@ private:
 	old root during an insert operation, so there will be two children of the new root, one of
 	which must be the old root.
 
-	\param leftChildID	The ID of the left child node.
-	\param rightChildID	The ID of the right child node.
+	\param result	TODO
 	*/
-	void add_root_node(int leftChildID, int rightChildID);
+	void add_root_node(const InsertResult& insertResult);
 
 	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.
@@ -221,17 +235,8 @@ private:
 	*/
 	int child_node_id(const BackedTuple& branchTuple) const;
 
-	/**
-	Finds the child of the specified node beneath which the specified tuple should be located.
-
-	\param nodeID	The ID of the parent node.
-	\param tuple	The tuple.
-	\return			The ID of the child node beneath which the specified tuple should be located.
-	*/
-	int find_child(int nodeID, const Tuple& tuple) const;
-
-	std::pair<int,int> insert_tuple_branch(const Tuple& tuple, int nodeID);
-	std::pair<int,int> insert_tuple_leaf(const Tuple& tuple, int nodeID);
+	InsertResult insert_tuple_branch(const Tuple& tuple, int nodeID);
+	InsertResult insert_tuple_leaf(const Tuple& tuple, int nodeID);
 
 	/**
 	Inserts a tuple into the subtree rooted at the specified node. This may ultimately cause
@@ -239,10 +244,9 @@ private:
 
 	\param tuple	The tuple to insert.
 	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
-	\return			A pair of node IDs denoting the results of any split that was necessary.
-					If the node was not split, both components of the pair will be -1.
+	\return			TODO
 	*/
-	std::pair<int,int> insert_tuple_sub(const Tuple& tuple, int nodeID);
+	InsertResult insert_tuple_sub(const Tuple& tuple, int nodeID);
 
 	ValueKey make_branch_key(const Tuple& tuple) const;
 
