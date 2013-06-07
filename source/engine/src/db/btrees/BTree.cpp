@@ -156,26 +156,8 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	}
 	else if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
 	{
-#if 0
-		// The child of this node was split, and this node can hold another index entry, so update it.
-		if(childID == m_nodes[nodeID].m_firstChildID)
-		{
-			// The node that was split was the first child, so the new
-			// first child is the left-hand node returned by the split.
-			m_nodes[nodeID].m_firstChildID = subResult.m_leftChildID;
-		}
-		else
-		{
-			// The node that was split was not the first child, so its
-			// index entry needs to be replaced with an index entry for
-			// the left-hand node returned by the split.
-			m_nodes[nodeID].m_page->delete_tuple(*it);
-			m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_leftChildID), subResult.m_leftChildID));
-		}
-#endif
-
-		// In either case, an index entry for the right-hand node returned
-		// by the split also needs to be inserted into this node.
+		// The child of this node was split, and there's space in this node, so
+		// insert an index entry for the right-hand node returned by the split.
 		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_middleChildID), subResult.m_rightChildID));
 
 		return InsertResult();
