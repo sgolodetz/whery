@@ -11,7 +11,7 @@
 namespace whery {
 
 /**
-\brief An instance of a class deriving from this one controls the construction and destruction of B+-tree pages.
+\brief An instance of a class deriving from this one controls the construction and destruction of a B+-tree's pages.
 
 This interface exists because the B+-tree itself should not need to care about how pages are constructed and destroyed
 (which generally involves specifying details of how the pages are persisted, and interaction with the cache).
@@ -27,6 +27,20 @@ public:
 
 	//#################### PUBLIC ABSTRACT METHODS ####################
 public:
+	/**
+	Returns a tuple manipulator that can be used to interact with the B+-tree's branch (index) tuples.
+
+	\return	The tuple manipulator.
+	*/
+	virtual TupleManipulator btree_branch_tuple_manipulator() const = 0;
+
+	/**
+	Returns a tuple manipulator that can be used to interact with the B+-tree's leaf (data) tuples.
+
+	\return	The tuple manipulator.
+	*/
+	virtual TupleManipulator btree_leaf_tuple_manipulator() const = 0;
+
 	/**
 	Makes a B+-tree branch (index) page.
 

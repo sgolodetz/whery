@@ -33,6 +33,7 @@ class SortedPage
 public:
 	typedef std::multiset<BackedTuple,PrefixTupleComparator> TupleSet;
 	typedef TupleSet::const_iterator TupleSetCIter;
+	typedef TupleSet::const_reverse_iterator TupleSetCRIter;
 	typedef std::pair<TupleSetCIter,TupleSetCIter> EqualRangeResult;
 
 	//#################### DESTRUCTOR ####################
@@ -142,6 +143,25 @@ public:
 	\return	The percentage of the page's buffer that currently contains tuples (in the range 0-100).
 	*/
 	virtual double percentage_full() const = 0;
+
+	/**
+	Returns an iterator pointing to the start of the reversed set of tuples on the page.
+
+	\return	An iterator pointing to the start of the reversed set of tuples on the page.
+	*/
+	virtual TupleSetCRIter rbegin() const = 0;
+
+	/**
+	Transfers the n tuples that compare highest across to the specified
+	target page. If the target page does not have space to store them,
+	an exception will be thrown. Note that the target page must store
+	tuples with the same fields, or the behaviour is undefined.
+
+	\param targetPage				The page to which to transfer the tuples.
+	\param n						The number of tuples to transfer.
+	\throw std::invalid_argument	If the target page does not have space for the tuples.
+	*/
+	virtual void transfer_high_tuples(SortedPage& targetPage, unsigned int n) = 0;
 
 	/**
 	Gets the number of tuples that are currently stored on the page.

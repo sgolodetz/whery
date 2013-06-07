@@ -127,6 +127,25 @@ double InMemorySortedPage::percentage_full() const
 	return tuple_count() * 100.0 / max_tuple_count();
 }
 
+SortedPage::TupleSetCRIter InMemorySortedPage::rbegin() const
+{
+	return m_tuples.rbegin();
+}
+
+void InMemorySortedPage::transfer_high_tuples(SortedPage& targetPage, unsigned int n)
+{
+	if(targetPage.empty_tuple_count() < n)
+	{
+		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
+	}
+
+	for(TupleSetCRIter it = m_tuples.rbegin(), iend = m_tuples.rend(); it != iend; ++it)
+	{
+		targetPage.add_tuple(*it);
+		delete_tuple(*it);
+	}
+}
+
 unsigned int InMemorySortedPage::tuple_count() const
 {
 	return m_tuples.size();
@@ -140,7 +159,7 @@ SortedPage::TupleSetCIter InMemorySortedPage::upper_bound(const RangeKey& key) c
 		if(key.high_kind() == OPEN)
 		{
 			PrefixTupleComparator comp;
-			TupleSet::const_reverse_iterator rit(it);
+			TupleSetCRIter rit(it);
 			while(rit != m_tuples.rend() && comp.compare(*rit, key.high_value()) == 0) ++rit;
 			it = rit.base();
 		}

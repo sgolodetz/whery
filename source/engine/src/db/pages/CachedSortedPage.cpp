@@ -80,6 +80,16 @@ double CachedSortedPage::percentage_full() const
 	return page()->percentage_full();
 }
 
+SortedPage::TupleSetCRIter CachedSortedPage::rbegin() const
+{
+	return page()->rbegin();
+}
+
+void CachedSortedPage::transfer_high_tuples(SortedPage& targetPage, unsigned int n)
+{
+	page()->transfer_high_tuples(targetPage, n);
+}
+
 unsigned int CachedSortedPage::tuple_count() const
 {
 	return page()->tuple_count();

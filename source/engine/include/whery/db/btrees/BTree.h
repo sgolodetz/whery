@@ -12,6 +12,9 @@
 
 namespace whery {
 
+//#################### FORWARD DECLARATIONS ####################
+class FreshTuple;
+
 /**
 An instance of this class represents a B+-tree.
 */
@@ -24,8 +27,11 @@ private:
 	*/
 	struct Node
 	{
-		/** The ID of the node's last child, if it has one. The IDs of any other children are stored in the tuples on the data page. */
-		int m_lastChildID;
+		/**
+		The ID of the node's first child, if it has one. The IDs of any
+		other children are stored in the tuples on the data page.
+		*/
+		int m_firstChildID;
 
 		/** The page used to store the tuple data for the node. */
 		SortedPage_Ptr m_page;
@@ -43,7 +49,7 @@ private:
 		Constructs a node.
 		*/
 		Node()
-		:	m_lastChildID(-1), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		:	m_firstChildID(-1), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
 		{}
 
 		/**
@@ -52,7 +58,7 @@ private:
 		\param page	The page to be used to store the tuple data for the node.
 		*/
 		explicit Node(const SortedPage_Ptr& page)
-		:	m_lastChildID(-1), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		:	m_firstChildID(-1), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
 		{}
 
 		/**
@@ -62,7 +68,7 @@ private:
 		*/
 		bool has_children() const
 		{
-			return m_lastChildID != -1;
+			return m_firstChildID != -1;
 		}
 	};
 
@@ -125,6 +131,13 @@ public:
 	*/
 	ConstIterator begin() const;
 
+	/**
+	Returns a tuple manipulator that can be used to interact with the B+-tree's branch (index) tuples.
+
+	\return	The tuple manipulator.
+	*/
+	TupleManipulator branch_tuple_manipulator() const;
+
 	void bulk_load(const std::vector<SortedPage_Ptr>& pages);
 	void clear();
 
@@ -145,6 +158,13 @@ public:
 	\param tuple	The tuple to insert.
 	*/
 	void insert_tuple(const Tuple& tuple);
+
+	/**
+	Returns a tuple manipulator that can be used to interact with the B+-tree's leaf (data) tuples.
+
+	\return	The tuple manipulator.
+	*/
+	TupleManipulator leaf_tuple_manipulator() const;
 
 	ConstIterator lower_bound(const RangeKey& key) const;
 	ConstIterator lower_bound(const ValueKey& key) const;
@@ -184,6 +204,16 @@ private:
 	int add_node();
 
 	/**
+	Adds a new root node to the B+-tree. New root nodes are added in response to a split of the
+	old root during an insert operation, so there will be two children of the new root, one of
+	which must be the old root.
+
+	\param leftChildID	The ID of the left child node.
+	\param rightChildID	The ID of the right child node.
+	*/
+	void add_root_node(int leftChildID, int rightChildID);
+
+	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.
 
 	\param branchTuple	The tuple from which to extract the child node ID.
@@ -192,16 +222,28 @@ private:
 	int child_node_id(const BackedTuple& branchTuple) const;
 
 	/**
+	Finds the child of the specified node beneath which the specified tuple should be located.
+
+	\param nodeID	The ID of the parent node.
+	\param tuple	The tuple.
+	\return			The ID of the child node beneath which the specified tuple should be located.
+	*/
+	int find_child(int nodeID, const Tuple& tuple) const;
+
+	/**
 	Inserts a tuple into the subtree rooted at the specified node. This may ultimately cause
-	the specified node to be split, in which case the ID of the additional page created by
-	the split will be returned.
+	the specified node to be split.
 
 	\param tuple	The tuple to insert.
 	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
-	\return			-1, if the specified node was not split as a result of the insert,
-					or the ID of the additional page created by the split, otherwise.
+	\return			A pair of node IDs denoting the results of any split that was necessary.
+					If the node was not split, both components of the pair will be -1.
 	*/
-	int insert_tuple_sub(const Tuple& tuple, int nodeID);
+	std::pair<int,int> insert_tuple_sub(const Tuple& tuple, int nodeID);
+
+	ValueKey make_branch_key(const Tuple& tuple) const;
+
+	FreshTuple make_branch_tuple(const Tuple& tuple, int nodeID) const;
 
 	/**
 	Returns an iterator pointing to the start of the set of tuples on the specified node's page.
@@ -218,6 +260,14 @@ private:
 	\return			An iterator pointing to the end of the set of tuples on the specified node's page.
 	*/
 	SortedPage::TupleSetCIter page_end(int nodeID) const;
+
+	/**
+	Returns an iterator pointing to the start of the reversed set of tuples on the specified node's page.
+
+	\param nodeID	The ID of a node in the B+-tree.
+	\return			An iterator pointing to the start of the reversed set of tuples on the specified node's page.
+	*/
+	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 };
 
 }

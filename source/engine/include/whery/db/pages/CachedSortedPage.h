@@ -47,6 +47,8 @@ public:
 	virtual TupleSetCIter lower_bound(const ValueKey& key) const;
 	virtual unsigned int max_tuple_count() const;
 	virtual double percentage_full() const;
+	virtual TupleSetCRIter rbegin() const;
+	virtual void transfer_high_tuples(SortedPage& targetPage, unsigned int n);
 	virtual unsigned int tuple_count() const;
 	virtual TupleSetCIter upper_bound(const RangeKey& key) const;
 	virtual TupleSetCIter upper_bound(const ValueKey& key) const;
