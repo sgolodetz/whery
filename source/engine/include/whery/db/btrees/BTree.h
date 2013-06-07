@@ -230,6 +230,9 @@ private:
 	*/
 	int find_child(int nodeID, const Tuple& tuple) const;
 
+	std::pair<int,int> insert_tuple_branch(const Tuple& tuple, int nodeID);
+	std::pair<int,int> insert_tuple_leaf(const Tuple& tuple, int nodeID);
+
 	/**
 	Inserts a tuple into the subtree rooted at the specified node. This may ultimately cause
 	the specified node to be split.

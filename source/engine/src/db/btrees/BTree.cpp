@@ -111,6 +111,8 @@ int BTree::add_node()
 void BTree::add_root_node(int leftChildID, int rightChildID)
 {
 	m_rootID = add_branch_node();
+	m_nodes[leftChildID].m_parentID = m_rootID;
+	m_nodes[rightChildID].m_parentID = m_rootID;
 	m_nodes[m_rootID].m_firstChildID = leftChildID;
 	m_nodes[m_rootID].m_page->add_tuple(make_branch_tuple(*page_begin(rightChildID), rightChildID));
 }
@@ -138,51 +140,80 @@ int BTree::find_child(int nodeID, const Tuple& tuple) const
 	}
 }
 
-std::pair<int,int> BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
+std::pair<int,int> BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 {
-	if(m_nodes[nodeID].has_children())
+	// Find the child of this node below which the specified tuple should be inserted,
+	// and insert the tuple into the subtree below it.
+	ValueKey key = make_branch_key(tuple);
+	SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->upper_bound(key);
+	int childID;
+	if(it == page_begin(nodeID))
 	{
-		// Find the subtree below which the specified tuple should be located.
-		int childID = find_child(nodeID, tuple);
-
-		// Insert the tuple into this subtree.
-		std::pair<int,int> result = insert_tuple_sub(tuple, childID);
-
-		// If the insertion succeeded without needing to split the direct child
-		// of this node, early out.
-		if(result.first == -1) return result;
-
-		// Otherwise:
-
-		// Option 1:	The branch node has spare capacity, so update it to record
-		//				the split of its child.
-		if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
-		{
-			// TODO
-			throw 23;
-		}
-
-		// Option 2:	The branch node is full, so split it into two nodes and update appropriately.
-		// TODO
-
-		// TODO
-		throw 23;
+		childID = m_nodes[nodeID].m_firstChildID;
 	}
 	else
 	{
-		// Option 1:	We have reached a leaf node with spare capacity, so simply insert the tuple into it.
-		if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
+		--it;
+		childID = child_node_id(*it);
+	}
+	std::pair<int,int> result = insert_tuple_sub(tuple, childID);
+
+	if(result.first == -1)
+	{
+		// The insertion succeeded without needing to split the direct child of this node.
+		return result;
+	}
+	else if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
+	{
+		// The child of this node was split, and this node can hold another index entry, so update it.
+		if(childID == m_nodes[nodeID].m_firstChildID)
 		{
-			m_nodes[nodeID].m_page->add_tuple(tuple);
-			return std::make_pair(-1, -1);
+			// The node that was split was the first child, so the new
+			// first child is the left-hand node returned by the split.
+			m_nodes[nodeID].m_firstChildID = result.first;
+		}
+		else
+		{
+			// The node that was split was not the first child, so its
+			// index entry needs to be replaced with an index entry for
+			// the left-hand node returned by the split.
+			m_nodes[nodeID].m_page->delete_tuple(*it);
+			m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(result.first), result.first));
 		}
 
-		// Option 2:	The leaf node is full, but one of its siblings has the same parent and spare capacity,
-		//				so we can redistribute tuples and avoid the need for a split.
-		// TODO (Optional)
+		// In either case, an index entry for the right-hand node returned
+		// by the split also needs to be inserted into this node.
+		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(result.second), result.second));
 
-		// Option 3:	The leaf node is full and redistribution is not possible, so split it
-		//				into two nodes and insert the tuple into the appropriate one of them.
+		return std::make_pair(-1, -1);
+	}
+	else
+	{
+		// The child of this node was split, but this node is full, so split it into two nodes
+		// and update appropriately. (Don't forget to handle the root case.)
+		// TODO
+		throw 23;
+	}
+}
+
+std::pair<int,int> BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
+{
+	if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
+	{
+		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
+		m_nodes[nodeID].m_page->add_tuple(tuple);
+		return std::make_pair(-1, -1);
+	}
+	else if(false)
+	{
+		// This node is full, but one of its siblings has the same parent and spare capacity,
+		// so we can redistribute tuples and avoid the need for a split.
+		// TODO (Optional)
+	}
+	else
+	{
+		// This node is full and redistribution is not possible, so split it into two nodes
+		// and insert the tuple into the appropriate one of them.
 
 		// Step 1:	Create a fresh leaf node and connect it to the rest of the tree.
 		int freshID = add_leaf_node();
@@ -215,6 +246,14 @@ std::pair<int,int> BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
 		}
 		else return result;
 	}
+}
+
+std::pair<int,int> BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
+{
+	if(m_nodes[nodeID].has_children())
+		return insert_tuple_branch(tuple, nodeID);
+	else
+		return insert_tuple_leaf(tuple, nodeID);
 }
 
 ValueKey BTree::make_branch_key(const Tuple& tuple) const
