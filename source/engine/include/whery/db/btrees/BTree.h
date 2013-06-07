@@ -6,6 +6,8 @@
 #ifndef H_WHERY_BTREE
 #define H_WHERY_BTREE
 
+#include <iostream>
+
 #include "whery/db/pages/SortedPage.h"
 #include "whery/util/IDAllocator.h"
 #include "BTreePageController.h"
@@ -184,6 +186,8 @@ public:
 	ConstIterator lower_bound(const RangeKey& key) const;
 	ConstIterator lower_bound(const ValueKey& key) const;
 
+	void print(std::ostream& os) const;
+
 	/**
 	Gets the number of tuples currently stored in the B+-tree's leaf nodes.
 
@@ -275,6 +279,8 @@ private:
 	\return			An iterator pointing to the start of the reversed set of tuples on the specified node's page.
 	*/
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
+
+	void print_sub(std::ostream& os, int nodeID, int depth) const;
 };
 
 }

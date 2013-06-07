@@ -7,6 +7,8 @@
 
 #include <cassert>
 
+#include <boost/lexical_cast.hpp>
+
 #include "whery/db/base/ValueKey.h"
 
 namespace whery {
@@ -64,6 +66,11 @@ void BTree::insert_tuple(const Tuple& tuple)
 TupleManipulator BTree::leaf_tuple_manipulator() const
 {
 	return m_pageController->btree_leaf_tuple_manipulator();
+}
+
+void BTree::print(std::ostream& os) const
+{
+	print_sub(os, m_rootID, 0);
 }
 
 unsigned int BTree::tuple_count()
@@ -149,6 +156,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	}
 	else if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
 	{
+#if 0
 		// The child of this node was split, and this node can hold another index entry, so update it.
 		if(childID == m_nodes[nodeID].m_firstChildID)
 		{
@@ -164,10 +172,11 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 			m_nodes[nodeID].m_page->delete_tuple(*it);
 			m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_leftChildID), subResult.m_leftChildID));
 		}
+#endif
 
 		// In either case, an index entry for the right-hand node returned
 		// by the split also needs to be inserted into this node.
-		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_rightChildID), subResult.m_rightChildID));
+		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_middleChildID), subResult.m_rightChildID));
 
 		return InsertResult();
 	}
@@ -188,6 +197,14 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
 		nodePage->transfer_high_tuples(*freshPage, nodePage->tuple_count() / 2);
+
+		// Step 3:	Update the parent pointers of all of the tuples that were moved,
+		//			plus the left and right children.
+		for(SortedPage::TupleSetCIter it = freshPage->begin(), iend = freshPage->end(); it != iend; ++it)
+		{
+			m_nodes[child_node_id(*it)].m_parentID = freshID;
+		}
+		m_nodes[subResult.m_leftChildID].m_parentID = m_nodes[subResult.m_rightChildID].m_parentID = freshID;
 
 		// Step 3:	TODO
 		m_nodes[freshID].m_firstChildID = subResult.m_leftChildID;
@@ -313,6 +330,45 @@ SortedPage::TupleSetCRIter BTree::page_rbegin(int nodeID) const
 	SortedPage_Ptr page = m_nodes[nodeID].m_page;
 	assert(page.get() != NULL);
 	return page->rbegin();
+}
+
+void write(std::ostream& os, int depth, const std::string& text)
+{
+	for(int i = 0; i < depth; ++i)
+	{
+		os << '\t';
+	}
+	os << text << '\n';
+}
+
+void BTree::print_sub(std::ostream& os, int nodeID, int depth) const
+{
+	write(os, depth, "Node: " + boost::lexical_cast<std::string>(nodeID));
+	write(os, depth, "Parent: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_parentID));
+	write(os, depth, "Left Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingLeftID));
+	write(os, depth, "Right Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingRightID));
+
+	for(SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->begin(), iend = m_nodes[nodeID].m_page->end(); it != iend; ++it)
+	{
+		std::stringstream ss;
+		ss << "Tuple(";
+		for(unsigned int j = 0, arity = it->arity(); j < arity; ++j)
+		{
+			ss << it->field(j).get_string();
+			if(j != arity - 1) ss << ',';
+		}
+		ss << ')';
+		write(os, depth, ss.str());
+	}
+
+	if(m_nodes[nodeID].m_firstChildID != -1)
+	{
+		print_sub(os, m_nodes[nodeID].m_firstChildID, depth + 1);
+		for(SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->begin(), iend = m_nodes[nodeID].m_page->end(); it != iend; ++it)
+		{
+			print_sub(os, child_node_id(*it), depth + 1);
+		}
+	}
 }
 
 }

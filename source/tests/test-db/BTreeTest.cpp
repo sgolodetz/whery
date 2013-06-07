@@ -93,6 +93,8 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 		tuple.field(1).set_double(i * i);
 		tuple.field(2).set_double(i * i * i);
 		tree.insert_tuple(tuple);
+		tree.print(std::cout);
+		std::cout << '\n';
 	}
 }
 
