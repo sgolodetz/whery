@@ -58,7 +58,7 @@ BTree::ConstIterator BTree::end() const
 
 void BTree::insert_tuple(const Tuple& tuple)
 {
-	OptionalSplit result = insert_tuple_sub(tuple, m_rootID);
+	OptionalSplit result = insert_tuple_into_subtree(tuple, m_rootID);
 	assert(!result);
 	++m_tupleCount;
 }
@@ -144,7 +144,7 @@ void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
 {
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
@@ -160,7 +160,7 @@ BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		--it;
 		childID = child_node_id(*it);
 	}
-	OptionalSplit result = insert_tuple_sub(tuple, childID);
+	OptionalSplit result = insert_tuple_into_subtree(tuple, childID);
 
 	if(!result)
 	{
@@ -183,7 +183,7 @@ BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
@@ -222,15 +222,15 @@ BTree::OptionalSplit BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_into_subtree(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].has_children())
 	{
-		return insert_tuple_branch(tuple, nodeID);
+		return insert_tuple_into_branch(tuple, nodeID);
 	}
 	else
 	{
-		return insert_tuple_leaf(tuple, nodeID);
+		return insert_tuple_into_leaf(tuple, nodeID);
 	}
 }
 
