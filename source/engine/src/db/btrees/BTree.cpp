@@ -30,7 +30,7 @@ BTree::ConstIterator BTree::begin() const
 	// Walk down the left side of the tree until we hit the left-most leaf.
 	while(m_nodes[id].has_children())
 	{
-		id = m_nodes[id].m_firstChildID;
+		id = m_nodes[id].firstChildID;
 	}
 
 	// Return an iterator pointing to the start of the set of tuples on the leaf's page.
@@ -59,7 +59,7 @@ BTree::ConstIterator BTree::end() const
 void BTree::insert_tuple(const Tuple& tuple)
 {
 	InsertResult result = insert_tuple_sub(tuple, m_rootID);
-	assert(result.m_leftChildID == -1);
+	assert(result.leftChildID == -1);
 	++m_tupleCount;
 }
 
@@ -85,7 +85,7 @@ int BTree::add_branch_node()
 	int id = add_node();
 
 	Node& n = m_nodes[id];
-	n.m_page = m_pageController->make_btree_branch_page();
+	n.page = m_pageController->make_btree_branch_page();
 
 	return id;
 }
@@ -95,7 +95,7 @@ int BTree::add_leaf_node()
 	int id = add_node();
 
 	Node& n = m_nodes[id];
-	n.m_page = m_pageController->make_btree_leaf_page();
+	n.page = m_pageController->make_btree_leaf_page();
 
 	return id;
 }
@@ -110,7 +110,7 @@ int BTree::add_node()
 	}
 
 	Node& n = m_nodes[id];
-	n.m_parentID = n.m_siblingLeftID = n.m_siblingRightID = -1;
+	n.parentID = n.siblingLeftID = n.siblingRightID = -1;
 
 	return id;
 }
@@ -118,29 +118,29 @@ int BTree::add_node()
 BTree::InsertResult BTree::add_root_node(const InsertResult& insertResult)
 {
 	m_rootID = add_branch_node();
-	m_nodes[insertResult.m_leftChildID].m_parentID = m_rootID;
-	m_nodes[insertResult.m_rightChildID].m_parentID = m_rootID;
-	m_nodes[m_rootID].m_firstChildID = insertResult.m_leftChildID;
-	m_nodes[m_rootID].m_page->add_tuple(make_branch_tuple(*insertResult.m_splitter, insertResult.m_rightChildID));
+	m_nodes[insertResult.leftChildID].parentID = m_rootID;
+	m_nodes[insertResult.rightChildID].parentID = m_rootID;
+	m_nodes[m_rootID].firstChildID = insertResult.leftChildID;
+	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(*insertResult.splitter, insertResult.rightChildID));
 	return InsertResult();
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
 {
 	int id = branchTuple.field(branchTuple.arity() - 1).get_int();
-	assert(0 <= id && static_cast<unsigned int>(id) < m_nodes.size() && m_nodes[id].m_page.get() != NULL);
+	assert(0 <= id && static_cast<unsigned int>(id) < m_nodes.size() && page(id).get() != NULL);
 	return id;
 }
 
 void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
 {
-	m_nodes[freshID].m_parentID = m_nodes[nodeID].m_parentID;
-	m_nodes[freshID].m_siblingLeftID = nodeID;
-	m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
-	m_nodes[nodeID].m_siblingRightID = freshID;
-	if(m_nodes[freshID].m_siblingRightID != -1)
+	m_nodes[freshID].parentID = m_nodes[nodeID].parentID;
+	m_nodes[freshID].siblingLeftID = nodeID;
+	m_nodes[freshID].siblingRightID = m_nodes[nodeID].siblingRightID;
+	m_nodes[nodeID].siblingRightID = freshID;
+	if(m_nodes[freshID].siblingRightID != -1)
 	{
-		m_nodes[m_nodes[freshID].m_siblingRightID].m_siblingLeftID = freshID;
+		m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
 	}
 }
 
@@ -149,11 +149,11 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
 	ValueKey key = make_branch_key(tuple);
-	SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->upper_bound(key);
+	SortedPage::TupleSetCIter it = m_nodes[nodeID].page->upper_bound(key);
 	int childID;
 	if(it == page_begin(nodeID))
 	{
-		childID = m_nodes[nodeID].m_firstChildID;
+		childID = m_nodes[nodeID].firstChildID;
 	}
 	else
 	{
@@ -162,23 +162,23 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	}
 	InsertResult subResult = insert_tuple_sub(tuple, childID);
 
-	if(subResult.m_leftChildID == -1)
+	if(subResult.leftChildID == -1)
 	{
 		// The insertion succeeded without needing to split the direct child of this node.
 		return subResult;
 	}
-	else if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
+	else if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
 		// A child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
-		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*subResult.m_splitter, subResult.m_rightChildID));
+		m_nodes[nodeID].page->add_tuple(make_branch_tuple(*subResult.splitter, subResult.rightChildID));
 
 		return InsertResult();
 	}
 	else
 	{
 		// The child of this node was split, but this node is full, so split it into two nodes
-		// and update appropriately. (Don't forget to handle the root case.)
+		// and update appropriately.
 
 		// TODO: This is very similar to the code in insert_tuple_leaf - factor out the commonality.
 
@@ -187,7 +187,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		insert_node_as_right_sibling_of(nodeID, freshID);
 
 		// Step 2:	Make a tuple set containing fresh copies of all the tuples in the original page.
-		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
+		SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
 		std::multiset<FreshTuple,PrefixTupleComparator> tuples;
 		for(SortedPage::TupleSetCIter it = nodePage->begin(), iend = nodePage->end(); it != iend; ++it)
 		{
@@ -197,7 +197,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 3:	Add the splitter from the sub-split to this set.
-		tuples.insert(make_branch_tuple(*subResult.m_splitter, subResult.m_rightChildID));
+		tuples.insert(make_branch_tuple(*subResult.splitter, subResult.rightChildID));
 
 		// Step 4:	Clear the original page and copy the first half of the tuples across to it.
 		nodePage->clear();
@@ -220,13 +220,13 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 7:	Set the first child of the fresh node to the child node ID of the splitter.
-		m_nodes[freshID].m_firstChildID = child_node_id(*splitter);
+		m_nodes[freshID].firstChildID = child_node_id(*splitter);
 
 		// Step 8:	Update the parent pointers of all children of the fresh page.
-		m_nodes[m_nodes[freshID].m_firstChildID].m_parentID = freshID;
+		m_nodes[m_nodes[freshID].firstChildID].parentID = freshID;
 		for(SortedPage::TupleSetCIter jt = page_begin(freshID), jend = page_end(freshID); jt != jend; ++jt)
 		{
-			m_nodes[child_node_id(*jt)].m_parentID = freshID;
+			m_nodes[child_node_id(*jt)].parentID = freshID;
 		}
 
 		// Step 9:	Construct a triple indicating the result of the split.
@@ -240,10 +240,10 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 
 BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 {
-	if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
+	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
 		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
-		m_nodes[nodeID].m_page->add_tuple(tuple);
+		m_nodes[nodeID].page->add_tuple(tuple);
 		return InsertResult();
 	}
 	else if(false)
@@ -262,7 +262,7 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		insert_node_as_right_sibling_of(nodeID, freshID);
 
 		// Step 2:	Transfer half of the tuples across to the fresh node.
-		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
+		SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
 		transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
 		// Step 3:	Insert the original tuple into the appropriate node.
@@ -321,7 +321,7 @@ FreshTuple BTree::make_branch_tuple(const Tuple& tuple, int nodeID) const
 
 SortedPage_Ptr BTree::page(int nodeID) const
 {
-	return m_nodes[nodeID].m_page;
+	return m_nodes[nodeID].page;
 }
 
 SortedPage::TupleSetCIter BTree::page_begin(int nodeID) const
@@ -349,9 +349,9 @@ void BTree::print_sub(std::ostream& os, int nodeID, unsigned int depth) const
 {
 	// Print the basic details of the node.
 	write_tabbed_text(os, depth, "Node: " + boost::lexical_cast<std::string>(nodeID));
-	write_tabbed_text(os, depth, "Parent: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_parentID));
-	write_tabbed_text(os, depth, "Left Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingLeftID));
-	write_tabbed_text(os, depth, "Right Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingRightID));
+	write_tabbed_text(os, depth, "Parent: " + boost::lexical_cast<std::string>(m_nodes[nodeID].parentID));
+	write_tabbed_text(os, depth, "Left Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].siblingLeftID));
+	write_tabbed_text(os, depth, "Right Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].siblingRightID));
 
 	// Print the tuples held by the node.
 	for(SortedPage::TupleSetCIter it = page_begin(nodeID), iend = page_end(nodeID); it != iend; ++it)
@@ -368,9 +368,9 @@ void BTree::print_sub(std::ostream& os, int nodeID, unsigned int depth) const
 	}
 
 	// Recursively print the children of the node (if any).
-	if(m_nodes[nodeID].m_firstChildID != -1)
+	if(m_nodes[nodeID].has_children())
 	{
-		print_sub(os, m_nodes[nodeID].m_firstChildID, depth + 1);
+		print_sub(os, m_nodes[nodeID].firstChildID, depth + 1);
 		for(SortedPage::TupleSetCIter it = page_begin(nodeID), iend = page_end(nodeID); it != iend; ++it)
 		{
 			print_sub(os, child_node_id(*it), depth + 1);
@@ -405,8 +405,8 @@ void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rig
 void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 {
 	// Check the preconditions.
-	int targetNodeID = m_nodes[sourceNodeID].m_siblingRightID;
-	if(m_nodes[targetNodeID].m_parentID != m_nodes[sourceNodeID].m_parentID)
+	int targetNodeID = m_nodes[sourceNodeID].siblingRightID;
+	if(m_nodes[targetNodeID].parentID != m_nodes[sourceNodeID].parentID)
 	{
 		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
 	}

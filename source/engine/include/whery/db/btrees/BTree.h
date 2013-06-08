@@ -26,16 +26,16 @@ class BTree
 private:
 	struct InsertResult
 	{
-		int m_leftChildID;
-		int m_rightChildID;
-		boost::shared_ptr<FreshTuple> m_splitter;
+		int leftChildID;
+		int rightChildID;
+		boost::shared_ptr<FreshTuple> splitter;
 
 		InsertResult()
-		:	m_leftChildID(-1), m_rightChildID(-1)
+		:	leftChildID(-1), rightChildID(-1)
 		{}
 
-		InsertResult(int leftChildID, int rightChildID, const boost::shared_ptr<FreshTuple>& splitter)
-		:	m_leftChildID(leftChildID), m_rightChildID(rightChildID), m_splitter(splitter)
+		InsertResult(int leftChildID_, int rightChildID_, const boost::shared_ptr<FreshTuple>& splitter_)
+		:	leftChildID(leftChildID_), rightChildID(rightChildID_), splitter(splitter_)
 		{}
 	};
 
@@ -48,25 +48,25 @@ private:
 		The ID of the node's first child, if it has one. The IDs of any
 		other children are stored in the tuples on the data page.
 		*/
-		int m_firstChildID;
+		int firstChildID;
 
 		/** The page used to store the tuple data for the node. */
-		SortedPage_Ptr m_page;
+		SortedPage_Ptr page;
 
 		/** The ID of the node's parent in the B+-tree (if any). */
-		int m_parentID;
+		int parentID;
 
 		/** The ID of the node's left sibling in the B+-tree (if any). */
-		int m_siblingLeftID;
+		int siblingLeftID;
 
 		/** The ID of the node's right sibling in the B+-tree (if any). */
-		int m_siblingRightID;
+		int siblingRightID;
 
 		/**
 		Constructs a node.
 		*/
 		Node()
-		:	m_firstChildID(-1), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		:	firstChildID(-1), parentID(-1), siblingLeftID(-1), siblingRightID(-1)
 		{}
 
 		/**
@@ -74,8 +74,8 @@ private:
 
 		\param page	The page to be used to store the tuple data for the node.
 		*/
-		explicit Node(const SortedPage_Ptr& page)
-		:	m_firstChildID(-1), m_page(page), m_parentID(-1), m_siblingLeftID(-1), m_siblingRightID(-1)
+		explicit Node(const SortedPage_Ptr& page_)
+		:	firstChildID(-1), page(page_), parentID(-1), siblingLeftID(-1), siblingRightID(-1)
 		{}
 
 		/**
@@ -85,7 +85,7 @@ private:
 		*/
 		bool has_children() const
 		{
-			return m_firstChildID != -1;
+			return firstChildID != -1;
 		}
 	};
 
