@@ -6,7 +6,6 @@
 #include "whery/db/btrees/BTree.h"
 
 #include <cassert>
-
 #include <boost/lexical_cast.hpp>
 
 #include "whery/db/base/ValueKey.h"
@@ -122,7 +121,7 @@ BTree::OptionalSplit BTree::add_root_node(const Split& split)
 	m_nodes[split.rightNodeID].parentID = m_rootID;
 	m_nodes[m_rootID].firstChildID = split.leftNodeID;
 	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
-	return OptionalSplit();
+	return boost::none;
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
@@ -172,7 +171,7 @@ BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nod
 		// The child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
 		m_nodes[nodeID].page->add_tuple(make_branch_tuple(result->splitter, result->rightNodeID));
-		return OptionalSplit();
+		return boost::none;
 	}
 	else
 	{
@@ -189,7 +188,7 @@ BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeI
 	{
 		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
 		m_nodes[nodeID].page->add_tuple(tuple);
-		return OptionalSplit();
+		return boost::none;
 	}
 	else if(false)
 	{

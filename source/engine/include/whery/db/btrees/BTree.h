@@ -248,7 +248,7 @@ private:
 	which must be the old root.
 
 	\param split	The split that created the need for a new root.
-	\return			None (for convenience).
+	\return			boost::none (for convenience).
 	*/
 	OptionalSplit add_root_node(const Split& split);
 
@@ -275,7 +275,7 @@ private:
 
 	\param tuple	The tuple to insert.
 	\param nodeID	The ID of the branch node at the root of the subtree into which to insert it.
-	\return			The result of any split that occurs, or None otherwise.
+	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
 	OptionalSplit insert_tuple_into_branch(const Tuple& tuple, int nodeID);
 
@@ -285,7 +285,7 @@ private:
 
 	\param tuple	The tuple to insert.
 	\param nodeID	The ID of the leaf node into which to insert it.
-	\return			The result of any split that occurs, or None otherwise.
+	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
 	OptionalSplit insert_tuple_into_leaf(const Tuple& tuple, int nodeID);
 
@@ -295,7 +295,7 @@ private:
 
 	\param tuple	The tuple to insert.
 	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
-	\return			The result of any split that occurs, or None otherwise.
+	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
 	OptionalSplit insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
 
