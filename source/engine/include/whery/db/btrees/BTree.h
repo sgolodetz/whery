@@ -8,14 +8,14 @@
 
 #include <iostream>
 
+#include <boost/optional/optional.hpp>
+
+#include "whery/db/base/FreshTuple.h"
 #include "whery/db/pages/SortedPage.h"
 #include "whery/util/IDAllocator.h"
 #include "BTreePageController.h"
 
 namespace whery {
-
-//#################### FORWARD DECLARATIONS ####################
-class FreshTuple;
 
 /**
 An instance of this class represents a B+-tree.
@@ -24,17 +24,13 @@ class BTree
 {
 	//#################### NESTED TYPES ####################
 private:
-	struct InsertResult
+	struct Split
 	{
 		int leftChildID;
 		int rightChildID;
-		boost::shared_ptr<FreshTuple> splitter;
+		FreshTuple splitter;
 
-		InsertResult()
-		:	leftChildID(-1), rightChildID(-1)
-		{}
-
-		InsertResult(int leftChildID_, int rightChildID_, const boost::shared_ptr<FreshTuple>& splitter_)
+		Split(int leftChildID_, int rightChildID_, const FreshTuple& splitter_)
 		:	leftChildID(leftChildID_), rightChildID(rightChildID_), splitter(splitter_)
 		{}
 	};
@@ -106,6 +102,10 @@ public:
 			return m_tree == rhs.m_tree && m_nodeID == rhs.m_nodeID && m_it == rhs.m_it;
 		}
 	};
+
+	//#################### TYPEDEFS ####################
+private:
+	typedef boost::optional<Split> OptionalSplit;
 
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -232,10 +232,10 @@ private:
 	old root during an insert operation, so there will be two children of the new root, one of
 	which must be the old root.
 
-	\param result	The result of the insert operation that created the need for a new root.
-	\return			An empty insert result (for convenience).
+	\param result	The split that created the need for a new root.
+	\return			An empty optional split (for convenience).
 	*/
-	InsertResult add_root_node(const InsertResult& insertResult);
+	OptionalSplit add_root_node(const Split& split);
 
 	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.
@@ -254,8 +254,8 @@ private:
 	*/
 	void insert_node_as_right_sibling_of(int nodeID, int freshID);
 
-	InsertResult insert_tuple_branch(const Tuple& tuple, int nodeID);
-	InsertResult insert_tuple_leaf(const Tuple& tuple, int nodeID);
+	OptionalSplit insert_tuple_branch(const Tuple& tuple, int nodeID);
+	OptionalSplit insert_tuple_leaf(const Tuple& tuple, int nodeID);
 
 	/**
 	Inserts a tuple into the subtree rooted at the specified node. This may ultimately cause
@@ -265,7 +265,7 @@ private:
 	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
 	\return			TODO
 	*/
-	InsertResult insert_tuple_sub(const Tuple& tuple, int nodeID);
+	OptionalSplit insert_tuple_sub(const Tuple& tuple, int nodeID);
 
 	ValueKey make_branch_key(const Tuple& tuple) const;
 

@@ -58,8 +58,8 @@ BTree::ConstIterator BTree::end() const
 
 void BTree::insert_tuple(const Tuple& tuple)
 {
-	InsertResult result = insert_tuple_sub(tuple, m_rootID);
-	assert(result.leftChildID == -1);
+	OptionalSplit result = insert_tuple_sub(tuple, m_rootID);
+	assert(!result);
 	++m_tupleCount;
 }
 
@@ -115,14 +115,14 @@ int BTree::add_node()
 	return id;
 }
 
-BTree::InsertResult BTree::add_root_node(const InsertResult& insertResult)
+BTree::OptionalSplit BTree::add_root_node(const Split& split)
 {
 	m_rootID = add_branch_node();
-	m_nodes[insertResult.leftChildID].parentID = m_rootID;
-	m_nodes[insertResult.rightChildID].parentID = m_rootID;
-	m_nodes[m_rootID].firstChildID = insertResult.leftChildID;
-	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(*insertResult.splitter, insertResult.rightChildID));
-	return InsertResult();
+	m_nodes[split.leftChildID].parentID = m_rootID;
+	m_nodes[split.rightChildID].parentID = m_rootID;
+	m_nodes[m_rootID].firstChildID = split.leftChildID;
+	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightChildID));
+	return OptionalSplit();
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
@@ -144,7 +144,7 @@ void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
 	}
 }
 
-BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 {
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
@@ -160,9 +160,9 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		--it;
 		childID = child_node_id(*it);
 	}
-	InsertResult subResult = insert_tuple_sub(tuple, childID);
+	OptionalSplit subResult = insert_tuple_sub(tuple, childID);
 
-	if(subResult.leftChildID == -1)
+	if(!subResult)
 	{
 		// The insertion succeeded without needing to split the direct child of this node.
 		return subResult;
@@ -171,9 +171,9 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	{
 		// A child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
-		m_nodes[nodeID].page->add_tuple(make_branch_tuple(*subResult.splitter, subResult.rightChildID));
+		m_nodes[nodeID].page->add_tuple(make_branch_tuple(subResult->splitter, subResult->rightChildID));
 
-		return InsertResult();
+		return OptionalSplit();
 	}
 	else
 	{
@@ -197,7 +197,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 3:	Add the splitter from the sub-split to this set.
-		tuples.insert(make_branch_tuple(*subResult.splitter, subResult.rightChildID));
+		tuples.insert(make_branch_tuple(subResult->splitter, subResult->rightChildID));
 
 		// Step 4:	Clear the original page and copy the first half of the tuples across to it.
 		nodePage->clear();
@@ -209,8 +209,8 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 5:	Record the median as the new splitter.
-		boost::shared_ptr<FreshTuple> splitter(new FreshTuple(branch_tuple_manipulator()));
-		splitter->copy_from(*it);
+		FreshTuple splitter(branch_tuple_manipulator());
+		splitter.copy_from(*it);
 		++it;
 
 		// Step 6:	Copy the second half of the tuples across to the fresh page.
@@ -220,7 +220,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 7:	Set the first child of the fresh node to the child node ID of the splitter.
-		m_nodes[freshID].firstChildID = child_node_id(*splitter);
+		m_nodes[freshID].firstChildID = child_node_id(splitter);
 
 		// Step 8:	Update the parent pointers of all children of the fresh page.
 		m_nodes[m_nodes[freshID].firstChildID].parentID = freshID;
@@ -230,21 +230,21 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 9:	Construct a triple indicating the result of the split.
-		InsertResult result(nodeID, freshID, splitter);
+		OptionalSplit result(Split(nodeID, freshID, splitter));
 
 		// Step 10:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.
-		return nodeID == m_rootID ? add_root_node(result) : result;
+		return nodeID == m_rootID ? add_root_node(*result) : result;
 	}
 }
 
-BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
 		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
 		m_nodes[nodeID].page->add_tuple(tuple);
-		return InsertResult();
+		return OptionalSplit();
 	}
 	else if(false)
 	{
@@ -269,17 +269,17 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		selectively_insert_tuple(tuple, nodeID, freshID);
 
 		// Step 4:	Construct a triple indicating the result of the split.
-		boost::shared_ptr<FreshTuple> splitter(new FreshTuple(leaf_tuple_manipulator()));
-		splitter->copy_from(*freshPage->begin());
-		InsertResult result(nodeID, freshID, splitter);
+		FreshTuple splitter(leaf_tuple_manipulator());
+		splitter.copy_from(*freshPage->begin());
+		OptionalSplit result(Split(nodeID, freshID, splitter));
 
 		// Step 5:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.
-		return nodeID == m_rootID ? add_root_node(result) : result;
+		return nodeID == m_rootID ? add_root_node(*result) : result;
 	}
 }
 
-BTree::InsertResult BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
+BTree::OptionalSplit BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].has_children())
 	{
