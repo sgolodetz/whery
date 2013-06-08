@@ -239,6 +239,15 @@ private:
 	*/
 	int child_node_id(const BackedTuple& branchTuple) const;
 
+	/**
+	Inserts a fresh node into the B+-tree as the right sibling of the specified node
+	and with the same parent.
+
+	\param nodeID	The ID of the node whose right sibling the fresh node will become.
+	\param freshID	The ID of the fresh node.
+	*/
+	void insert_node_as_right_sibling_of(int nodeID, int freshID);
+
 	InsertResult insert_tuple_branch(const Tuple& tuple, int nodeID);
 	InsertResult insert_tuple_leaf(const Tuple& tuple, int nodeID);
 

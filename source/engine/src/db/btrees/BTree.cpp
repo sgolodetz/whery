@@ -131,6 +131,18 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	return id;
 }
 
+void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
+{
+	m_nodes[freshID].m_parentID = m_nodes[nodeID].m_parentID;
+	m_nodes[freshID].m_siblingLeftID = nodeID;
+	m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
+	m_nodes[nodeID].m_siblingRightID = freshID;
+	if(m_nodes[freshID].m_siblingRightID != -1)
+	{
+		m_nodes[m_nodes[freshID].m_siblingRightID].m_siblingLeftID = freshID;
+	}
+}
+
 BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 {
 	// Find the child of this node below which the specified tuple should be inserted,
@@ -171,10 +183,7 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 
 		// Step 1:	Create a fresh branch node and connect it to the rest of the tree.
 		int freshID = add_branch_node();
-		m_nodes[freshID].m_parentID = m_nodes[nodeID].m_parentID;
-		m_nodes[freshID].m_siblingLeftID = nodeID;
-		m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
-		m_nodes[nodeID].m_siblingRightID = freshID;
+		insert_node_as_right_sibling_of(nodeID, freshID);
 
 		// Step 2:	Make a tuple set containing fresh copies of all the tuples in the original page.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
@@ -254,11 +263,7 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 
 		// Step 1:	Create a fresh leaf node and connect it to the rest of the tree.
 		int freshID = add_leaf_node();
-		m_nodes[freshID].m_parentID = m_nodes[nodeID].m_parentID;
-		m_nodes[freshID].m_siblingLeftID = nodeID;
-		m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
-		m_nodes[nodeID].m_siblingRightID = freshID;
-		if(m_nodes[freshID].m_siblingRightID != -1) m_nodes[m_nodes[freshID].m_siblingRightID].m_siblingLeftID = freshID;
+		insert_node_as_right_sibling_of(nodeID, freshID);
 
 		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
