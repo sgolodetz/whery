@@ -232,9 +232,10 @@ private:
 	old root during an insert operation, so there will be two children of the new root, one of
 	which must be the old root.
 
-	\param result	TODO
+	\param result	The result of the insert operation that created the need for a new root.
+	\return			An empty insert result (for convenience).
 	*/
-	void add_root_node(const InsertResult& insertResult);
+	InsertResult add_root_node(const InsertResult& insertResult);
 
 	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.

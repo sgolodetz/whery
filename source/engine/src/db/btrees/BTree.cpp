@@ -115,13 +115,14 @@ int BTree::add_node()
 	return id;
 }
 
-void BTree::add_root_node(const InsertResult& insertResult)
+BTree::InsertResult BTree::add_root_node(const InsertResult& insertResult)
 {
 	m_rootID = add_branch_node();
 	m_nodes[insertResult.m_leftChildID].m_parentID = m_rootID;
 	m_nodes[insertResult.m_rightChildID].m_parentID = m_rootID;
 	m_nodes[m_rootID].m_firstChildID = insertResult.m_leftChildID;
 	m_nodes[m_rootID].m_page->add_tuple(make_branch_tuple(*insertResult.m_splitter, insertResult.m_rightChildID));
+	return InsertResult();
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
@@ -228,17 +229,12 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 			m_nodes[child_node_id(*jt)].m_parentID = freshID;
 		}
 
-		// Step 3:	Construct a triple indicating the result of the split.
+		// Step 9:	Construct a triple indicating the result of the split.
 		InsertResult result(nodeID, freshID, splitter);
 
-		// Step 4:	If the node that was split is the root, create a new root node.
+		// Step 10:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.
-		if(nodeID == m_rootID)
-		{
-			add_root_node(result);
-			return InsertResult();
-		}
-		else return result;
+		return nodeID == m_rootID ? add_root_node(result) : result;
 	}
 }
 
@@ -279,21 +275,20 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 
 		// Step 5:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.
-		if(nodeID == m_rootID)
-		{
-			add_root_node(result);
-			return InsertResult();
-		}
-		else return result;
+		return nodeID == m_rootID ? add_root_node(result) : result;
 	}
 }
 
 BTree::InsertResult BTree::insert_tuple_sub(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].has_children())
+	{
 		return insert_tuple_branch(tuple, nodeID);
+	}
 	else
+	{
 		return insert_tuple_leaf(tuple, nodeID);
+	}
 }
 
 ValueKey BTree::make_branch_key(const Tuple& tuple) const
