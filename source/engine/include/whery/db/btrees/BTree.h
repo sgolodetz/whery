@@ -186,6 +186,11 @@ public:
 	ConstIterator lower_bound(const RangeKey& key) const;
 	ConstIterator lower_bound(const ValueKey& key) const;
 
+	/**
+	Prints the B+-tree to an output stream (for debugging purposes).
+
+	\param os	The output stream.
+	*/
 	void print(std::ostream& os) const;
 
 	/**
@@ -297,7 +302,14 @@ private:
 	*/
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 
-	void print_sub(std::ostream& os, int nodeID, int depth) const;
+	/**
+	Prints the specified node to an output stream (for debugging purposes).
+
+	\param os		The output stream.
+	\param nodeID	The ID of the node to print.
+	\param depth	The depth of the node in the tree (starting from 0 at the root).
+	*/
+	void print_sub(std::ostream& os, int nodeID, unsigned int depth) const;
 
 	/**
 	Selectively inserts the specified tuple into one of two adjacent nodes,
@@ -324,6 +336,15 @@ private:
 									or does not have space for an extra n tuples.
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
+
+	/**
+	Writes some text to the specified output stream, prefixed by the specified number of tabs.
+
+	\param os		The output stream.
+	\param tabCount	The number of tabs with which to prefix the text.
+	\param text		The text to write.
+	*/
+	void write_tabbed_text(std::ostream& os, unsigned int tabCount, const std::string& text) const;
 };
 
 }

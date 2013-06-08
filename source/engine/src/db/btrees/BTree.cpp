@@ -350,23 +350,16 @@ SortedPage::TupleSetCRIter BTree::page_rbegin(int nodeID) const
 	return p->rbegin();
 }
 
-void write(std::ostream& os, int depth, const std::string& text)
+void BTree::print_sub(std::ostream& os, int nodeID, unsigned int depth) const
 {
-	for(int i = 0; i < depth; ++i)
-	{
-		os << '\t';
-	}
-	os << text << '\n';
-}
+	// Print the basic details of the node.
+	write_tabbed_text(os, depth, "Node: " + boost::lexical_cast<std::string>(nodeID));
+	write_tabbed_text(os, depth, "Parent: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_parentID));
+	write_tabbed_text(os, depth, "Left Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingLeftID));
+	write_tabbed_text(os, depth, "Right Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingRightID));
 
-void BTree::print_sub(std::ostream& os, int nodeID, int depth) const
-{
-	write(os, depth, "Node: " + boost::lexical_cast<std::string>(nodeID));
-	write(os, depth, "Parent: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_parentID));
-	write(os, depth, "Left Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingLeftID));
-	write(os, depth, "Right Sibling: " + boost::lexical_cast<std::string>(m_nodes[nodeID].m_siblingRightID));
-
-	for(SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->begin(), iend = m_nodes[nodeID].m_page->end(); it != iend; ++it)
+	// Print the tuples held by the node.
+	for(SortedPage::TupleSetCIter it = page_begin(nodeID), iend = page_end(nodeID); it != iend; ++it)
 	{
 		std::stringstream ss;
 		ss << "Tuple(";
@@ -376,13 +369,14 @@ void BTree::print_sub(std::ostream& os, int nodeID, int depth) const
 			if(j != arity - 1) ss << ',';
 		}
 		ss << ')';
-		write(os, depth, ss.str());
+		write_tabbed_text(os, depth, ss.str());
 	}
 
+	// Recursively print the children of the node (if any).
 	if(m_nodes[nodeID].m_firstChildID != -1)
 	{
 		print_sub(os, m_nodes[nodeID].m_firstChildID, depth + 1);
-		for(SortedPage::TupleSetCIter it = m_nodes[nodeID].m_page->begin(), iend = m_nodes[nodeID].m_page->end(); it != iend; ++it)
+		for(SortedPage::TupleSetCIter it = page_begin(nodeID), iend = page_end(nodeID); it != iend; ++it)
 		{
 			print_sub(os, child_node_id(*it), depth + 1);
 		}
@@ -428,9 +422,8 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
 	}
 
-	// Transfer n tuples from the source page to the target page.
-	// Note that copying the tuples into a separate container is
-	// needed to prevent a "modification during iteration" issue.
+	// Transfer n tuples from the source page to the target page. Note that copying the tuples
+	// into a separate container is needed to prevent a "modification during iteration" issue.
 	SortedPage_Ptr sourcePage = page(sourceNodeID);
 	std::vector<BackedTuple> ts(sourcePage->rbegin(), sourcePage->rend());
 	unsigned int i = 0;
@@ -439,6 +432,15 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 		targetPage->add_tuple(*it);
 		sourcePage->delete_tuple(*it);
 	}
+}
+
+void BTree::write_tabbed_text(std::ostream& os, unsigned int tabCount, const std::string& text) const
+{
+	for(unsigned int i = 0; i < tabCount; ++i)
+	{
+		os << '\t';
+	}
+	os << text << '\n';
 }
 
 }
