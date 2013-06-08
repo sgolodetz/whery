@@ -265,15 +265,12 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		int freshID = add_leaf_node();
 		insert_node_as_right_sibling_of(nodeID, freshID);
 
-		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
+		// Step 2:	Transfer half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
 		transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
-		// Step 3:	Insert the tuple into one of the two nodes, based on a comparison
-		//			against the first tuple in the new node.
-		PrefixTupleComparator comp;
-		if(comp.compare(tuple, *freshPage->begin()) == -1) nodePage->add_tuple(tuple);
-		else freshPage->add_tuple(tuple);
+		// Step 3:	Insert the original tuple into the appropriate node.
+		selectively_insert_tuple(tuple, nodeID, freshID);
 
 		// Step 4:	Construct a triple indicating the result of the split.
 		boost::shared_ptr<FreshTuple> splitter(new FreshTuple(leaf_tuple_manipulator()));
@@ -327,25 +324,30 @@ FreshTuple BTree::make_branch_tuple(const Tuple& tuple, int nodeID) const
 	return result;
 }
 
+SortedPage_Ptr BTree::page(int nodeID) const
+{
+	return m_nodes[nodeID].m_page;
+}
+
 SortedPage::TupleSetCIter BTree::page_begin(int nodeID) const
 {
-	SortedPage_Ptr page = m_nodes[nodeID].m_page;
-	assert(page.get() != NULL);
-	return page->begin();
+	SortedPage_Ptr p = page(nodeID);
+	assert(p.get() != NULL);
+	return p->begin();
 }
 
 SortedPage::TupleSetCIter BTree::page_end(int nodeID) const
 {
-	SortedPage_Ptr page = m_nodes[nodeID].m_page;
-	assert(page.get() != NULL);
-	return page->end();
+	SortedPage_Ptr p = page(nodeID);
+	assert(p.get() != NULL);
+	return p->end();
 }
 
 SortedPage::TupleSetCRIter BTree::page_rbegin(int nodeID) const
 {
-	SortedPage_Ptr page = m_nodes[nodeID].m_page;
-	assert(page.get() != NULL);
-	return page->rbegin();
+	SortedPage_Ptr p = page(nodeID);
+	assert(p.get() != NULL);
+	return p->rbegin();
 }
 
 void write(std::ostream& os, int depth, const std::string& text)
@@ -387,6 +389,30 @@ void BTree::print_sub(std::ostream& os, int nodeID, int depth) const
 	}
 }
 
+void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID)
+{
+	SortedPage_Ptr leftPage = page(leftNodeID), rightPage = page(rightNodeID);
+
+	// Check the precondition.
+	if(leftPage->empty_tuple_count() == 0 || rightPage->empty_tuple_count() == 0)
+	{
+		throw std::invalid_argument("Cannot selectively insert a tuple unless both potential pages have space.");
+	}
+
+	// Compare the tuple to be inserted against the first tuple on the right-hand page.
+	// If it's strictly before that tuple in the ordering, insert it into the left-hand
+	// page; if not, insert it into the right-hand page.
+	PrefixTupleComparator comp;
+	if(comp.compare(tuple, *rightPage->begin()) == -1)
+	{
+		leftPage->add_tuple(tuple);
+	}
+	else
+	{
+		rightPage->add_tuple(tuple);
+	}
+}
+
 void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 {
 	// Check the preconditions.
@@ -396,7 +422,7 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
 	}
 
-	SortedPage_Ptr targetPage = m_nodes[targetNodeID].m_page;
+	SortedPage_Ptr targetPage = page(targetNodeID);
 	if(targetPage->empty_tuple_count() < n)
 	{
 		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
@@ -405,7 +431,7 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 	// Transfer n tuples from the source page to the target page.
 	// Note that copying the tuples into a separate container is
 	// needed to prevent a "modification during iteration" issue.
-	SortedPage_Ptr sourcePage = m_nodes[sourceNodeID].m_page;
+	SortedPage_Ptr sourcePage = page(sourceNodeID);
 	std::vector<BackedTuple> ts(sourcePage->rbegin(), sourcePage->rend());
 	unsigned int i = 0;
 	for(std::vector<BackedTuple>::const_iterator it = ts.begin(), iend = ts.end(); it != iend && i < n; ++it, ++i)

@@ -266,6 +266,14 @@ private:
 	FreshTuple make_branch_tuple(const Tuple& tuple, int nodeID) const;
 
 	/**
+	Returns the page of the specified node.
+
+	\param nodeID	The node whose page we want to get.
+	\return			The page of the specified node.
+	*/
+	SortedPage_Ptr page(int nodeID) const;
+
+	/**
 	Returns an iterator pointing to the start of the set of tuples on the specified node's page.
 
 	\param nodeID	The ID of a node in the B+-tree.
@@ -290,6 +298,19 @@ private:
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 
 	void print_sub(std::ostream& os, int nodeID, int depth) const;
+
+	/**
+	Selectively inserts the specified tuple into one of two adjacent nodes,
+	based on a comparison against the first tuple of the right-hand node.
+	Both nodes must have space for an extra tuple.
+
+	\param tuple					The tuple to insert.
+	\param leftNodeID				The ID of the left-hand node.
+	\param rightNodeID				The ID of the right-hand node.
+	\throw std::invalid_argument	If at least one of the two nodes does
+									not have space for an extra tuple.
+	*/
+	void selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID);
 
 	/**
 	Transfers n tuples from the specified leaf node to its right sibling.
