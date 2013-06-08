@@ -267,7 +267,7 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 
 		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
-		nodePage->transfer_high_tuples(*freshPage, nodePage->tuple_count() / 2);
+		transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
 		// Step 3:	Insert the tuple into one of the two nodes, based on a comparison
 		//			against the first tuple in the new node.
@@ -384,6 +384,34 @@ void BTree::print_sub(std::ostream& os, int nodeID, int depth) const
 		{
 			print_sub(os, child_node_id(*it), depth + 1);
 		}
+	}
+}
+
+void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
+{
+	// Check the preconditions.
+	int targetNodeID = m_nodes[sourceNodeID].m_siblingRightID;
+	if(m_nodes[targetNodeID].m_parentID != m_nodes[sourceNodeID].m_parentID)
+	{
+		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
+	}
+
+	SortedPage_Ptr targetPage = m_nodes[targetNodeID].m_page;
+	if(targetPage->empty_tuple_count() < n)
+	{
+		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
+	}
+
+	// Transfer n tuples from the source page to the target page.
+	// Note that copying the tuples into a separate container is
+	// needed to prevent a "modification during iteration" issue.
+	SortedPage_Ptr sourcePage = m_nodes[sourceNodeID].m_page;
+	std::vector<BackedTuple> ts(sourcePage->rbegin(), sourcePage->rend());
+	unsigned int i = 0;
+	for(std::vector<BackedTuple>::const_iterator it = ts.begin(), iend = ts.end(); it != iend && i < n; ++it, ++i)
+	{
+		targetPage->add_tuple(*it);
+		sourcePage->delete_tuple(*it);
 	}
 }
 

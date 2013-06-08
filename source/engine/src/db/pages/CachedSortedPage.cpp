@@ -90,9 +90,9 @@ SortedPage::TupleSetCRIter CachedSortedPage::rbegin() const
 	return page()->rbegin();
 }
 
-void CachedSortedPage::transfer_high_tuples(SortedPage& targetPage, unsigned int n)
+SortedPage::TupleSetCRIter CachedSortedPage::rend() const
 {
-	page()->transfer_high_tuples(targetPage, n);
+	return page()->rend();
 }
 
 unsigned int CachedSortedPage::tuple_count() const

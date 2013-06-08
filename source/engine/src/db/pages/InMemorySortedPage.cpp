@@ -138,22 +138,9 @@ SortedPage::TupleSetCRIter InMemorySortedPage::rbegin() const
 	return m_tuples.rbegin();
 }
 
-void InMemorySortedPage::transfer_high_tuples(SortedPage& targetPage, unsigned int n)
+SortedPage::TupleSetCRIter InMemorySortedPage::rend() const
 {
-	if(targetPage.empty_tuple_count() < n)
-	{
-		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
-	}
-
-	std::vector<BackedTuple> tuples(m_tuples.rbegin(), m_tuples.rend());
-	unsigned int count = 0;
-	for(std::vector<BackedTuple>::const_iterator it = tuples.begin(), iend = tuples.end();
-		it != iend && count < n;
-		++it, ++count)
-	{
-		targetPage.add_tuple(*it);
-		delete_tuple(*it);
-	}
+	return m_tuples.rend();
 }
 
 unsigned int InMemorySortedPage::tuple_count() const

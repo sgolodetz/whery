@@ -290,6 +290,19 @@ private:
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 
 	void print_sub(std::ostream& os, int nodeID, int depth) const;
+
+	/**
+	Transfers n tuples from the specified leaf node to its right sibling.
+	Note that this function makes no attempt to update the parent of the two
+	nodes, and should therefore only be used as part of a larger algorithm
+	that does do so.
+
+	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
+	\param n						The number of tuples to transfer.
+	\throw std::invalid_argument	If the right sibling does not have the same parent,
+									or does not have space for an extra n tuples.
+	*/
+	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
 };
 
 }

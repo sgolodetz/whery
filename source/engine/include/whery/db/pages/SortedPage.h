@@ -157,16 +157,11 @@ public:
 	virtual TupleSetCRIter rbegin() const = 0;
 
 	/**
-	Transfers the n tuples that compare highest across to the specified
-	target page. If the target page does not have space to store them,
-	an exception will be thrown. Note that the target page must store
-	tuples with the same fields, or the behaviour is undefined.
+	Returns an iterator pointing to the end of the reversed set of tuples on the page.
 
-	\param targetPage				The page to which to transfer the tuples.
-	\param n						The number of tuples to transfer.
-	\throw std::invalid_argument	If the target page does not have space for the tuples.
+	\return	An iterator pointing to the end of the reversed set of tuples on the page.
 	*/
-	virtual void transfer_high_tuples(SortedPage& targetPage, unsigned int n) = 0;
+	virtual TupleSetCRIter rend() const = 0;
 
 	/**
 	Gets the number of tuples that are currently stored on the page.
