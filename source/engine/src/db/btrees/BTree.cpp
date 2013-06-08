@@ -69,7 +69,7 @@ TupleManipulator BTree::leaf_tuple_manipulator() const
 
 void BTree::print(std::ostream& os) const
 {
-	print_sub(os, m_rootID, 0);
+	print_subtree(os, m_rootID, 0);
 }
 
 unsigned int BTree::tuple_count()
@@ -287,7 +287,7 @@ SortedPage::TupleSetCRIter BTree::page_rbegin(int nodeID) const
 	return p->rbegin();
 }
 
-void BTree::print_sub(std::ostream& os, int nodeID, unsigned int depth) const
+void BTree::print_subtree(std::ostream& os, int nodeID, unsigned int depth) const
 {
 	// Print the basic details of the node.
 	write_tabbed_text(os, depth, "Node: " + boost::lexical_cast<std::string>(nodeID));
@@ -312,10 +312,10 @@ void BTree::print_sub(std::ostream& os, int nodeID, unsigned int depth) const
 	// Recursively print the children of the node (if any).
 	if(m_nodes[nodeID].has_children())
 	{
-		print_sub(os, m_nodes[nodeID].firstChildID, depth + 1);
+		print_subtree(os, m_nodes[nodeID].firstChildID, depth + 1);
 		for(SortedPage::TupleSetCIter it = page_begin(nodeID), iend = page_end(nodeID); it != iend; ++it)
 		{
-			print_sub(os, child_node_id(*it), depth + 1);
+			print_subtree(os, child_node_id(*it), depth + 1);
 		}
 	}
 }

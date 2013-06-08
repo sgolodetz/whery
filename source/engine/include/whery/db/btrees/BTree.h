@@ -336,13 +336,13 @@ private:
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 
 	/**
-	Prints the specified node to an output stream (for debugging purposes).
+	Prints the subtree rooted at the specified node to an output stream (for debugging purposes).
 
 	\param os		The output stream.
-	\param nodeID	The ID of the node to print.
-	\param depth	The depth of the node in the tree (starting from 0 at the root).
+	\param nodeID	The ID of the node whose subtree should be printed.
+	\param depth	The depth of the node in the tree (starting from 0 at the overall root).
 	*/
-	void print_sub(std::ostream& os, int nodeID, unsigned int depth) const;
+	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
 
 	/**
 	Selectively inserts the specified tuple into one of two adjacent nodes,
