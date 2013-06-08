@@ -27,15 +27,15 @@ private:
 	struct InsertResult
 	{
 		int m_leftChildID;
-		int m_middleChildID;
 		int m_rightChildID;
+		boost::shared_ptr<FreshTuple> m_splitter;
 
 		InsertResult()
-		:	m_leftChildID(-1), m_middleChildID(-1), m_rightChildID(-1)
+		:	m_leftChildID(-1), m_rightChildID(-1)
 		{}
 
-		InsertResult(int leftChildID, int middleChildID, int rightChildID)
-		:	m_leftChildID(leftChildID), m_middleChildID(middleChildID), m_rightChildID(rightChildID)
+		InsertResult(int leftChildID, int rightChildID, const boost::shared_ptr<FreshTuple>& splitter)
+		:	m_leftChildID(leftChildID), m_rightChildID(rightChildID), m_splitter(splitter)
 		{}
 	};
 

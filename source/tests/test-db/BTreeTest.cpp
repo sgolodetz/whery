@@ -87,11 +87,14 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 	tuple.field(2).set_double(10.0);
 	tree.insert_tuple(tuple);*/
 
-	for(int i = 0; i < 7; ++i)
+	int arr[] = {0,1,4,2,3};
+	//int arr[] = {0,1,2,3,4,5,6};
+	int size = sizeof(arr) / sizeof(int);
+	for(int i = 0; i < size; ++i)
 	{
-		tuple.field(0).set_int(i);
-		tuple.field(1).set_double(i * i);
-		tuple.field(2).set_double(i * i * i);
+		tuple.field(0).set_int(arr[i]);
+		tuple.field(1).set_double(arr[i] * arr[i]);
+		tuple.field(2).set_double(arr[i] * arr[i] * arr[i]);
 		tree.insert_tuple(tuple);
 		tree.print(std::cout);
 		std::cout << '\n';

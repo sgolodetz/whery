@@ -121,7 +121,7 @@ void BTree::add_root_node(const InsertResult& insertResult)
 	m_nodes[insertResult.m_leftChildID].m_parentID = m_rootID;
 	m_nodes[insertResult.m_rightChildID].m_parentID = m_rootID;
 	m_nodes[m_rootID].m_firstChildID = insertResult.m_leftChildID;
-	m_nodes[m_rootID].m_page->add_tuple(make_branch_tuple(*page_begin(insertResult.m_middleChildID), insertResult.m_rightChildID));
+	m_nodes[m_rootID].m_page->add_tuple(make_branch_tuple(*insertResult.m_splitter, insertResult.m_rightChildID));
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
@@ -156,9 +156,9 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	}
 	else if(m_nodes[nodeID].m_page->empty_tuple_count() > 0)
 	{
-		// The child of this node was split, and there's space in this node, so
+		// A child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
-		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*page_begin(subResult.m_middleChildID), subResult.m_rightChildID));
+		m_nodes[nodeID].m_page->add_tuple(make_branch_tuple(*subResult.m_splitter, subResult.m_rightChildID));
 
 		return InsertResult();
 	}
@@ -176,25 +176,51 @@ BTree::InsertResult BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
 		m_nodes[nodeID].m_siblingRightID = freshID;
 
-		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
+		// Step 2:	Make a tuple set containing fresh copies of all the tuples in the original page.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
-		nodePage->transfer_high_tuples(*freshPage, nodePage->tuple_count() / 2);
-
-		// Step 3:	Update the parent pointers of all of the tuples that were moved,
-		//			plus the left and right children.
-		for(SortedPage::TupleSetCIter it = freshPage->begin(), iend = freshPage->end(); it != iend; ++it)
+		std::multiset<FreshTuple,PrefixTupleComparator> tuples;
+		for(SortedPage::TupleSetCIter it = nodePage->begin(), iend = nodePage->end(); it != iend; ++it)
 		{
-			m_nodes[child_node_id(*it)].m_parentID = freshID;
+			FreshTuple temp(branch_tuple_manipulator());
+			temp.copy_from(*it);
+			tuples.insert(temp);
 		}
-		m_nodes[subResult.m_leftChildID].m_parentID = m_nodes[subResult.m_rightChildID].m_parentID = freshID;
 
-		// Step 3:	TODO
-		m_nodes[freshID].m_firstChildID = subResult.m_leftChildID;
-		freshPage->delete_tuple(*page_begin(freshID));
-		freshPage->add_tuple(make_branch_tuple(*page_begin(subResult.m_middleChildID), subResult.m_rightChildID));
+		// Step 3:	Add the splitter from the sub-split to this set.
+		tuples.insert(make_branch_tuple(*subResult.m_splitter, subResult.m_rightChildID));
+
+		// Step 4:	Clear the original page and copy the first half of the tuples across to it.
+		nodePage->clear();
+		unsigned int count = 0, size = tuples.size();
+		std::multiset<FreshTuple,PrefixTupleComparator>::const_iterator it = tuples.begin(), iend = tuples.end();
+		for(; count < size / 2; ++it, ++count)
+		{
+			nodePage->add_tuple(*it);
+		}
+
+		// Step 5:	Record the median as the new splitter.
+		boost::shared_ptr<FreshTuple> splitter(new FreshTuple(branch_tuple_manipulator()));
+		splitter->copy_from(*it);
+		++it;
+
+		// Step 6:	Copy the second half of the tuples across to the fresh page.
+		for(; it != iend; ++it)
+		{
+			freshPage->add_tuple(*it);
+		}
+
+		// Step 7:	Set the first child of the fresh node to the child node ID of the splitter.
+		m_nodes[freshID].m_firstChildID = child_node_id(*splitter);
+
+		// Step 8:	Update the parent pointers of all children of the fresh page.
+		m_nodes[m_nodes[freshID].m_firstChildID].m_parentID = freshID;
+		for(SortedPage::TupleSetCIter jt = page_begin(freshID), jend = page_end(freshID); jt != jend; ++jt)
+		{
+			m_nodes[child_node_id(*jt)].m_parentID = freshID;
+		}
 
 		// Step 3:	Construct a triple indicating the result of the split.
-		InsertResult result(nodeID, subResult.m_leftChildID, freshID);
+		InsertResult result(nodeID, freshID, splitter);
 
 		// Step 4:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.
@@ -232,6 +258,7 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		m_nodes[freshID].m_siblingLeftID = nodeID;
 		m_nodes[freshID].m_siblingRightID = m_nodes[nodeID].m_siblingRightID;
 		m_nodes[nodeID].m_siblingRightID = freshID;
+		if(m_nodes[freshID].m_siblingRightID != -1) m_nodes[m_nodes[freshID].m_siblingRightID].m_siblingLeftID = freshID;
 
 		// Step 2:	Transfer the higher half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].m_page, freshPage = m_nodes[freshID].m_page;
@@ -244,7 +271,9 @@ BTree::InsertResult BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		else freshPage->add_tuple(tuple);
 
 		// Step 4:	Construct a triple indicating the result of the split.
-		InsertResult result(nodeID, freshID, freshID);
+		boost::shared_ptr<FreshTuple> splitter(new FreshTuple(leaf_tuple_manipulator()));
+		splitter->copy_from(*freshPage->begin());
+		InsertResult result(nodeID, freshID, splitter);
 
 		// Step 5:	If the node that was split is the root, create a new root node.
 		//			If not, return the result as-is.

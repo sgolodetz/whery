@@ -30,6 +30,11 @@ unsigned int CachedSortedPage::buffer_size() const
 	return page()->buffer_size();
 }
 
+void CachedSortedPage::clear()
+{
+	page()->clear();
+}
+
 void CachedSortedPage::delete_tuple(const BackedTuple& tuple)
 {
 	page()->delete_tuple(tuple);

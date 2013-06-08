@@ -62,6 +62,12 @@ unsigned int InMemorySortedPage::buffer_size() const
 	return m_buffer->size();
 }
 
+void InMemorySortedPage::clear()
+{
+	m_tuples.clear();
+	m_freeList.clear();
+}
+
 void InMemorySortedPage::delete_tuple(const BackedTuple& tuple)
 {
 	TupleSet::iterator it = m_tuples.find(tuple);
@@ -139,7 +145,11 @@ void InMemorySortedPage::transfer_high_tuples(SortedPage& targetPage, unsigned i
 		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
 	}
 
-	for(TupleSetCRIter it = m_tuples.rbegin(), iend = m_tuples.rend(); it != iend; ++it)
+	std::vector<BackedTuple> tuples(m_tuples.rbegin(), m_tuples.rend());
+	unsigned int count = 0;
+	for(std::vector<BackedTuple>::const_iterator it = tuples.begin(), iend = tuples.end();
+		it != iend && count < n;
+		++it, ++count)
 	{
 		targetPage.add_tuple(*it);
 		delete_tuple(*it);

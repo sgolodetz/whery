@@ -37,6 +37,7 @@ public:
 	virtual void add_tuple(const Tuple& tuple);
 	virtual TupleSetCIter begin() const;
 	virtual unsigned int buffer_size() const;
+	virtual void clear();
 	virtual void delete_tuple(const BackedTuple& tuple);
 	virtual unsigned int empty_tuple_count() const;
 	virtual TupleSetCIter end() const;

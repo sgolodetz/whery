@@ -68,6 +68,11 @@ public:
 	virtual unsigned int buffer_size() const = 0;
 
 	/**
+	Deletes all of the tuples from the page.
+	*/
+	virtual void clear() = 0;
+
+	/**
 	Deletes the specified tuple from the page, if it is present.
 
 	\param tuple	The tuple to delete.
