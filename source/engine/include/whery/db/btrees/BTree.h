@@ -24,17 +24,6 @@ class BTree
 {
 	//#################### NESTED TYPES ####################
 private:
-	struct Split
-	{
-		int leftChildID;
-		int rightChildID;
-		FreshTuple splitter;
-
-		Split(int leftChildID_, int rightChildID_, const FreshTuple& splitter_)
-		:	leftChildID(leftChildID_), rightChildID(rightChildID_), splitter(splitter_)
-		{}
-	};
-
 	/**
 	An instance of this struct represents a node in a B+-tree.
 	*/
@@ -83,6 +72,32 @@ private:
 		{
 			return firstChildID != -1;
 		}
+	};
+
+	/**
+	An instance of this class represents the splitting of a B+-tree node in two, e.g. during an insert operaton.
+	*/
+	struct Split
+	{
+		/** The ID of the left-hand node resulting from the split. */
+		const int leftNodeID;
+
+		/** The ID of the right-hand node resulting from the split. */
+		const int rightNodeID;
+
+		/** A key that can be used to separate the tuples in the two halves of the split. */
+		FreshTuple splitter;
+
+		/**
+		Constructs a split.
+
+		\param leftNodeID	The ID of the left-hand node resulting from the split.
+		\param rightNodeID	The ID of the right-hand node resulting from the split.
+		\param splitter		A key that can be used to separate the tuples in the two halves of the split.
+		*/
+		Split(int leftNodeID_, int rightNodeID_, const FreshTuple& splitter_)
+		:	leftNodeID(leftNodeID_), rightNodeID(rightNodeID_), splitter(splitter_)
+		{}
 	};
 
 public:

@@ -118,10 +118,10 @@ int BTree::add_node()
 BTree::OptionalSplit BTree::add_root_node(const Split& split)
 {
 	m_rootID = add_branch_node();
-	m_nodes[split.leftChildID].parentID = m_rootID;
-	m_nodes[split.rightChildID].parentID = m_rootID;
-	m_nodes[m_rootID].firstChildID = split.leftChildID;
-	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightChildID));
+	m_nodes[split.leftNodeID].parentID = m_rootID;
+	m_nodes[split.rightNodeID].parentID = m_rootID;
+	m_nodes[m_rootID].firstChildID = split.leftNodeID;
+	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
 	return OptionalSplit();
 }
 
@@ -171,7 +171,7 @@ BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 	{
 		// A child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
-		m_nodes[nodeID].page->add_tuple(make_branch_tuple(subResult->splitter, subResult->rightChildID));
+		m_nodes[nodeID].page->add_tuple(make_branch_tuple(subResult->splitter, subResult->rightNodeID));
 
 		return OptionalSplit();
 	}
@@ -197,7 +197,7 @@ BTree::OptionalSplit BTree::insert_tuple_branch(const Tuple& tuple, int nodeID)
 		}
 
 		// Step 3:	Add the splitter from the sub-split to this set.
-		tuples.insert(make_branch_tuple(subResult->splitter, subResult->rightChildID));
+		tuples.insert(make_branch_tuple(subResult->splitter, subResult->rightNodeID));
 
 		// Step 4:	Clear the original page and copy the first half of the tuples across to it.
 		nodePage->clear();
