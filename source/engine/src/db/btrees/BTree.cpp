@@ -257,25 +257,23 @@ BTree::OptionalSplit BTree::insert_tuple_leaf(const Tuple& tuple, int nodeID)
 		// This node is full and redistribution is not possible, so split it into two nodes
 		// and insert the tuple into the appropriate one of them.
 
-		// Step 1:	Create a fresh leaf node and connect it to the rest of the tree.
+		// Step 1: Create a fresh leaf node and connect it to the rest of the tree.
 		int freshID = add_leaf_node();
 		insert_node_as_right_sibling_of(nodeID, freshID);
 
-		// Step 2:	Transfer half of the tuples across to the fresh node.
+		// Step 2: Transfer half of the tuples across to the fresh node.
 		SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
 		transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
-		// Step 3:	Insert the original tuple into the appropriate node.
+		// Step 3: Insert the original tuple into the appropriate node.
 		selectively_insert_tuple(tuple, nodeID, freshID);
 
-		// Step 4:	Construct a triple indicating the result of the split.
-		FreshTuple splitter(leaf_tuple_manipulator());
-		splitter.copy_from(*freshPage->begin());
-		OptionalSplit result(Split(nodeID, freshID, splitter));
+		// Step 4: Construct a triple indicating the result of the split.
+		Split split(nodeID, freshID, FreshTuple(leaf_tuple_manipulator()));
+		split.splitter.copy_from(*freshPage->begin());
 
-		// Step 5:	If the node that was split is the root, create a new root node.
-		//			If not, return the result as-is.
-		return nodeID == m_rootID ? add_root_node(*result) : result;
+		// Step 5: If the node that was split is the root, create a new root node. If not, return the result as-is.
+		return nodeID == m_rootID ? add_root_node(split) : split;
 	}
 }
 
