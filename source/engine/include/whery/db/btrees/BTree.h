@@ -341,6 +341,17 @@ private:
 	void selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID);
 
 	/**
+	Splits a full branch node into two half-full branch nodes and inserts
+	the specified tuple.
+
+	\param nodeID					The ID of the branch node to split.
+	\param tuple					The tuple to insert.
+	\return							The result of the split.
+	\throw std::invalid_argument	If the branch node is not full.
+	*/
+	Split split_branch_and_insert(int nodeID, const FreshTuple& tuple);
+
+	/**
 	Transfers n tuples from the specified leaf node to its right sibling.
 	Note that this function makes no attempt to update the parent of the two
 	nodes, and should therefore only be used as part of a larger algorithm

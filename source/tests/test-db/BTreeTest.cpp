@@ -87,8 +87,8 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 	tuple.field(2).set_double(10.0);
 	tree.insert_tuple(tuple);*/
 
-	int arr[] = {0,1,4,2,3};
-	//int arr[] = {0,1,2,3,4,5,6};
+	//int arr[] = {0,1,4,2,3};
+	int arr[] = {0,1,2,3,4,5,6};
 	int size = sizeof(arr) / sizeof(int);
 	for(int i = 0; i < size; ++i)
 	{
