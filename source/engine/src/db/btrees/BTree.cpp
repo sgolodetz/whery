@@ -358,12 +358,19 @@ void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rig
 
 BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 {
+	// Check the precondition.
+	SortedPage_Ptr nodePage = page(nodeID);
+	if(nodePage->empty_tuple_count() > 0)
+	{
+		throw std::invalid_argument("Cannot split a non-full leaf node.");
+	}
+
 	// Create a fresh leaf node and connect it to the rest of the tree.
 	int freshID = add_leaf_node();
 	insert_node_as_right_sibling_of(nodeID, freshID);
 
 	// Transfer half of the tuples across to the fresh node.
-	SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
+	SortedPage_Ptr freshPage = page(freshID);
 	transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
 	// Insert the original tuple into the appropriate node.
@@ -378,7 +385,7 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 {
 	// Check the precondition.
-	SortedPage_Ptr nodePage = m_nodes[nodeID].page;
+	SortedPage_Ptr nodePage = page(nodeID);
 	if(nodePage->empty_tuple_count() > 0)
 	{
 		throw std::invalid_argument("Cannot split a non-full branch node.");
@@ -415,7 +422,7 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	++it;
 
 	// Copy the second half of the tuple set across to the fresh page.
-	SortedPage_Ptr freshPage = m_nodes[freshID].page;
+	SortedPage_Ptr freshPage = page(freshID);
 	for(; it != iend; ++it)
 	{
 		freshPage->add_tuple(*it);
