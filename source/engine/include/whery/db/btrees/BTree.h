@@ -301,7 +301,14 @@ private:
 
 	ValueKey make_branch_key(const Tuple& tuple) const;
 
-	FreshTuple make_branch_tuple(const Tuple& tuple, int nodeID) const;
+	/**
+	Makes a branch tuple by copying the appropriate number of fields from a source tuple
+	(which can be either a leaf or a branch tuple) and filling in the child node ID.
+
+	\param sourceTuple	The tuple from which to copy all but one of the branch tuple's fields.
+	\param childNodeID	The ID of the child node that will be stored in the last field of the branch tuple.
+	*/
+	FreshTuple make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const;
 
 	/**
 	Returns the page of the specified node.

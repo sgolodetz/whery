@@ -250,14 +250,24 @@ ValueKey BTree::make_branch_key(const Tuple& tuple) const
 	return result;
 }
 
-FreshTuple BTree::make_branch_tuple(const Tuple& tuple, int nodeID) const
+FreshTuple BTree::make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const
 {
+	// A branch tuple has fields of the same type as some of the initial fields of a leaf tuple, plus a
+	// child node ID (of type int). For example, a B+-tree with leaf tuples of type <int,double,double>
+	// might have branch tuples of type <int,int>.
 	FreshTuple result(branch_tuple_manipulator());
+
+	// Copy fields across from the source tuple to fill up all but one of the fields of the branch tuple.
+	// Note that not every field of the source tuple has to be used, but that the source tuple must have
+	// at least the required number of fields.
 	for(unsigned int i = 0; i < result.arity() - 1; ++i)
 	{
-		result.field(i).set_from(tuple.field(i));
+		result.field(i).set_from(sourceTuple.field(i));
 	}
-	result.field(result.arity() - 1).set_int(nodeID);
+
+	// Set the last field of the branch tuple to the child node ID.
+	result.field(result.arity() - 1).set_int(childNodeID);
+
 	return result;
 }
 
