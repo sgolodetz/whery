@@ -141,22 +141,9 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	return id;
 }
 
-void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
-{
-	m_nodes[freshID].parentID = m_nodes[nodeID].parentID;
-	m_nodes[freshID].siblingLeftID = nodeID;
-	m_nodes[freshID].siblingRightID = m_nodes[nodeID].siblingRightID;
-	m_nodes[nodeID].siblingRightID = freshID;
-	if(m_nodes[freshID].siblingRightID != -1)
-	{
-		m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
-	}
-}
-
 int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
 {
-	ValueKey key = make_branch_key(leafTuple);
-	SortedPage::TupleSetCIter it = m_nodes[branchNodeID].page->upper_bound(key);
+	SortedPage::TupleSetCIter it = page(branchNodeID)->upper_bound(make_branch_key(leafTuple));
 
 	int result;
 	if(it == page_begin(branchNodeID))
@@ -173,6 +160,18 @@ int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
 	}
 
 	return result;
+}
+
+void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
+{
+	m_nodes[freshID].parentID = m_nodes[nodeID].parentID;
+	m_nodes[freshID].siblingLeftID = nodeID;
+	m_nodes[freshID].siblingRightID = m_nodes[nodeID].siblingRightID;
+	m_nodes[nodeID].siblingRightID = freshID;
+	if(m_nodes[freshID].siblingRightID != -1)
+	{
+		m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
+	}
 }
 
 BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
@@ -209,14 +208,67 @@ BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeI
 	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
 		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
-		m_nodes[nodeID].page->add_tuple(tuple);
+		page(nodeID)->add_tuple(tuple);
 		return boost::none;
 	}
-	else if(false)
+	else if(m_nodes[nodeID].siblingLeftID != -1 &&
+			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
+			m_nodes[m_nodes[nodeID].siblingLeftID].page->empty_tuple_count() > 0)
 	{
-		// This node is full, but one of its siblings has the same parent and spare capacity,
-		// so we can redistribute tuples and avoid the need for a split.
-		// TODO (Optional)
+		// This node is full, but its left sibling has the same parent and spare capacity,
+		// so we can avoid the need for a split.
+
+		// Delete the index entry for this node from the parent page (an updated index
+		// entry will be re-added below).
+		SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+		parentPage->delete_tuple(make_branch_key(*page_begin(nodeID)));
+
+		// Noting that the tuple must be at least as large as the first tuple on this
+		// page, or we wouldn't be trying to insert it here, we can redistribute the
+		// first tuple across to the left sibling to make space, and then insert the
+		// tuple into this page.
+		transfer_leaf_tuples_left(nodeID, 1);
+		page(nodeID)->add_tuple(tuple);
+
+		// Re-add an index entry for this node to the parent page.
+		parentPage->add_tuple(make_branch_tuple(*page_begin(nodeID), nodeID));
+
+		return boost::none;
+	}
+	else if(m_nodes[nodeID].siblingRightID != -1 &&
+			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
+			m_nodes[m_nodes[nodeID].siblingRightID].page->empty_tuple_count() > 0)
+	{
+		// This node is full, but its right sibling has the same parent and spare capacity,
+		// so we can avoid the need for a split.
+
+		// Delete the index entry for the right sibling from the parent page (an updated
+		// index entry will be re-added below).
+		SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+		parentPage->delete_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
+
+		PrefixTupleComparator comp;
+		if(comp.compare(*page_rbegin(nodeID), tuple) == -1)
+		{
+			// If the tuple is greater than the last tuple on this page, it can be inserted
+			// into the right sibling (which has space). Note that this is a valid thing to
+			// do because the tuple must also be less than the first tuple on the right sibling
+			// (or we wouldn't be trying to insert it here in the first place).
+			page(m_nodes[nodeID].siblingRightID)->add_tuple(tuple);
+		}
+		else
+		{
+			// If the tuple is not greater than the last tuple on this page, we can redistribute
+			// the last tuple across to the right sibling to make space, and then insert the tuple
+			// into this page.
+			transfer_leaf_tuples_right(nodeID, 1);
+			page(nodeID)->add_tuple(tuple);
+		}
+
+		// Re-add an index entry for the right sibling to the parent page.
+		parentPage->add_tuple(make_branch_tuple(*page_begin(m_nodes[nodeID].siblingRightID), m_nodes[nodeID].siblingRightID));
+
+		return boost::none;
 	}
 	else
 	{
@@ -439,6 +491,35 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	}
 
 	return Split(nodeID, freshID, splitter);
+}
+
+void BTree::transfer_leaf_tuples_left(int sourceNodeID, unsigned int n)
+{
+	// TODO: This is similar to transfer_leaf_tuples_right - factor out the commonality.
+
+	// Check the preconditions.
+	int targetNodeID = m_nodes[sourceNodeID].siblingLeftID;
+	if(m_nodes[targetNodeID].parentID != m_nodes[sourceNodeID].parentID)
+	{
+		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
+	}
+
+	SortedPage_Ptr targetPage = page(targetNodeID);
+	if(targetPage->empty_tuple_count() < n)
+	{
+		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
+	}
+
+	// Transfer n tuples from the source page to the target page. Note that copying the tuples
+	// into a separate container is needed to prevent a "modification during iteration" issue.
+	SortedPage_Ptr sourcePage = page(sourceNodeID);
+	std::vector<BackedTuple> ts(sourcePage->begin(), sourcePage->end());
+	unsigned int i = 0;
+	for(std::vector<BackedTuple>::const_iterator it = ts.begin(), iend = ts.end(); it != iend && i < n; ++it, ++i)
+	{
+		targetPage->add_tuple(*it);
+		sourcePage->delete_tuple(*it);
+	}
 }
 
 void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)

@@ -44,6 +44,7 @@ public:
 	virtual EqualRangeResult equal_range(const RangeKey& key) const;
 	virtual EqualRangeResult equal_range(const ValueKey& key) const;
 	virtual const std::vector<const FieldManipulator*>& field_manipulators() const;
+	virtual TupleSetCIter find(const ValueKey& key) const;
 	virtual TupleSetCIter lower_bound(const RangeKey& key) const;
 	virtual TupleSetCIter lower_bound(const ValueKey& key) const;
 	virtual unsigned int max_tuple_count() const;

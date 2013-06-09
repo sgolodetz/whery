@@ -103,6 +103,11 @@ const std::vector<const FieldManipulator*>& InMemorySortedPage::field_manipulato
 	return m_tupleManipulator.field_manipulators();
 }
 
+SortedPage::TupleSetCIter InMemorySortedPage::find(const ValueKey& key) const
+{
+	return m_tuples.find(key);
+}
+
 SortedPage::TupleSetCIter InMemorySortedPage::lower_bound(const RangeKey& key) const
 {
 	if(key.has_low_endpoint())

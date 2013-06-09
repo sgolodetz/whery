@@ -115,6 +115,11 @@ public:
 	virtual const std::vector<const FieldManipulator*>& field_manipulators() const = 0;
 
 	/**
+	TODO
+	*/
+	virtual TupleSetCIter find(const ValueKey& key) const = 0;
+
+	/**
 	Returns an iterator pointing to the tuple at the lower end of the range
 	specified by key.
 

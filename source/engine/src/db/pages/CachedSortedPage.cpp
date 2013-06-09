@@ -65,6 +65,11 @@ const std::vector<const FieldManipulator*>& CachedSortedPage::field_manipulators
 	return page()->field_manipulators();
 }
 
+SortedPage::TupleSetCIter CachedSortedPage::find(const ValueKey& key) const
+{
+	return page()->find(key);
+}
+
 SortedPage::TupleSetCIter CachedSortedPage::lower_bound(const RangeKey& key) const
 {
 	return page()->lower_bound(key);
