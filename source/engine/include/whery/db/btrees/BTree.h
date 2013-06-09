@@ -264,6 +264,17 @@ private:
 	int child_node_id(const BackedTuple& branchTuple) const;
 
 	/**
+	Finds the ID of the child node of the specified branch node whose subtree might contain
+	the specified leaf tuple.
+
+	\param tuple		The leaf tuple for which to find the child node.
+	\param branchNodeID	The ID of the branch node in which to search.
+	\return				The ID of the child node of the branch node whose subtree might
+						contain the leaf tuple.
+	*/
+	int find_child(const Tuple& leafTuple, int branchNodeID) const;
+
+	/**
 	Inserts a fresh node into the B+-tree as the right sibling of the specified node
 	and with the same parent.
 

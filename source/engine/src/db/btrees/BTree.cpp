@@ -153,23 +153,34 @@ void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
 	}
 }
 
+int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
+{
+	ValueKey key = make_branch_key(leafTuple);
+	SortedPage::TupleSetCIter it = m_nodes[branchNodeID].page->upper_bound(key);
+
+	int result;
+	if(it == page_begin(branchNodeID))
+	{
+		// If the key is less than the first key in the branch node,
+		// then the leaf tuple might be within the first child node.
+		result = m_nodes[branchNodeID].firstChildID;
+	}
+	else
+	{
+		// Otherwise, return the child node ID from the relevant index entry.
+		--it;
+		result = child_node_id(*it);
+	}
+
+	return result;
+}
+
 BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
 {
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
-	ValueKey key = make_branch_key(tuple);
-	SortedPage::TupleSetCIter it = m_nodes[nodeID].page->upper_bound(key);
-	int childID;
-	if(it == page_begin(nodeID))
-	{
-		childID = m_nodes[nodeID].firstChildID;
-	}
-	else
-	{
-		--it;
-		childID = child_node_id(*it);
-	}
-	OptionalSplit result = insert_tuple_into_subtree(tuple, childID);
+	int childNodeID = find_child(tuple, nodeID);
+	OptionalSplit result = insert_tuple_into_subtree(tuple, childNodeID);
 
 	if(!result)
 	{
