@@ -124,6 +124,9 @@ private:
 
 	//#################### PRIVATE VARIABLES ####################
 private:
+	/** The field indices to use when making branch keys. */
+	std::vector<unsigned int> m_branchKeyFieldIndices;
+
 	/** An ID allocator used to allocate IDs for the nodes. */
 	IDAllocator m_nodeIDAllocator;
 
@@ -299,14 +302,25 @@ private:
 	*/
 	OptionalSplit insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
 
-	ValueKey make_branch_key(const Tuple& tuple) const;
+	/**
+	Makes a value key that can be used to search for tuples within a branch node. This has
+	the same format as a branch tuple without the child node ID, since branch nodes are
+	intended to store a mapping from branch keys to child node IDs. The fields of the key
+	are taken from the specified source tuple (which can be either a leaf or a branch tuple).
+
+	\param sourceTuple	The tuple from which to copy the branch key's fields.
+	\return				The branch key.
+	*/
+	ValueKey make_branch_key(const Tuple& sourceTuple) const;
 
 	/**
 	Makes a branch tuple by copying the appropriate number of fields from a source tuple
 	(which can be either a leaf or a branch tuple) and filling in the child node ID.
 
 	\param sourceTuple	The tuple from which to copy all but one of the branch tuple's fields.
-	\param childNodeID	The ID of the child node that will be stored in the last field of the branch tuple.
+	\param childNodeID	The ID of the child node that will be stored in the last field of the
+						branch tuple.
+	\return				The branch tuple.
 	*/
 	FreshTuple make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const;
 

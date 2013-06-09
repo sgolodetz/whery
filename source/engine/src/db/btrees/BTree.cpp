@@ -17,7 +17,17 @@ namespace whery {
 BTree::BTree(const BTreePageController_CPtr& pageController)
 :	m_pageController(pageController), m_tupleCount(0)
 {
+	// Create the root node.
 	m_rootID = add_leaf_node();
+
+	// Pre-calculate the field indices to use when constructing branch keys.
+	TupleManipulator branchTupleManipulator = branch_tuple_manipulator();
+	unsigned int branchKeyArity = branchTupleManipulator.arity() - 1;
+	m_branchKeyFieldIndices.reserve(branchKeyArity);
+	for(unsigned int i = 0; i < branchKeyArity; ++i)
+	{
+		m_branchKeyFieldIndices.push_back(i);
+	}
 }
 
 //#################### PUBLIC METHODS ####################
@@ -233,19 +243,14 @@ BTree::OptionalSplit BTree::insert_tuple_into_subtree(const Tuple& tuple, int no
 	}
 }
 
-ValueKey BTree::make_branch_key(const Tuple& tuple) const
+ValueKey BTree::make_branch_key(const Tuple& sourceTuple) const
 {
 	TupleManipulator branchTupleManipulator = branch_tuple_manipulator();
-	unsigned int arity = branchTupleManipulator.arity() - 1;
-
-	std::vector<unsigned int> fieldIndices;
-	fieldIndices.reserve(arity);
-	for(unsigned int i = 0; i < arity; ++i) fieldIndices.push_back(i);
-
-	ValueKey result(branchTupleManipulator.field_manipulators(), fieldIndices);
-	for(unsigned int i = 0; i < arity; ++i)
+	unsigned int branchKeyArity = m_branchKeyFieldIndices.size();
+	ValueKey result(branchTupleManipulator.field_manipulators(), m_branchKeyFieldIndices);
+	for(unsigned int i = 0; i < branchKeyArity; ++i)
 	{
-		result.field(i).set_from(tuple.field(i));
+		result.field(i).set_from(sourceTuple.field(i));
 	}
 	return result;
 }
