@@ -197,7 +197,8 @@ BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nod
 	else
 	{
 		// The child of this node was split, but this node is full, so split it into two nodes,
-		// inserting the new tuple and then pushing the median tuple upwards.
+		// inserting the new tuple and then pushing the median tuple upwards. If the node being
+		// split is also the root node, add a new root above both it and the fresh node.
 		Split split = split_branch_and_insert(nodeID, make_branch_tuple(result->splitter, result->rightNodeID));
 		return nodeID == m_rootID ? add_root_node(split) : split;
 	}
@@ -220,24 +221,9 @@ BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeI
 	else
 	{
 		// This node is full and redistribution is not possible, so split it into two nodes
-		// and insert the tuple into the appropriate one of them.
-
-		// Step 1: Create a fresh leaf node and connect it to the rest of the tree.
-		int freshID = add_leaf_node();
-		insert_node_as_right_sibling_of(nodeID, freshID);
-
-		// Step 2: Transfer half of the tuples across to the fresh node.
-		SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
-		transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
-
-		// Step 3: Insert the original tuple into the appropriate node.
-		selectively_insert_tuple(tuple, nodeID, freshID);
-
-		// Step 4: Construct a triple indicating the result of the split.
-		Split split(nodeID, freshID, FreshTuple(leaf_tuple_manipulator()));
-		split.splitter.copy_from(*freshPage->begin());
-
-		// Step 5: If the node that was split is the root, create a new root node. If not, return the result as-is.
+		// and insert the tuple into the appropriate one of them. If the node being split
+		// is also the root node, add a new root above both it and the fresh node.
+		Split split = split_leaf_and_insert(nodeID, tuple);
 		return nodeID == m_rootID ? add_root_node(split) : split;
 	}
 }
@@ -368,6 +354,25 @@ void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rig
 	{
 		rightPage->add_tuple(tuple);
 	}
+}
+
+BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
+{
+	// Create a fresh leaf node and connect it to the rest of the tree.
+	int freshID = add_leaf_node();
+	insert_node_as_right_sibling_of(nodeID, freshID);
+
+	// Transfer half of the tuples across to the fresh node.
+	SortedPage_Ptr nodePage = m_nodes[nodeID].page, freshPage = m_nodes[freshID].page;
+	transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
+
+	// Insert the original tuple into the appropriate node.
+	selectively_insert_tuple(tuple, nodeID, freshID);
+
+	// Construct and return the split result.
+	Split split(nodeID, freshID, FreshTuple(leaf_tuple_manipulator()));
+	split.splitter.copy_from(*freshPage->begin());
+	return split;
 }
 
 BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)

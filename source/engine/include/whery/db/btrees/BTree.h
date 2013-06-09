@@ -390,8 +390,7 @@ private:
 	void selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID);
 
 	/**
-	Splits a full branch node into two half-full branch nodes and inserts
-	the specified tuple.
+	Splits a full branch node into two half-full branch nodes and inserts the specified tuple.
 
 	\param nodeID					The ID of the branch node to split.
 	\param tuple					The tuple to insert.
@@ -399,6 +398,16 @@ private:
 	\throw std::invalid_argument	If the branch node is not full.
 	*/
 	Split split_branch_and_insert(int nodeID, const FreshTuple& tuple);
+
+	/**
+	Splits a full leaf node into two half-full leaf nodes and inserts the specified tuple.
+
+	\param nodeID					The ID of the leaf node to split.
+	\param tuple					The tuple to insert.
+	\return							The result of the split.
+	\throw std::invalid_argument	If the leaf node is not full.
+	*/
+	Split split_leaf_and_insert(int nodeID, const Tuple& tuple);
 
 	/**
 	Transfers n tuples from the specified leaf node to its right sibling.
