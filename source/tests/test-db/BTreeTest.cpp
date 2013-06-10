@@ -100,6 +100,11 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 		tree.print(std::cout);
 		std::cout << '\n';
 	}
+
+	for(BTree::ConstIterator it = tree.begin(), iend = tree.end(); it != iend; ++it)
+	{
+		std::cout << it->field(0).get_int() << '\n';
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -112,9 +112,45 @@ public:
 		:	m_tree(tree), m_nodeID(nodeID), m_it(it)
 		{}
 
+		const BackedTuple& operator*() const
+		{
+			return *m_it;
+		}
+
+		const BackedTuple *operator->() const
+		{
+			return m_it.operator->();
+		}
+
 		bool operator==(const ConstIterator& rhs) const
 		{
 			return m_tree == rhs.m_tree && m_nodeID == rhs.m_nodeID && m_it == rhs.m_it;
+		}
+
+		bool operator!=(const ConstIterator& rhs) const
+		{
+			return !(*this == rhs);
+		}
+
+		ConstIterator& operator++()
+		{
+			// Provided we're not at the end of the current page (which can only
+			// happen if the page is an empty root page, in which case the whole
+			// B+-tree must also be empty), increment the iterator.
+			if(m_it != m_tree->page_end(m_nodeID))
+			{
+				++m_it;
+			}
+
+			// If we're at the end of the current page and there's a right sibling,
+			// move the iterator to the start of the right sibling's page.
+			if(m_it == m_tree->page_end(m_nodeID) && m_tree->m_nodes[m_nodeID].siblingRightID != -1)
+			{
+				m_nodeID = m_tree->m_nodes[m_nodeID].siblingRightID;
+				m_it = m_tree->page_begin(m_nodeID);
+			}
+
+			return *this;
 		}
 	};
 
@@ -184,7 +220,7 @@ public:
 	ConstIterator end() const;
 
 	// TODO: equal_range
-	void erase_tuple(const RangeKey& key);
+	void erase_tuples(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
 
 	/**
