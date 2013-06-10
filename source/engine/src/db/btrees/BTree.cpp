@@ -67,7 +67,7 @@ BTree::ConstIterator BTree::end() const
 
 void BTree::insert_tuple(const Tuple& tuple)
 {
-	OptionalSplit result = insert_tuple_into_subtree(tuple, m_rootID);
+	boost::optional<Split> result = insert_tuple_into_subtree(tuple, m_rootID);
 	assert(!result);
 	++m_tupleCount;
 }
@@ -124,7 +124,7 @@ int BTree::add_node()
 	return id;
 }
 
-BTree::OptionalSplit BTree::add_root_node(const Split& split)
+boost::optional<BTree::Split> BTree::add_root_node(const Split& split)
 {
 	m_rootID = add_branch_node();
 	m_nodes[split.leftNodeID].parentID = m_rootID;
@@ -174,12 +174,12 @@ void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
+boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
 {
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
 	int childNodeID = find_child(tuple, nodeID);
-	OptionalSplit result = insert_tuple_into_subtree(tuple, childNodeID);
+	boost::optional<Split> result = insert_tuple_into_subtree(tuple, childNodeID);
 
 	if(!result)
 	{
@@ -203,7 +203,7 @@ BTree::OptionalSplit BTree::insert_tuple_into_branch(const Tuple& tuple, int nod
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeID)
+boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
 	{
@@ -280,7 +280,7 @@ BTree::OptionalSplit BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeI
 	}
 }
 
-BTree::OptionalSplit BTree::insert_tuple_into_subtree(const Tuple& tuple, int nodeID)
+boost::optional<BTree::Split> BTree::insert_tuple_into_subtree(const Tuple& tuple, int nodeID)
 {
 	if(m_nodes[nodeID].has_children())
 	{

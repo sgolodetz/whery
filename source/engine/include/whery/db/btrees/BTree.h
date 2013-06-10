@@ -154,10 +154,6 @@ public:
 		}
 	};
 
-	//#################### TYPEDEFS ####################
-private:
-	typedef boost::optional<Split> OptionalSplit;
-
 	//#################### PRIVATE VARIABLES ####################
 private:
 	/** The field indices to use when making branch keys. */
@@ -289,7 +285,7 @@ private:
 	\param split	The split that created the need for a new root.
 	\return			boost::none (for convenience).
 	*/
-	OptionalSplit add_root_node(const Split& split);
+	boost::optional<Split> add_root_node(const Split& split);
 
 	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.
@@ -327,7 +323,7 @@ private:
 	\param nodeID	The ID of the branch node at the root of the subtree into which to insert it.
 	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
-	OptionalSplit insert_tuple_into_branch(const Tuple& tuple, int nodeID);
+	boost::optional<Split> insert_tuple_into_branch(const Tuple& tuple, int nodeID);
 
 	/**
 	Inserts a tuple into the specified leaf node. This may cause the node to be split,
@@ -337,7 +333,7 @@ private:
 	\param nodeID	The ID of the leaf node into which to insert it.
 	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
-	OptionalSplit insert_tuple_into_leaf(const Tuple& tuple, int nodeID);
+	boost::optional<Split> insert_tuple_into_leaf(const Tuple& tuple, int nodeID);
 
 	/**
 	Inserts a tuple into the subtree rooted at the specified node. This may cause
@@ -347,7 +343,7 @@ private:
 	\param nodeID	The ID of the node at the root of the subtree into which to insert it.
 	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
-	OptionalSplit insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
+	boost::optional<Split> insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
 
 	/**
 	Makes a value key that can be used to search for tuples within a branch node. This has
