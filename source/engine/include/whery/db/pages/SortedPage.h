@@ -115,7 +115,12 @@ public:
 	virtual const std::vector<const FieldManipulator*>& field_manipulators() const = 0;
 
 	/**
-	TODO
+	Returns an iterator pointing to a tuple on the page that is equivalent to
+	the specified key, if one exists, or to end() otherwise.
+
+	\param key	The key for which to search.
+	\return		An iterator pointing to a tuple on the page that is equivalent
+				to the specified key, if one exists, or to end() otherwise.
 	*/
 	virtual TupleSetCIter find(const ValueKey& key) const = 0;
 

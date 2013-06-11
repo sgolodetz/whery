@@ -296,24 +296,26 @@ private:
 	int child_node_id(const BackedTuple& branchTuple) const;
 
 	/**
-	Finds the ID of the child node of the specified branch node whose subtree might contain
+	Finds the ID of the child of the specified branch node whose subtree might contain
 	the specified leaf tuple.
 
 	\param tuple		The leaf tuple for which to find the child node.
 	\param branchNodeID	The ID of the branch node in which to search.
-	\return				The ID of the child node of the branch node whose subtree might
-						contain the leaf tuple.
+	\return				The ID of the node of the branch node whose subtree
+						might contain the leaf tuple.
 	*/
 	int find_child(const Tuple& leafTuple, int branchNodeID) const;
 
 	/**
 	Inserts a fresh node into the B+-tree as the right sibling of the specified node
-	and with the same parent.
+	and with the same parent. Note that this function makes no attempt to update the
+	parent of the two nodes, and should therefore only be used as part of a larger
+	algorithm that does do so.
 
-	\param nodeID	The ID of the node whose right sibling the fresh node will become.
-	\param freshID	The ID of the fresh node.
+	\param existingID	The ID of the existing node whose right sibling the fresh node will become.
+	\param freshID		The ID of the fresh node.
 	*/
-	void insert_node_as_right_sibling_of(int nodeID, int freshID);
+	void insert_node_as_right_sibling_of(int existingID, int freshID);
 
 	/**
 	Inserts a tuple into the subtree rooted at the specified branch node. This may cause

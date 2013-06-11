@@ -143,6 +143,9 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 
 int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
 {
+	assert(leafTuple.arity() == leaf_tuple_manipulator().arity());
+	assert(m_nodes[branchNodeID].has_children());
+
 	SortedPage::TupleSetCIter it = page(branchNodeID)->upper_bound(make_branch_key(leafTuple));
 
 	int result;
@@ -162,12 +165,12 @@ int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
 	return result;
 }
 
-void BTree::insert_node_as_right_sibling_of(int nodeID, int freshID)
+void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
 {
-	m_nodes[freshID].parentID = m_nodes[nodeID].parentID;
-	m_nodes[freshID].siblingLeftID = nodeID;
-	m_nodes[freshID].siblingRightID = m_nodes[nodeID].siblingRightID;
-	m_nodes[nodeID].siblingRightID = freshID;
+	m_nodes[freshID].parentID = m_nodes[existingID].parentID;
+	m_nodes[freshID].siblingLeftID = existingID;
+	m_nodes[freshID].siblingRightID = m_nodes[existingID].siblingRightID;
+	m_nodes[existingID].siblingRightID = freshID;
 	if(m_nodes[freshID].siblingRightID != -1)
 	{
 		m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
@@ -186,11 +189,11 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 		// The insertion succeeded without needing to split the direct child of this node.
 		return result;
 	}
-	else if(m_nodes[nodeID].page->empty_tuple_count() > 0)
+	else if(page(nodeID)->empty_tuple_count() > 0)
 	{
 		// The child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
-		m_nodes[nodeID].page->add_tuple(make_branch_tuple(result->splitter, result->rightNodeID));
+		page(nodeID)->add_tuple(make_branch_tuple(result->splitter, result->rightNodeID));
 		return boost::none;
 	}
 	else
@@ -213,7 +216,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	}
 	else if(m_nodes[nodeID].siblingLeftID != -1 &&
 			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
-			m_nodes[m_nodes[nodeID].siblingLeftID].page->empty_tuple_count() > 0)
+			page(m_nodes[nodeID].siblingLeftID)->empty_tuple_count() > 0)
 	{
 		// This node is full, but its left sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
@@ -237,7 +240,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	}
 	else if(m_nodes[nodeID].siblingRightID != -1 &&
 			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
-			m_nodes[m_nodes[nodeID].siblingRightID].page->empty_tuple_count() > 0)
+			page(m_nodes[nodeID].siblingRightID)->empty_tuple_count() > 0)
 	{
 		// This node is full, but its right sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
@@ -252,7 +255,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 		{
 			// If the tuple is greater than the last tuple on this page, it can be inserted
 			// into the right sibling (which has space). Note that this is a valid thing to
-			// do because the tuple must also be less than the first tuple on the right sibling
+			// do because the tuple must also be less than the first tuple on the right page
 			// (or we wouldn't be trying to insert it here in the first place).
 			page(m_nodes[nodeID].siblingRightID)->add_tuple(tuple);
 		}
@@ -314,6 +317,7 @@ FreshTuple BTree::make_branch_tuple(const Tuple& sourceTuple, int childNodeID) c
 	// Copy fields across from the source tuple to fill up all but one of the fields of the branch tuple.
 	// Note that not every field of the source tuple has to be used, but that the source tuple must have
 	// at least the required number of fields.
+	assert(sourceTuple.arity() >= result.arity() - 1);
 	for(unsigned int i = 0; i < result.arity() - 1; ++i)
 	{
 		result.field(i).set_from(sourceTuple.field(i));
@@ -422,7 +426,6 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 	insert_node_as_right_sibling_of(nodeID, freshID);
 
 	// Transfer half of the tuples across to the fresh node.
-	SortedPage_Ptr freshPage = page(freshID);
 	transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
 
 	// Insert the original tuple into the appropriate node.
@@ -430,7 +433,7 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 
 	// Construct and return the split result.
 	Split split(nodeID, freshID, FreshTuple(leaf_tuple_manipulator()));
-	split.splitter.copy_from(*freshPage->begin());
+	split.splitter.copy_from(*page_begin(freshID));
 	return split;
 }
 
