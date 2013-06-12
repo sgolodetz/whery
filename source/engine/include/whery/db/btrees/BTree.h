@@ -101,17 +101,41 @@ private:
 	};
 
 public:
+	/**
+	An instance of this class can be used to traverse the leaf tuples in a B+-tree.
+	The leaf tuples themselves cannot be modified through this interface.
+	*/
 	class ConstIterator
 	{
+		//#################### FRIENDS ####################
+		friend class BTree;
+
+		//#################### PRIVATE VARIABLES ####################
 	private:
+		/** The B+-tree for which this is an iterator. */
 		const BTree *m_tree;
+
+		/** The ID of the leaf node containing the currently-pointed-to tuple. */
 		int m_nodeID;
+
+		/** An iterator to the currently-pointed-to tuple within a leaf page. */
 		SortedPage::TupleSetCIter m_it;
-	public:
+
+		//#################### CONSTRUCTORS ####################
+	private:
+		/**
+		Constructs a B+-tree iterator.
+
+		\param tree		The B+-tree for which this is an iterator.
+		\param nodeID	The ID of the leaf node containing the initially-pointed-to tuple.
+		\param it		An iterator to the initially-pointed-to tuple within a leaf page.
+		*/
 		ConstIterator(const BTree *tree, int nodeID, SortedPage::TupleSetCIter it)
 		:	m_tree(tree), m_nodeID(nodeID), m_it(it)
 		{}
 
+		//#################### PUBLIC OPERATORS ####################
+	public:
 		const BackedTuple& operator*() const
 		{
 			return *m_it;
