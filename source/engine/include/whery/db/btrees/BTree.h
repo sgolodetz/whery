@@ -426,6 +426,14 @@ private:
 	SortedPage::TupleSetCRIter page_rbegin(int nodeID) const;
 
 	/**
+	Returns an iterator pointing to the end of the reversed set of tuples on the specified node's page.
+
+	\param nodeID	The ID of a node in the B+-tree.
+	\return			An iterator pointing to the end of the reversed set of tuples on the specified node's page.
+	*/
+	SortedPage::TupleSetCRIter page_rend(int nodeID) const;
+
+	/**
 	Prints the subtree rooted at the specified node to an output stream (for debugging purposes).
 
 	\param os		The output stream.
@@ -490,6 +498,20 @@ private:
 	Split split_leaf_and_insert(int nodeID, const Tuple& tuple);
 
 	/**
+	Transfers tuples from the specified leaf node to one of its siblings (which must have
+	the same parent and enough space for the extra tuples). Note that this function makes
+	no attempt to update the parent of the two nodes, and should therefore only be used as
+	part of a larger algorithm that does so.
+
+	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
+	\param targetNodeID				The ID of the node to which the tuples should be transferred.
+	\param tuples					The tuples to transfer.
+	\throw std::invalid_argument	If the target node does not have the same parent,
+									or does not have space for the extra tuples.
+	*/
+	void transfer_leaf_tuples(int sourceNodeID, int targetNodeID, const std::vector<BackedTuple>& tuples);
+
+	/**
 	Transfers n tuples from the specified leaf node to its left sibling.
 	Note that this function makes no attempt to update the parent of the
 	two nodes, and should therefore only be used as part of a larger
@@ -497,21 +519,21 @@ private:
 
 	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
 	\param n						The number of tuples to transfer.
-	\throw std::invalid_argument	If the left sibling does not have the same parent,
-									or does not have space for an extra n tuples.
+	\throw std::invalid_argument	If the specified node has fewer than n tuples, or the left sibling
+									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_left(int sourceNodeID, unsigned int n);
 
 	/**
 	Transfers n tuples from the specified leaf node to its right sibling.
-	Note that this function makes no attempt to update the parent of the two
-	nodes, and should therefore only be used as part of a larger algorithm
-	that does do so.
+	Note that this function makes no attempt to update the parent of the
+	two nodes, and should therefore only be used as part of a larger
+	algorithm that does do so.
 
 	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
 	\param n						The number of tuples to transfer.
-	\throw std::invalid_argument	If the right sibling does not have the same parent,
-									or does not have space for an extra n tuples.
+	\throw std::invalid_argument	If the specified node has fewer than n tuples, or the right sibling
+									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
 

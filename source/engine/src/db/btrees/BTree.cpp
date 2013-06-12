@@ -314,6 +314,13 @@ SortedPage::TupleSetCRIter BTree::page_rbegin(int nodeID) const
 	return p->rbegin();
 }
 
+SortedPage::TupleSetCRIter BTree::page_rend(int nodeID) const
+{
+	SortedPage_Ptr p = page(nodeID);
+	assert(p.get() != NULL);
+	return p->rend();
+}
+
 void BTree::print_subtree(std::ostream& os, int nodeID, unsigned int depth) const
 {
 	// Print the basic details of the node.
@@ -502,60 +509,63 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	return Split(nodeID, freshID, splitter);
 }
 
-void BTree::transfer_leaf_tuples_left(int sourceNodeID, unsigned int n)
+void BTree::transfer_leaf_tuples(int sourceNodeID, int targetNodeID, const std::vector<BackedTuple>& tuples)
 {
-	// TODO: This is similar to transfer_leaf_tuples_right - factor out the commonality.
-
 	// Check the preconditions.
-	int targetNodeID = m_nodes[sourceNodeID].siblingLeftID;
 	if(m_nodes[targetNodeID].parentID != m_nodes[sourceNodeID].parentID)
 	{
-		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
+		throw std::invalid_argument("Cannot transfer tuples to a node with a different parent.");
 	}
 
 	SortedPage_Ptr targetPage = page(targetNodeID);
-	if(targetPage->empty_tuple_count() < n)
+	if(targetPage->empty_tuple_count() < tuples.size())
 	{
 		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
 	}
 
-	// Transfer n tuples from the source page to the target page. Note that copying the tuples
-	// into a separate container is needed to prevent a "modification during iteration" issue.
+	// Transfer the tuples to the target page.
 	SortedPage_Ptr sourcePage = page(sourceNodeID);
-	std::vector<BackedTuple> ts(sourcePage->begin(), sourcePage->end());
-	unsigned int i = 0;
-	for(std::vector<BackedTuple>::const_iterator it = ts.begin(), iend = ts.end(); it != iend && i < n; ++it, ++i)
+	for(std::vector<BackedTuple>::const_iterator it = tuples.begin(), iend = tuples.end(); it != iend; ++it)
 	{
 		targetPage->add_tuple(*it);
 		sourcePage->delete_tuple(*it);
 	}
 }
 
+void BTree::transfer_leaf_tuples_left(int sourceNodeID, unsigned int n)
+{
+	if(page(sourceNodeID)->tuple_count() < n)
+	{
+		throw std::invalid_argument("The specified page does not contain sufficient tuples to transfer.");
+	}
+
+	std::vector<BackedTuple> tuples;
+	tuples.reserve(n);
+	unsigned int i = 0;
+	for(SortedPage::TupleSetCIter it = page_begin(sourceNodeID), iend = page_end(sourceNodeID); it != iend && i < n; ++it, ++i)
+	{
+		tuples.push_back(*it);
+	}
+
+	transfer_leaf_tuples(sourceNodeID, m_nodes[sourceNodeID].siblingLeftID, tuples);
+}
+
 void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 {
-	// Check the preconditions.
-	int targetNodeID = m_nodes[sourceNodeID].siblingRightID;
-	if(m_nodes[targetNodeID].parentID != m_nodes[sourceNodeID].parentID)
+	if(page(sourceNodeID)->tuple_count() < n)
 	{
-		throw std::invalid_argument("Cannot transfer tuples to a page with a different parent.");
+		throw std::invalid_argument("The specified page does not contain sufficient tuples to transfer.");
 	}
 
-	SortedPage_Ptr targetPage = page(targetNodeID);
-	if(targetPage->empty_tuple_count() < n)
-	{
-		throw std::invalid_argument("Cannot transfer tuples to a page with insufficient space to hold them.");
-	}
-
-	// Transfer n tuples from the source page to the target page. Note that copying the tuples
-	// into a separate container is needed to prevent a "modification during iteration" issue.
-	SortedPage_Ptr sourcePage = page(sourceNodeID);
-	std::vector<BackedTuple> ts(sourcePage->rbegin(), sourcePage->rend());
+	std::vector<BackedTuple> tuples;
+	tuples.reserve(n);
 	unsigned int i = 0;
-	for(std::vector<BackedTuple>::const_iterator it = ts.begin(), iend = ts.end(); it != iend && i < n; ++it, ++i)
+	for(SortedPage::TupleSetCRIter it = page_rbegin(sourceNodeID), iend = page_rend(sourceNodeID); it != iend && i < n; ++it, ++i)
 	{
-		targetPage->add_tuple(*it);
-		sourcePage->delete_tuple(*it);
+		tuples.push_back(*it);
 	}
+
+	transfer_leaf_tuples(sourceNodeID, m_nodes[sourceNodeID].siblingRightID, tuples);
 }
 
 void BTree::write_tabbed_text(std::ostream& os, unsigned int tabCount, const std::string& text) const
