@@ -435,6 +435,28 @@ private:
 	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
 
 	/**
+	Moves the first tuple from a full leaf to its non-full left sibling (with the same parent)
+	to make space to insert the specified tuple, and then inserts it. Note that this function
+	appropriately updates the parent of the two nodes.
+
+	\param nodeID	The ID of the full leaf node.
+	\param tuple	The tuple to insert into the leaf once there is space.
+	*/
+	void redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple);
+
+	/**
+	In most cases, moves the last tuple from a full leaf to its non-full right sibling (with the
+	same parent) to make space to insert the specified tuple, and then inserts it. However, when
+	the tuple being inserted is greater than the last tuple in the full leaf, it is itself inserted
+	into the right sibling, leaving the last tuple of the full leaf where it is. Note that this
+	function appropriately updates the parent of the two nodes.
+
+	\param nodeID	The ID of the full leaf node.
+	\param tuple	The tuple to insert into the leaf once there is space.
+	*/
+	void redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple);
+
+	/**
 	Selectively inserts the specified tuple into one of two adjacent nodes,
 	based on a comparison against the first tuple of the right-hand node.
 	Both nodes must have space for an extra tuple.

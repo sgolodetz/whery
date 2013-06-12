@@ -220,22 +220,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	{
 		// This node is full, but its left sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
-
-		// Delete the index entry for this node from the parent page (an updated index
-		// entry will be re-added below).
-		SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-		parentPage->delete_tuple(make_branch_key(*page_begin(nodeID)));
-
-		// Noting that the tuple must be at least as large as the first tuple on this
-		// page, or we wouldn't be trying to insert it here, we can redistribute the
-		// first tuple across to the left sibling to make space, and then insert the
-		// tuple into this page.
-		transfer_leaf_tuples_left(nodeID, 1);
-		page(nodeID)->add_tuple(tuple);
-
-		// Re-add an index entry for this node to the parent page.
-		parentPage->add_tuple(make_branch_tuple(*page_begin(nodeID), nodeID));
-
+		redistribute_leaf_left_and_insert(nodeID, tuple);
 		return boost::none;
 	}
 	else if(m_nodes[nodeID].siblingRightID != -1 &&
@@ -244,33 +229,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	{
 		// This node is full, but its right sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
-
-		// Delete the index entry for the right sibling from the parent page (an updated
-		// index entry will be re-added below).
-		SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-		parentPage->delete_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
-
-		PrefixTupleComparator comp;
-		if(comp.compare(*page_rbegin(nodeID), tuple) == -1)
-		{
-			// If the tuple is greater than the last tuple on this page, it can be inserted
-			// into the right sibling (which has space). Note that this is a valid thing to
-			// do because the tuple must also be less than the first tuple on the right page
-			// (or we wouldn't be trying to insert it here in the first place).
-			page(m_nodes[nodeID].siblingRightID)->add_tuple(tuple);
-		}
-		else
-		{
-			// If the tuple is not greater than the last tuple on this page, we can redistribute
-			// the last tuple across to the right sibling to make space, and then insert the tuple
-			// into this page.
-			transfer_leaf_tuples_right(nodeID, 1);
-			page(nodeID)->add_tuple(tuple);
-		}
-
-		// Re-add an index entry for the right sibling to the parent page.
-		parentPage->add_tuple(make_branch_tuple(*page_begin(m_nodes[nodeID].siblingRightID), m_nodes[nodeID].siblingRightID));
-
+		redistribute_leaf_right_and_insert(nodeID, tuple);
 		return boost::none;
 	}
 	else
@@ -386,6 +345,53 @@ void BTree::print_subtree(std::ostream& os, int nodeID, unsigned int depth) cons
 			print_subtree(os, child_node_id(*it), depth + 1);
 		}
 	}
+}
+
+void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
+{
+	// Delete the index entry for this node from the parent page (an updated index
+	// entry will be re-added below).
+	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+	parentPage->delete_tuple(make_branch_key(*page_begin(nodeID)));
+
+	// Noting that the tuple must be at least as large as the first tuple on this
+	// page, or we wouldn't be trying to insert it here, we can redistribute the
+	// first tuple across to the left sibling to make space, and then insert the
+	// tuple into this page.
+	transfer_leaf_tuples_left(nodeID, 1);
+	page(nodeID)->add_tuple(tuple);
+
+	// Re-add an index entry for this node to the parent page.
+	parentPage->add_tuple(make_branch_tuple(*page_begin(nodeID), nodeID));
+}
+
+void BTree::redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple)
+{
+	// Delete the index entry for the right sibling from the parent page (an updated
+	// index entry will be re-added below).
+	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+	parentPage->delete_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
+
+	PrefixTupleComparator comp;
+	if(comp.compare(*page_rbegin(nodeID), tuple) == -1)
+	{
+		// If the tuple is greater than the last tuple on this page, it can be inserted
+		// into the right sibling (which has space). Note that this is a valid thing to
+		// do because the tuple must also be less than the first tuple on the right page
+		// (or we wouldn't be trying to insert it here in the first place).
+		page(m_nodes[nodeID].siblingRightID)->add_tuple(tuple);
+	}
+	else
+	{
+		// If the tuple is not greater than the last tuple on this page, we can redistribute
+		// the last tuple across to the right sibling to make space, and then insert the tuple
+		// into this page.
+		transfer_leaf_tuples_right(nodeID, 1);
+		page(nodeID)->add_tuple(tuple);
+	}
+
+	// Re-add an index entry for the right sibling to the parent page.
+	parentPage->add_tuple(make_branch_tuple(*page_begin(m_nodes[nodeID].siblingRightID), m_nodes[nodeID].siblingRightID));
 }
 
 void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID)
