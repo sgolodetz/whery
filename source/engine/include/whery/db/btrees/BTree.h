@@ -16,7 +16,11 @@
 namespace whery {
 
 /**
-An instance of this class represents a B+-tree.
+\brief An instance of this class represents a B+-tree.
+
+Note that this implementation is designed to work with data tuples that
+incorporate a unique key, and as such does not support duplicates. This
+turns out to be a minor restriction in practice.
 */
 class BTree
 {
@@ -214,26 +218,19 @@ private:
 	//#################### PUBLIC METHODS ####################
 public:
 	/**
-	Returns an iterator pointing to the start of the set of tuples in the B+-tree.
+	Returns an iterator pointing to the start of the set of leaf (data) tuples in the B+-tree.
 
-	\return	An iterator pointing to the start of the set of tuples in the B+-tree.
+	\return	An iterator pointing to the start of the set of leaf (data) tuples in the B+-tree.
 	*/
 	ConstIterator begin() const;
-
-	/**
-	Returns a tuple manipulator that can be used to interact with the B+-tree's branch (index) tuples.
-
-	\return	The tuple manipulator.
-	*/
-	TupleManipulator branch_tuple_manipulator() const;
 
 	void bulk_load(const std::vector<SortedPage_Ptr>& pages);
 	void clear();
 
 	/**
-	Returns an iterator pointing to the end of the set of tuples in the B+-tree.
+	Returns an iterator pointing to the end of the set of leaf (data) tuples in the B+-tree.
 
-	\return	An iterator pointing to the end of the set of tuples in the B+-tree.
+	\return	An iterator pointing to the end of the set of leaf (data) tuples in the B+-tree.
 	*/
 	ConstIterator end() const;
 
@@ -242,7 +239,7 @@ public:
 	void erase_tuples(const ValueKey& key);
 
 	/**
-	Inserts a tuple into the B+-tree.
+	Inserts a leaf (data) tuple into the B+-tree.
 
 	\param tuple	The tuple to insert.
 	*/
@@ -308,6 +305,13 @@ private:
 	\return			boost::none (for convenience).
 	*/
 	boost::optional<Split> add_root_node(const Split& split);
+
+	/**
+	Returns a tuple manipulator that can be used to interact with the B+-tree's branch (index) tuples.
+
+	\return	The tuple manipulator.
+	*/
+	TupleManipulator branch_tuple_manipulator() const;
 
 	/**
 	Extracts the child node ID from a branch tuple of the form <key1,...,keyN,child node ID>.

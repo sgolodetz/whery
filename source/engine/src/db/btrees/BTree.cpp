@@ -47,11 +47,6 @@ BTree::ConstIterator BTree::begin() const
 	return ConstIterator(this, id, page_begin(id));
 }
 
-TupleManipulator BTree::branch_tuple_manipulator() const
-{
-	return m_pageController->btree_branch_tuple_manipulator();
-}
-
 BTree::ConstIterator BTree::end() const
 {
 	int id = m_rootID;
@@ -133,6 +128,11 @@ boost::optional<BTree::Split> BTree::add_root_node(const Split& split)
 	m_nodes[m_rootID].firstChildID = split.leftNodeID;
 	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
 	return boost::none;
+}
+
+TupleManipulator BTree::branch_tuple_manipulator() const
+{
+	return m_pageController->btree_branch_tuple_manipulator();
 }
 
 int BTree::child_node_id(const BackedTuple& branchTuple) const
@@ -467,9 +467,10 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	// Make a tuple set containing fresh copies of all the tuples in the original page.
 	typedef std::multiset<FreshTuple,PrefixTupleComparator> FreshTupleSet;
 	FreshTupleSet tuples;
+	TupleManipulator branchTupleManipulator = branch_tuple_manipulator();
 	for(SortedPage::TupleSetCIter it = nodePage->begin(), iend = nodePage->end(); it != iend; ++it)
 	{
-		FreshTuple temp(branch_tuple_manipulator());
+		FreshTuple temp(branchTupleManipulator);
 		temp.copy_from(*it);
 		tuples.insert(temp);
 	}
@@ -486,7 +487,7 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	}
 
 	// Record the median as the splitter.
-	FreshTuple splitter(branch_tuple_manipulator());
+	FreshTuple splitter(branchTupleManipulator);
 	splitter.copy_from(*it);
 	++it;
 
