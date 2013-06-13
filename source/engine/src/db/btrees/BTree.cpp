@@ -61,6 +61,11 @@ BTree::ConstIterator BTree::end() const
 	return ConstIterator(this, id, page_end(id));
 }
 
+BTree::EqualRangeResult BTree::equal_range(const ValueKey& key) const
+{
+	return std::make_pair(lower_bound(key), upper_bound(key));
+}
+
 void BTree::insert_tuple(const Tuple& tuple)
 {
 	boost::optional<Split> result = insert_tuple_into_subtree(tuple, m_rootID);

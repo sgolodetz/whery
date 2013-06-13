@@ -259,7 +259,14 @@ public:
 	ConstIterator end() const;
 
 	EqualRangeResult equal_range(const RangeKey& key) const;
+
+	/**
+	Returns the pair [lower_bound(key), upper_bound(key)].
+
+	\return	The pair [lower_bound(key), upper_bound(key)].
+	*/
 	EqualRangeResult equal_range(const ValueKey& key) const;
+
 	void erase_tuples(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
 	ConstIterator find(const ValueKey& key) const;
