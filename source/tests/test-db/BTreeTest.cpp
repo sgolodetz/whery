@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 }
 #endif
 
-BOOST_AUTO_TEST_CASE(lower_bound_valuekey)
+BOOST_AUTO_TEST_CASE(upper_bound_valuekey)
 {
 	BTree tree(BTreePageController_CPtr(new TestPageController));
 	FreshTuple tuple(tree.leaf_tuple_manipulator());
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(lower_bound_valuekey)
 	for(int i = -1; i <= 3; ++i)
 	{
 		key.field(0).set_int(i);
-		BTree::ConstIterator it = tree.lower_bound(key);
+		BTree::ConstIterator it = tree.upper_bound(key);
 		if(it != tree.end())
 		{
 			std::cout << i << ' ' << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';

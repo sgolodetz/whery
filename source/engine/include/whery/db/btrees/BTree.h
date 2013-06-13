@@ -306,6 +306,15 @@ public:
 	unsigned int tuple_count();
 
 	ConstIterator upper_bound(const RangeKey& key) const;
+
+	/**
+	Returns an iterator pointing to the first leaf (data) tuple in the B+-tree
+	that is ordered after the specified key (using prefix comparison).
+
+	\param key	The search key.
+	\return		An iterator pointing to the first tuple in the B+-tree that is ordered
+				after key, or end() if no tuples are ordered after key.
+	*/
 	ConstIterator upper_bound(const ValueKey& key) const;
 
 	//#################### PRIVATE METHODS ####################

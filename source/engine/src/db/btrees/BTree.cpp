@@ -91,32 +91,28 @@ BTree::ConstIterator BTree::lower_bound(const ValueKey& key) const
 			// then continue to the right-most child of the node.
 			id = child_node_id(*page_rbegin(id));
 		}
-		else
+		else if(comp.compare(key, *it) == -1)
 		{
-			// Otherwise, compare the key against the lower bound in the current node.
-			if(comp.compare(key, *it) == -1)
+			// If the key is strictly less than the lower bound, then continue
+			// to the child to the left of the lower bound.
+			if(it == page_begin(id))
 			{
-				// If the key is strictly less than the lower bound, then continue
-				// to the child to the left of the lower bound.
-				if(it == page_begin(id))
-				{
-					id = m_nodes[id].firstChildID;
-				}
-				else
-				{
-					--it;
-					id = child_node_id(*it);
-				}
+				id = m_nodes[id].firstChildID;
 			}
 			else
 			{
-				// If the key is greater than or equal to the lower bound, then continue
-				// to the child to the right of the lower bound. Note that when the key
-				// is equal to the lower bound, this may not actually take us to the lower
-				// bound in the leaf layer, but it's the best we can do at this point -
-				// any mis-steps that are made here are rectified later by a linear walk.
+				--it;
 				id = child_node_id(*it);
 			}
+		}
+		else
+		{
+			// If the key is greater than or equal to the lower bound, then continue
+			// to the child to the right of the lower bound. Note that when the key
+			// is equal to the lower bound, this may not actually take us to the lower
+			// bound in the leaf layer, but it's the best we can do at this point -
+			// any mis-steps that are made here are rectified later by a linear walk.
+			id = child_node_id(*it);
 		}
 
 		it = page(id)->lower_bound(key);
@@ -144,6 +140,48 @@ void BTree::print(std::ostream& os) const
 unsigned int BTree::tuple_count()
 {
 	return m_tupleCount;
+}
+
+BTree::ConstIterator BTree::upper_bound(const ValueKey& key) const
+{
+	int id = m_rootID;
+	SortedPage::TupleSetCIter it = page(id)->upper_bound(key);
+
+	// Walk down the B+-tree to find the upper bound. At the start of each iteration,
+	// the iterator it points to the upper bound of the key in the current node. Note
+	// in passing that the implementation of this is simpler and more efficient than
+	// that of lower_bound() due to the fact that branch keys tell us that anything
+	// equal to them must be to their right (the direction we need here). The same is
+	// then clearly not true to their left (the direction we need for lower_bound()).
+	while(m_nodes[id].has_children())
+	{
+		if(it == page_begin(id))
+		{
+			// If all of the tuples in the current node are greater than the key,
+			// then continue to the left-most child of the node.
+			id = m_nodes[id].firstChildID;
+		}
+		else
+		{
+			// Otherwise, the key is less than the upper bound in this node, and
+			// greater than or equal to its predecessor, so continue to the child
+			// to the right of the upper bound's predecessor.
+			--it;
+			id = child_node_id(*it);
+		}
+
+		it = page(id)->upper_bound(key);
+	}
+
+	// If the iterator points to the end of the leaf page, move it to the start
+	// of the current page's right sibling (if any).
+	if(it == page_end(id) && m_nodes[id].siblingRightID != -1)
+	{
+		id = m_nodes[id].siblingRightID;
+		it = page_begin(id);
+	}
+
+	return ConstIterator(this, id, it);
 }
 
 //#################### PRIVATE METHODS ####################
