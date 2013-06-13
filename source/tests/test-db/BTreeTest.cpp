@@ -11,6 +11,7 @@ using namespace boost::assign;
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
+#include "whery/db/base/ValueKey.h"
 #include "whery/db/btrees/BTree.h"
 #include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
@@ -67,6 +68,7 @@ BOOST_AUTO_TEST_CASE(constructor)
 	BOOST_CHECK(tree.begin() == tree.end());
 }
 
+#if 0
 BOOST_AUTO_TEST_CASE(insert_tuple)
 {
 	BTree tree(BTreePageController_CPtr(new TestPageController));
@@ -104,6 +106,41 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 	for(BTree::ConstIterator it = tree.begin(), iend = tree.end(); it != iend; ++it)
 	{
 		std::cout << it->field(0).get_int() << '\n';
+	}
+}
+#endif
+
+BOOST_AUTO_TEST_CASE(lower_bound_valuekey)
+{
+	BTree tree(BTreePageController_CPtr(new TestPageController));
+	FreshTuple tuple(tree.leaf_tuple_manipulator());
+
+	for(int i = 0; i < 3; ++i)
+	{
+		for(int j = 0; j < 3; ++j)
+		{
+			tuple.field(0).set_int(i);
+			tuple.field(1).set_int(j);
+			tuple.field(2).set_int(j);
+			tree.insert_tuple(tuple);
+		}
+	}
+
+	tree.print(std::cout);
+
+	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	for(int i = -1; i <= 3; ++i)
+	{
+		key.field(0).set_int(i);
+		BTree::ConstIterator it = tree.lower_bound(key);
+		if(it != tree.end())
+		{
+			std::cout << i << ' ' << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';
+		}
+		else
+		{
+			std::cout << i << " End\n";
+		}
 	}
 }
 

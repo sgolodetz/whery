@@ -178,7 +178,31 @@ public:
 
 			return *this;
 		}
+
+		ConstIterator& operator--()
+		{
+			// If we're at the start of the current page and there's a left sibling,
+			// move the iterator to the end of the left sibling's page.
+			if(m_it == m_tree->page_begin(m_nodeID) && m_tree->m_nodes[m_nodeID].siblingLeftID != -1)
+			{
+				m_nodeID = m_tree->m_nodes[m_nodeID].siblingLeftID;
+				m_it = m_tree->page_end(m_nodeID);
+			}
+
+			// Provided we're not at the start of the current page (which can only happen
+			// here if we're at the start of the whole B+-tree), decrement the iterator.
+			if(m_it != m_tree->page_begin(m_nodeID))
+			{
+				--m_it;
+			}
+
+			return *this;
+		}
 	};
+
+	//#################### TYPEDEFS ####################
+public:
+	typedef std::pair<ConstIterator,ConstIterator> EqualRangeResult;
 
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -234,9 +258,11 @@ public:
 	*/
 	ConstIterator end() const;
 
-	// TODO: equal_range
+	EqualRangeResult equal_range(const RangeKey& key) const;
+	EqualRangeResult equal_range(const ValueKey& key) const;
 	void erase_tuples(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
+	ConstIterator find(const ValueKey& key) const;
 
 	/**
 	Inserts a leaf (data) tuple into the B+-tree.
@@ -253,6 +279,16 @@ public:
 	TupleManipulator leaf_tuple_manipulator() const;
 
 	ConstIterator lower_bound(const RangeKey& key) const;
+
+	/**
+	Returns an iterator pointing to the first leaf (data) tuple in the B+-tree
+	that is not ordered before the specified key (using prefix comparison).
+
+	\param key	The search key.
+	\return		An iterator pointing to the first tuple in the B+-tree that is
+				not ordered before key, or end() if all tuples are ordered
+				before key.
+	*/
 	ConstIterator lower_bound(const ValueKey& key) const;
 
 	/**

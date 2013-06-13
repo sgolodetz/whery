@@ -73,6 +73,69 @@ TupleManipulator BTree::leaf_tuple_manipulator() const
 	return m_pageController->btree_leaf_tuple_manipulator();
 }
 
+BTree::ConstIterator BTree::lower_bound(const ValueKey& key) const
+{
+	PrefixTupleComparator comp;
+
+	int id = m_rootID;
+	SortedPage::TupleSetCIter it = page(id)->lower_bound(key);
+
+	// Walk down the B+-tree to find the starting point for our lower bound search.
+	// At the start of each iteration, the iterator it points to the lower bound of
+	// the key in the current node.
+	while(m_nodes[id].has_children())
+	{
+		if(it == page_end(id))
+		{
+			// If all of the tuples in the current node are less than the key,
+			// then continue to the right-most child of the node.
+			id = child_node_id(*page_rbegin(id));
+		}
+		else
+		{
+			// Otherwise, compare the key against the lower bound in the current node.
+			if(comp.compare(key, *it) == -1)
+			{
+				// If the key is strictly less than the lower bound, then continue
+				// to the child to the left of the lower bound.
+				if(it == page_begin(id))
+				{
+					id = m_nodes[id].firstChildID;
+				}
+				else
+				{
+					--it;
+					id = child_node_id(*it);
+				}
+			}
+			else
+			{
+				// If the key is greater than or equal to the lower bound, then continue
+				// to the child to the right of the lower bound. Note that when the key
+				// is equal to the lower bound, this may not actually take us to the lower
+				// bound in the leaf layer, but it's the best we can do at this point -
+				// any mis-steps that are made here are rectified later by a linear walk.
+				id = child_node_id(*it);
+			}
+		}
+
+		it = page(id)->lower_bound(key);
+	}
+
+	// Once we reach the leaf layer, we have a starting point for our lower bound search
+	// that is guaranteed not to be to the left of the real lower bound in the B+-tree.
+	// We therefore walk left until we find the real lower bound, and return it.
+	ConstIterator result(this, id, it);
+	ConstIterator test = result;
+	--test;
+	while(test != result && comp.compare(*test, key) == 0)
+	{
+		result = test;
+		--test;
+	}
+	return result;
+}
+
 void BTree::print(std::ostream& os) const
 {
 	print_subtree(os, m_rootID, 0);
