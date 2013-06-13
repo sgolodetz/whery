@@ -75,11 +75,13 @@ include/whery/db/pages/SortedPage.h
 SET(util_sources
 src/util/AlignmentTracker.cpp
 src/util/IDAllocator.cpp
+src/util/TextUtil.cpp
 )
 
 SET(util_headers
 include/whery/util/AlignmentTracker.h
 include/whery/util/IDAllocator.h
+include/whery/util/TextUtil.h
 )
 
 #################################################################

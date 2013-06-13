@@ -9,6 +9,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "whery/db/base/ValueKey.h"
+#include "whery/util/TextUtil.h"
 
 namespace whery {
 
@@ -566,15 +567,6 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 	}
 
 	transfer_leaf_tuples(sourceNodeID, m_nodes[sourceNodeID].siblingRightID, tuples);
-}
-
-void BTree::write_tabbed_text(std::ostream& os, unsigned int tabCount, const std::string& text) const
-{
-	for(unsigned int i = 0; i < tabCount; ++i)
-	{
-		os << '\t';
-	}
-	os << text << '\n';
 }
 
 }

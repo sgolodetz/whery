@@ -6,8 +6,6 @@
 #ifndef H_WHERY_BTREE
 #define H_WHERY_BTREE
 
-#include <iostream>
-
 #include <boost/optional/optional.hpp>
 
 #include "whery/db/base/FreshTuple.h"
@@ -536,15 +534,6 @@ private:
 									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
-
-	/**
-	Writes some text to the specified output stream, prefixed by the specified number of tabs.
-
-	\param os		The output stream.
-	\param tabCount	The number of tabs with which to prefix the text.
-	\param text		The text to write.
-	*/
-	void write_tabbed_text(std::ostream& os, unsigned int tabCount, const std::string& text) const;
 };
 
 }
