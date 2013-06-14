@@ -274,6 +274,15 @@ public:
 
 	void erase_tuples(const RangeKey& key);
 	void erase_tuples(const ValueKey& key);
+
+	/**
+	Returns an iterator pointing to the first leaf (data) tuple in the B+-tree
+	that compares equal to key (if any), or end() otherwise.
+
+	\param key	The search key.
+	\return		An iterator pointing to the first leaf (data) tuple in the B+-tree
+				that compares equal to key (if any), or end() otherwise.
+	*/
 	ConstIterator find(const ValueKey& key) const;
 
 	/**
