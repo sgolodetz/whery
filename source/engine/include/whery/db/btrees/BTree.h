@@ -209,6 +209,12 @@ private:
 	/** The field indices to use when making branch keys. */
 	std::vector<unsigned int> m_branchKeyFieldIndices;
 
+	/** The ID of the first leaf node (used to optimise begin()). */
+	int m_firstLeafID;
+
+	/** The ID of the last leaf node (used to optimise end()). */
+	int m_lastLeafID;
+
 	/** An ID allocator used to allocate IDs for the nodes. */
 	IDAllocator m_nodeIDAllocator;
 

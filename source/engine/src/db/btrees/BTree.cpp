@@ -19,7 +19,7 @@ BTree::BTree(const BTreePageController_CPtr& pageController)
 :	m_pageController(pageController), m_tupleCount(0)
 {
 	// Create the root node.
-	m_rootID = add_leaf_node();
+	m_rootID = m_firstLeafID = m_lastLeafID = add_leaf_node();
 
 	// Pre-calculate the field indices to use when constructing branch keys.
 	TupleManipulator branchTupleManipulator = branch_tuple_manipulator();
@@ -35,30 +35,12 @@ BTree::BTree(const BTreePageController_CPtr& pageController)
 
 BTree::ConstIterator BTree::begin() const
 {
-	int id = m_rootID;
-
-	// Walk down the left side of the tree until we hit the left-most leaf.
-	while(m_nodes[id].has_children())
-	{
-		id = m_nodes[id].firstChildID;
-	}
-
-	// Return an iterator pointing to the start of the set of tuples on the leaf's page.
-	return ConstIterator(this, id, page_begin(id));
+	return ConstIterator(this, m_firstLeafID, page_begin(m_firstLeafID));
 }
 
 BTree::ConstIterator BTree::end() const
 {
-	int id = m_rootID;
-
-	// Walk down the right side of the tree until we hit the right-most leaf.
-	while(m_nodes[id].has_children())
-	{
-		id = child_node_id(*page_rbegin(id));
-	}
-
-	// Return an iterator pointing to the end of the set of tuples on the leaf's page.
-	return ConstIterator(this, id, page_end(id));
+	return ConstIterator(this, m_lastLeafID, page_end(m_lastLeafID));
 }
 
 BTree::EqualRangeResult BTree::equal_range(const RangeKey& key) const
@@ -309,10 +291,8 @@ void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
 	m_nodes[freshID].siblingLeftID = existingID;
 	m_nodes[freshID].siblingRightID = m_nodes[existingID].siblingRightID;
 	m_nodes[existingID].siblingRightID = freshID;
-	if(m_nodes[freshID].siblingRightID != -1)
-	{
-		m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
-	}
+	if(m_nodes[freshID].siblingRightID != -1) m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
+	if(m_lastLeafID == existingID) m_lastLeafID = freshID;
 }
 
 boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
