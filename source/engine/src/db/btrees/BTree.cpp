@@ -8,7 +8,7 @@
 #include <cassert>
 #include <boost/lexical_cast.hpp>
 
-#include "whery/db/base/ValueKey.h"
+#include "whery/db/base/RangeKey.h"
 #include "whery/util/TextUtil.h"
 
 namespace whery {
@@ -61,6 +61,11 @@ BTree::ConstIterator BTree::end() const
 	return ConstIterator(this, id, page_end(id));
 }
 
+BTree::EqualRangeResult BTree::equal_range(const RangeKey& key) const
+{
+	return std::make_pair(lower_bound(key), upper_bound(key));
+}
+
 BTree::EqualRangeResult BTree::equal_range(const ValueKey& key) const
 {
 	return std::make_pair(lower_bound(key), upper_bound(key));
@@ -76,6 +81,22 @@ void BTree::insert_tuple(const Tuple& tuple)
 TupleManipulator BTree::leaf_tuple_manipulator() const
 {
 	return m_pageController->btree_leaf_tuple_manipulator();
+}
+
+BTree::ConstIterator BTree::lower_bound(const RangeKey& key) const
+{
+	if(key.has_low_endpoint())
+	{
+		ConstIterator it = lower_bound(key.low_value());
+		if(key.low_kind() == OPEN)
+		{
+			ConstIterator iend = end();
+			PrefixTupleComparator comp;
+			while(it != iend && comp.compare(*it, key.low_value()) == 0) ++it;
+		}
+		return it;
+	}
+	else return begin();
 }
 
 BTree::ConstIterator BTree::lower_bound(const ValueKey& key) const
@@ -124,6 +145,27 @@ void BTree::print(std::ostream& os) const
 unsigned int BTree::tuple_count()
 {
 	return m_tupleCount;
+}
+
+BTree::ConstIterator BTree::upper_bound(const RangeKey& key) const
+{
+	if(key.has_high_endpoint())
+	{
+		ConstIterator it = upper_bound(key.high_value());
+		if(key.high_kind() == OPEN)
+		{
+			PrefixTupleComparator comp;
+			ConstIterator test = it;
+			--test;
+			while(test != it && comp.compare(*test, key.high_value()) == 0)
+			{
+				it = test;
+				--test;
+			}
+		}
+		return it;
+	}
+	else return end();
 }
 
 BTree::ConstIterator BTree::upper_bound(const ValueKey& key) const

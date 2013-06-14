@@ -258,6 +258,11 @@ public:
 	*/
 	ConstIterator end() const;
 
+	/**
+	Returns the pair [lower_bound(key), upper_bound(key)].
+
+	\return	The pair [lower_bound(key), upper_bound(key)].
+	*/
 	EqualRangeResult equal_range(const RangeKey& key) const;
 
 	/**
@@ -285,6 +290,14 @@ public:
 	*/
 	TupleManipulator leaf_tuple_manipulator() const;
 
+	/**
+	Returns an iterator pointing to the leaf (data) tuple at the lower end
+	of the range specified by key.
+
+	\param key	The search key.
+	\return		An iterator pointing to the leaf (data) tuple at the lower
+				end of the range specified by key.
+	*/
 	ConstIterator lower_bound(const RangeKey& key) const;
 
 	/**
@@ -292,8 +305,8 @@ public:
 	that is not ordered before the specified key (using prefix comparison).
 
 	\param key	The search key.
-	\return		An iterator pointing to the first tuple in the B+-tree that is
-				not ordered before key, or end() if all tuples are ordered
+	\return		An iterator pointing to the first leaf (data) tuple in the B+-tree
+				that is not ordered before key, or end() if all tuples are ordered
 				before key.
 	*/
 	ConstIterator lower_bound(const ValueKey& key) const;
@@ -312,6 +325,14 @@ public:
 	*/
 	unsigned int tuple_count();
 
+	/**
+	Returns an iterator pointing one beyond the leaf (data) tuple at the higher end
+	of the range specified by key.
+
+	\param key	The search key.
+	\return		An iterator pointing one beyond the leaf (data) tuple at the higher
+				end of the range specified by key.
+	*/
 	ConstIterator upper_bound(const RangeKey& key) const;
 
 	/**
@@ -319,8 +340,9 @@ public:
 	that is ordered after the specified key (using prefix comparison).
 
 	\param key	The search key.
-	\return		An iterator pointing to the first tuple in the B+-tree that is ordered
-				after key, or end() if no tuples are ordered after key.
+	\return		An iterator pointing to the first leaf (data) tuple in the B+-tree
+				that is ordered after key, or end() if no tuples are ordered after
+				key.
 	*/
 	ConstIterator upper_bound(const ValueKey& key) const;
 

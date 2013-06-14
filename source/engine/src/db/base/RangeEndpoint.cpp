@@ -9,7 +9,7 @@ namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-RangeEndpoint::RangeEndpoint(const FreshTuple& value, RangeEndpointKind kind)
+RangeEndpoint::RangeEndpoint(const ValueKey& value, RangeEndpointKind kind)
 :	m_kind(kind), m_value(value)
 {}
 
@@ -20,7 +20,7 @@ RangeEndpointKind& RangeEndpoint::kind()
 	return m_kind;
 }
 
-FreshTuple& RangeEndpoint::value()
+ValueKey& RangeEndpoint::value()
 {
 	return m_value;
 }

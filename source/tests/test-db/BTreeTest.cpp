@@ -11,7 +11,7 @@ using namespace boost::assign;
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
-#include "whery/db/base/ValueKey.h"
+#include "whery/db/base/RangeKey.h"
 #include "whery/db/btrees/BTree.h"
 #include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
@@ -68,6 +68,36 @@ BOOST_AUTO_TEST_CASE(constructor)
 	BOOST_CHECK(tree.begin() == tree.end());
 }
 
+BOOST_AUTO_TEST_CASE(equal_range_rangekey)
+{
+	BTree tree(BTreePageController_CPtr(new TestPageController));
+	FreshTuple tuple(tree.leaf_tuple_manipulator());
+
+	for(int i = 0; i < 3; ++i)
+	{
+		for(int j = 0; j < 3; ++j)
+		{
+			tuple.field(0).set_int(i);
+			tuple.field(1).set_int(j);
+			tuple.field(2).set_int(j);
+			tree.insert_tuple(tuple);
+		}
+	}
+
+	tree.print(std::cout);
+
+	RangeKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	key.low_kind() = OPEN;
+	key.high_kind() = CLOSED;
+	key.low_value().field(0).set_int(0);
+	key.high_value().field(0).set_int(2);
+	BTree::EqualRangeResult er = tree.equal_range(key);
+	for(BTree::ConstIterator it = er.first; it != er.second; ++it)
+	{
+		std::cout << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';
+	}
+}
+
 #if 0
 BOOST_AUTO_TEST_CASE(insert_tuple)
 {
@@ -110,6 +140,7 @@ BOOST_AUTO_TEST_CASE(insert_tuple)
 }
 #endif
 
+#if 0
 BOOST_AUTO_TEST_CASE(upper_bound_valuekey)
 {
 	BTree tree(BTreePageController_CPtr(new TestPageController));
@@ -143,5 +174,6 @@ BOOST_AUTO_TEST_CASE(upper_bound_valuekey)
 		}
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

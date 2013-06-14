@@ -11,7 +11,6 @@ using namespace boost::assign;
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/RangeKey.h"
-#include "whery/db/base/ValueKey.h"
 #include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
 

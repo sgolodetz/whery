@@ -185,7 +185,7 @@ public:
 	range specified by key.
 
 	\param key	The search key.
-	\return		An iterator pointing one beyond the tuple at the lower end of
+	\return		An iterator pointing one beyond the tuple at the higher end of
 				the range specified by key.
 	*/
 	virtual TupleSetCIter upper_bound(const RangeKey& key) const = 0;
