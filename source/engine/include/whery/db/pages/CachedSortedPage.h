@@ -39,6 +39,7 @@ public:
 	virtual unsigned int buffer_size() const;
 	virtual void clear();
 	virtual void delete_tuple(const BackedTuple& tuple);
+	virtual void delete_tuple(const TupleSetCIter& it);
 	virtual unsigned int empty_tuple_count() const;
 	virtual TupleSetCIter end() const;
 	virtual EqualRangeResult equal_range(const RangeKey& key) const;

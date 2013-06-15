@@ -69,7 +69,11 @@ void InMemorySortedPage::clear()
 
 void InMemorySortedPage::delete_tuple(const BackedTuple& tuple)
 {
-	TupleSet::iterator it = m_tuples.find(tuple);
+	delete_tuple(m_tuples.find(tuple));
+}
+
+void InMemorySortedPage::delete_tuple(const TupleSetCIter& it)
+{
 	if(it != m_tuples.end())
 	{
 		m_freeList.push_back(const_cast<char*>(it->location()));

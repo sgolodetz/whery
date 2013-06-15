@@ -53,6 +53,13 @@ BTree::EqualRangeResult BTree::equal_range(const ValueKey& key) const
 	return std::make_pair(lower_bound(key), upper_bound(key));
 }
 
+void BTree::erase_tuple(const ValueKey& key)
+{
+	boost::optional<Merge> result = erase_tuple_from_subtree(key, m_rootID);
+	assert(!result);
+	--m_tupleCount;
+}
+
 BTree::ConstIterator BTree::find(const ValueKey& key) const
 {
 	ConstIterator it = lower_bound(key), iend = end();
@@ -245,7 +252,7 @@ boost::optional<BTree::Split> BTree::add_root_node(const Split& split)
 	m_nodes[split.leftNodeID].parentID = m_rootID;
 	m_nodes[split.rightNodeID].parentID = m_rootID;
 	m_nodes[m_rootID].firstChildID = split.leftNodeID;
-	m_nodes[m_rootID].page->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
+	page(m_rootID)->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
 	return boost::none;
 }
 
@@ -259,6 +266,40 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	int id = branchTuple.field(branchTuple.arity() - 1).get_int();
 	assert(0 <= id && static_cast<unsigned int>(id) < m_nodes.size() && page(id).get() != NULL);
 	return id;
+}
+
+boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key, int nodeID)
+{
+	// TODO
+	throw 23;
+}
+
+boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, int nodeID)
+{
+	SortedPage_Ptr nodePage = page(nodeID);
+	if(nodePage->tuple_count() - 1 >= nodePage->max_tuple_count() / 2)
+	{
+		// This node would still be at least half full after a deletion, so simply delete the tuple.
+		nodePage->delete_tuple(nodePage->find(key));
+		return boost::none;
+	}
+	else
+	{
+		// TODO
+		throw 23;
+	}
+}
+
+boost::optional<BTree::Merge> BTree::erase_tuple_from_subtree(const ValueKey& key, int nodeID)
+{
+	if(m_nodes[nodeID].has_children())
+	{
+		return erase_tuple_from_branch(key, nodeID);
+	}
+	else
+	{
+		return erase_tuple_from_leaf(key, nodeID);
+	}
 }
 
 int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
@@ -326,9 +367,9 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 
 boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeID)
 {
-	if(m_nodes[nodeID].page->empty_tuple_count() > 0)
+	if(page(nodeID)->empty_tuple_count() > 0)
 	{
-		// This node is a leaf and has spare capacity, so simply insert the tuple into it.
+		// This node has spare capacity, so simply insert the tuple into it.
 		page(nodeID)->add_tuple(tuple);
 		return boost::none;
 	}

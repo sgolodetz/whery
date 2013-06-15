@@ -40,6 +40,11 @@ void CachedSortedPage::delete_tuple(const BackedTuple& tuple)
 	page()->delete_tuple(tuple);
 }
 
+void CachedSortedPage::delete_tuple(const TupleSetCIter& it)
+{
+	page()->delete_tuple(it);
+}
+
 unsigned int CachedSortedPage::empty_tuple_count() const
 {
 	return page()->empty_tuple_count();

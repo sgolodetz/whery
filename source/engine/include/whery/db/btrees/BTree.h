@@ -27,7 +27,7 @@ class BTree
 	//#################### NESTED TYPES ####################
 private:
 	/**
-	An instance of this struct represents a node in a B+-tree.
+	\brief An instance of this struct represents a node in a B+-tree.
 	*/
 	struct Node
 	{
@@ -77,7 +77,15 @@ private:
 	};
 
 	/**
-	An instance of this class represents the splitting of a B+-tree node in two, e.g. during an insert operaton.
+	\brief An instance of this represents the merging of two B+-tree nodes into one, e.g. during an erase operation.
+	*/
+	struct Merge
+	{
+		// TODO
+	};
+
+	/**
+	\brief An instance of this class represents the splitting of a B+-tree node in two, e.g. during an insert operaton.
 	*/
 	struct Split
 	{
@@ -104,7 +112,8 @@ private:
 
 public:
 	/**
-	An instance of this class can be used to traverse the leaf tuples in a B+-tree.
+	\brief An instance of this class can be used to traverse the leaf tuples in a B+-tree.
+
 	The leaf tuples themselves cannot be modified through this interface.
 	*/
 	class ConstIterator
@@ -279,7 +288,7 @@ public:
 	EqualRangeResult equal_range(const ValueKey& key) const;
 
 	void erase_tuples(const RangeKey& key);
-	void erase_tuples(const ValueKey& key);
+	void erase_tuple(const ValueKey& key);
 
 	/**
 	Returns an iterator pointing to the first leaf (data) tuple in the B+-tree
@@ -409,6 +418,10 @@ private:
 	\return				The child node ID from the tuple.
 	*/
 	int child_node_id(const BackedTuple& branchTuple) const;
+
+	boost::optional<Merge> erase_tuple_from_branch(const ValueKey& key, int nodeID);
+	boost::optional<Merge> erase_tuple_from_leaf(const ValueKey& key, int nodeID);
+	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
 	/**
 	Finds the ID of the child of the specified branch node whose subtree might contain

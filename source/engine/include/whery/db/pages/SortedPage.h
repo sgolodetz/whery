@@ -80,6 +80,14 @@ public:
 	virtual void delete_tuple(const BackedTuple& tuple) = 0;
 
 	/**
+	Deletes any tuple pointed to by the specified iterator from this page.
+	If the specified iterator equals end(), this is a no-op.
+
+	\param it	An iterator pointing to a tuple on the page, or end().
+	*/
+	virtual void delete_tuple(const TupleSetCIter& it) = 0;
+
+	/**
 	Gets the number of additional tuples that can fit on the page.
 
 	\return	The number of additional tuples that can fit on the page.
