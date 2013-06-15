@@ -35,16 +35,6 @@ void CachedSortedPage::clear()
 	page()->clear();
 }
 
-void CachedSortedPage::delete_tuple(const BackedTuple& tuple)
-{
-	page()->delete_tuple(tuple);
-}
-
-void CachedSortedPage::delete_tuple(const TupleSetCIter& it)
-{
-	page()->delete_tuple(it);
-}
-
 unsigned int CachedSortedPage::empty_tuple_count() const
 {
 	return page()->empty_tuple_count();
@@ -63,6 +53,16 @@ SortedPage::EqualRangeResult CachedSortedPage::equal_range(const RangeKey& key) 
 SortedPage::EqualRangeResult CachedSortedPage::equal_range(const ValueKey& key) const
 {
 	return page()->equal_range(key);
+}
+
+void CachedSortedPage::erase_tuple(const BackedTuple& key)
+{
+	page()->erase_tuple(key);
+}
+
+void CachedSortedPage::erase_tuple(const TupleSetCIter& it)
+{
+	page()->erase_tuple(it);
 }
 
 const std::vector<const FieldManipulator*>& CachedSortedPage::field_manipulators() const

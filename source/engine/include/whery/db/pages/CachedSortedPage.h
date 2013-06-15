@@ -38,12 +38,12 @@ public:
 	virtual TupleSetCIter begin() const;
 	virtual unsigned int buffer_size() const;
 	virtual void clear();
-	virtual void delete_tuple(const BackedTuple& tuple);
-	virtual void delete_tuple(const TupleSetCIter& it);
 	virtual unsigned int empty_tuple_count() const;
 	virtual TupleSetCIter end() const;
 	virtual EqualRangeResult equal_range(const RangeKey& key) const;
 	virtual EqualRangeResult equal_range(const ValueKey& key) const;
+	virtual void erase_tuple(const BackedTuple& key);
+	virtual void erase_tuple(const TupleSetCIter& it);
 	virtual const std::vector<const FieldManipulator*>& field_manipulators() const;
 	virtual TupleSetCIter find(const ValueKey& key) const;
 	virtual TupleSetCIter lower_bound(const RangeKey& key) const;

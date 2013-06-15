@@ -270,17 +270,60 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 
 boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key, int nodeID)
 {
-	// TODO
-	throw 23;
+	// Find the child of this node below which tuples that match the specified key can be found,
+	// and erase the tuple from the subtree below it.
+	// FIXME: This is a duplicate of the logic in lower_bound() - factor it out.
+	SortedPage::TupleSetCIter it = page(nodeID)->lower_bound(key);
+	int childNodeID;
+	if(it == page_begin(nodeID))
+	{
+		childNodeID = m_nodes[nodeID].firstChildID;
+	}
+	else
+	{
+		--it;
+		childNodeID = child_node_id(*it);
+	}
+	boost::optional<Merge> result = erase_tuple_from_subtree(key, childNodeID);
+
+	if(!result)
+	{
+		// The erasure succeeded without direct children of this node being merged.
+		return result;
+	}
+	else
+	{
+		// TODO
+		throw 23;
+	}
 }
 
 boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, int nodeID)
 {
 	SortedPage_Ptr nodePage = page(nodeID);
-	if(nodePage->tuple_count() - 1 >= nodePage->max_tuple_count() / 2)
+
+	// If all of the tuples in the node are less than the key,
+	// and there is a right sibling, erase from that instead.
+	SortedPage::TupleSetCIter it = nodePage->lower_bound(key);
+	if(it == nodePage->end() && m_nodes[nodeID].siblingRightID != -1)
 	{
-		// This node would still be at least half full after a deletion, so simply delete the tuple.
-		nodePage->delete_tuple(nodePage->find(key));
+		return erase_tuple_from_leaf(key, m_nodes[nodeID].siblingRightID);
+	}
+
+	// If the tuple pointed to by the iterator does not compare equal
+	// to the key, then no tuple in the B+-tree does, so early out.
+	PrefixTupleComparator comp;
+	if(comp.compare(*it, key) != 0)
+	{
+		return boost::none;
+	}
+
+	if(nodeID == m_rootID || nodePage->tuple_count() - 1 >= nodePage->max_tuple_count() / 2)
+	{
+		// Either this node is the root (in which case it has no minimum tuple requirement),
+		// or it would still be at least half full after a deletion, so simply erase the
+		// first tuple that matches the key.
+		nodePage->erase_tuple(it);
 		return boost::none;
 	}
 	else
@@ -515,10 +558,10 @@ void BTree::print_subtree(std::ostream& os, int nodeID, unsigned int depth) cons
 
 void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
 {
-	// Delete the index entry for this node from the parent page (an updated index
+	// Erase the index entry for this node from the parent page (an updated index
 	// entry will be re-added below).
 	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-	parentPage->delete_tuple(make_branch_key(*page_begin(nodeID)));
+	parentPage->erase_tuple(make_branch_key(*page_begin(nodeID)));
 
 	// Noting that the tuple must be at least as large as the first tuple on this
 	// page, or we wouldn't be trying to insert it here, we can redistribute the
@@ -533,10 +576,10 @@ void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
 
 void BTree::redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple)
 {
-	// Delete the index entry for the right sibling from the parent page (an updated
+	// Erase the index entry for the right sibling from the parent page (an updated
 	// index entry will be re-added below).
 	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-	parentPage->delete_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
+	parentPage->erase_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
 
 	PrefixTupleComparator comp;
 	if(comp.compare(*page_rbegin(nodeID), tuple) == -1)
@@ -688,7 +731,7 @@ void BTree::transfer_leaf_tuples(int sourceNodeID, int targetNodeID, const std::
 	for(std::vector<BackedTuple>::const_iterator it = tuples.begin(), iend = tuples.end(); it != iend; ++it)
 	{
 		targetPage->add_tuple(*it);
-		sourcePage->delete_tuple(*it);
+		sourcePage->erase_tuple(*it);
 	}
 }
 

@@ -18,9 +18,9 @@ namespace whery {
 /**
 \brief An instance of this class represents a B+-tree.
 
-Note that this implementation is designed to work with data tuples that
-incorporate a unique key, and as such does not support duplicates. This
-turns out to be a minor restriction in practice.
+Note that this implementation is designed to work with tuples that
+incorporate a unique key, and as such does not support duplicates.
+This turns out to be a minor restriction in practice.
 */
 class BTree
 {
@@ -287,7 +287,12 @@ public:
 	*/
 	EqualRangeResult equal_range(const ValueKey& key) const;
 
-	void erase_tuples(const RangeKey& key);
+	/**
+	Erases the first tuple that matches the specified key from the B+-tree.
+	Other tuples that match the specified key remain in the tree.
+
+	\param key	The key denoting the tuple to erase.
+	*/
 	void erase_tuple(const ValueKey& key);
 
 	/**

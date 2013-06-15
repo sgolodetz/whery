@@ -102,8 +102,8 @@ BOOST_AUTO_TEST_CASE(delete_tuple)
 	// Check that the page has the right number of tuples to start with.
 	BOOST_CHECK_EQUAL(page.tuple_count(), 3);
 
-	// Delete the second tuple in the page, i.e. (17,10.0,51) since the page is sorted.
-	page.delete_tuple(tuples[1]);
+	// Erase the second tuple in the page, i.e. (17,10.0,51) since the page is sorted.
+	page.erase_tuple(tuples[1]);
 
 	// Check that deleting a tuple decreases the tuple count of the page
 	// and leaves the other tuples unaffected.

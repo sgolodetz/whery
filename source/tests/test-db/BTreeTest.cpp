@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE(constructor)
 	BOOST_CHECK(tree.begin() == tree.end());
 }
 
+#if 0
 BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 {
 	BTree tree(BTreePageController_CPtr(new TestPageController));
@@ -96,6 +97,31 @@ BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 	{
 		std::cout << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';
 	}
+}
+#endif
+
+BOOST_AUTO_TEST_CASE(erase_tuple)
+{
+	BTree tree(BTreePageController_CPtr(new TestPageController));
+	FreshTuple tuple(tree.leaf_tuple_manipulator());
+
+	int arr[] = {0,1,2,4,5,3};
+	int size = sizeof(arr) / sizeof(int);
+	for(int i = 0; i < size; ++i)
+	{
+		tuple.field(0).set_int(arr[i]);
+		tuple.field(1).set_double(arr[i] * arr[i]);
+		tuple.field(2).set_double(arr[i] * arr[i] * arr[i]);
+		tree.insert_tuple(tuple);
+		tree.print(std::cout);
+		std::cout << '\n';
+	}
+
+	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	key.field(0).set_int(3);
+	tree.erase_tuple(key);
+
+	tree.print(std::cout);
 }
 
 #if 0

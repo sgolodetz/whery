@@ -81,7 +81,7 @@ try
 
 	output(page);
 
-	page.delete_tuple(*boost::next(page.begin(), 2));
+	page.erase_tuple(*boost::next(page.begin(), 2));
 
 	output(page);
 

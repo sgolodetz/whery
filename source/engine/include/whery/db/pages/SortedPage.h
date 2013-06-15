@@ -73,21 +73,6 @@ public:
 	virtual void clear() = 0;
 
 	/**
-	Deletes the specified tuple from the page, if it is present.
-
-	\param tuple	The tuple to delete.
-	*/
-	virtual void delete_tuple(const BackedTuple& tuple) = 0;
-
-	/**
-	Deletes any tuple pointed to by the specified iterator from this page.
-	If the specified iterator equals end(), this is a no-op.
-
-	\param it	An iterator pointing to a tuple on the page, or end().
-	*/
-	virtual void delete_tuple(const TupleSetCIter& it) = 0;
-
-	/**
 	Gets the number of additional tuples that can fit on the page.
 
 	\return	The number of additional tuples that can fit on the page.
@@ -114,6 +99,22 @@ public:
 	\return	The pair [lower_bound(key), upper_bound(key)].
 	*/
 	virtual EqualRangeResult equal_range(const ValueKey& key) const = 0;
+
+	/**
+	Erases the first tuple that matches the specified key from the page.
+	Other tuples that match the specified key remain on the page.
+
+	\param key	The key denoting the tuple to erase.
+	*/
+	virtual void erase_tuple(const BackedTuple& key) = 0;
+
+	/**
+	Erases any tuple pointed to by the specified iterator from the page.
+	If the specified iterator equals end(), this is a no-op.
+
+	\param it	An iterator pointing to a tuple on the page, or end().
+	*/
+	virtual void erase_tuple(const TupleSetCIter& it) = 0;
 
 	/**
 	Gets the manipulators for the fields of the tuples on the page.
