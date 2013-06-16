@@ -429,17 +429,6 @@ private:
 	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
 	/**
-	Finds the ID of the child of the specified branch node whose subtree might contain
-	the specified leaf tuple.
-
-	\param tuple		The leaf tuple for which to find the child node.
-	\param branchNodeID	The ID of the branch node in which to search.
-	\return				The ID of the node of the branch node whose subtree
-						might contain the leaf tuple.
-	*/
-	int find_child(const Tuple& leafTuple, int branchNodeID) const;
-
-	/**
 	Inserts a fresh node into the B+-tree as the right sibling of the specified node
 	and with the same parent. Note that this function makes no attempt to update the
 	parent of the two nodes, and should therefore only be used as part of a larger
@@ -479,6 +468,18 @@ private:
 	\return			The result of any split that occurs, or boost::none otherwise.
 	*/
 	boost::optional<Split> insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
+
+	/**
+	Returns the ID of the child to the left of the pointed-to index entry in the
+	specified branch node. (If the iterator points to the end of the index entries,
+	this will return the right child of the last index entry.)
+
+	\param it			An iterator pointing either to an index entry in the branch node
+						or to the end of those index entries.
+	\param branchNodeID	The ID of the branch node containing the index entries.
+	\return				The ID of the child to the left of the pointed-to index entry.
+	*/
+	int left_child_of(const SortedPage::TupleSetCIter& it, int branchNodeID) const;
 
 	/**
 	Makes a value key that can be used to search for tuples within a branch node. This has

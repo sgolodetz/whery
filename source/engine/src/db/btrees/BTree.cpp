@@ -111,21 +111,7 @@ BTree::ConstIterator BTree::lower_bound(const ValueKey& key) const
 	// the iterator it points to the lower bound of the key in the current node.
 	while(m_nodes[id].has_children())
 	{
-		if(it == page_begin(id))
-		{
-			// If all of the tuples in the current node are greater than or equal
-			// to the key, then continue to the left-most child of the node.
-			id = m_nodes[id].firstChildID;
-		}
-		else
-		{
-			// Otherwise, the key is less than or equal to the lower bound in this node,
-			// and greater than its predecessor, so continue to the child to the right
-			// of the lower bound's predecessor.
-			--it;
-			id = child_node_id(*it);
-		}
-
+		id = left_child_of(it, id);
 		it = page(id)->lower_bound(key);
 	}
 
@@ -180,21 +166,7 @@ BTree::ConstIterator BTree::upper_bound(const ValueKey& key) const
 	// the iterator it points to the upper bound of the key in the current node.
 	while(m_nodes[id].has_children())
 	{
-		if(it == page_begin(id))
-		{
-			// If all of the tuples in the current node are greater than the key,
-			// then continue to the left-most child of the node.
-			id = m_nodes[id].firstChildID;
-		}
-		else
-		{
-			// Otherwise, the key is less than the upper bound in this node, and
-			// greater than or equal to its predecessor, so continue to the child
-			// to the right of the upper bound's predecessor.
-			--it;
-			id = child_node_id(*it);
-		}
-
+		id = left_child_of(it, id);
 		it = page(id)->upper_bound(key);
 	}
 
@@ -272,23 +244,12 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 {
 	// Find the child of this node below which tuples that match the specified key can be found,
 	// and erase the tuple from the subtree below it.
-	// FIXME: This is a duplicate of the logic in lower_bound() - factor it out.
-	SortedPage::TupleSetCIter it = page(nodeID)->lower_bound(key);
-	int childNodeID;
-	if(it == page_begin(nodeID))
-	{
-		childNodeID = m_nodes[nodeID].firstChildID;
-	}
-	else
-	{
-		--it;
-		childNodeID = child_node_id(*it);
-	}
+	int childNodeID = left_child_of(page(nodeID)->lower_bound(key), nodeID);
 	boost::optional<Merge> result = erase_tuple_from_subtree(key, childNodeID);
 
 	if(!result)
 	{
-		// The erasure succeeded without direct children of this node being merged.
+		// The erasure succeeded without any direct children of this node being merged.
 		return result;
 	}
 	else
@@ -345,30 +306,6 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_subtree(const ValueKey& ke
 	}
 }
 
-int BTree::find_child(const Tuple& leafTuple, int branchNodeID) const
-{
-	assert(leafTuple.arity() == leaf_tuple_manipulator().arity());
-	assert(m_nodes[branchNodeID].has_children());
-
-	SortedPage::TupleSetCIter it = page(branchNodeID)->upper_bound(make_branch_key(leafTuple));
-
-	int result;
-	if(it == page_begin(branchNodeID))
-	{
-		// If the key is less than the first key in the branch node,
-		// then the leaf tuple might be within the first child node.
-		result = m_nodes[branchNodeID].firstChildID;
-	}
-	else
-	{
-		// Otherwise, return the child node ID from the relevant index entry.
-		--it;
-		result = child_node_id(*it);
-	}
-
-	return result;
-}
-
 void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
 {
 	m_nodes[freshID].parentID = m_nodes[existingID].parentID;
@@ -383,7 +320,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 {
 	// Find the child of this node below which the specified tuple should be inserted,
 	// and insert the tuple into the subtree below it.
-	int childNodeID = find_child(tuple, nodeID);
+	int childNodeID = left_child_of(page(nodeID)->upper_bound(make_branch_key(tuple)), nodeID);
 	boost::optional<Split> result = insert_tuple_into_subtree(tuple, childNodeID);
 
 	if(!result)
@@ -453,6 +390,20 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_subtree(const Tuple& tupl
 	else
 	{
 		return insert_tuple_into_leaf(tuple, nodeID);
+	}
+}
+
+int BTree::left_child_of(const SortedPage::TupleSetCIter& it, int branchNodeID) const
+{
+	if(it == page_begin(branchNodeID))
+	{
+		return m_nodes[branchNodeID].firstChildID;
+	}
+	else
+	{
+		SortedPage::TupleSetCIter jt = it;
+		--jt;
+		return child_node_id(*jt);
 	}
 }
 
