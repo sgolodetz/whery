@@ -385,6 +385,14 @@ private:
 	int add_branch_node();
 
 	/**
+	Adds an index entry for the specified node to its parent node.
+	Evidently the node must have a parent for this to work.
+
+	\param nodeID	The ID of the node for which to add an index entry.
+	*/
+	void add_index_entry(int nodeID);
+
+	/**
 	Adds a leaf (data) node that can be connected to the rest of the B+-tree.
 
 	\return	The ID of the leaf node.
@@ -423,6 +431,14 @@ private:
 	\return				The child node ID from the tuple.
 	*/
 	int child_node_id(const BackedTuple& branchTuple) const;
+
+	/**
+	Erases the index entry for the specified node from its parent node. The node
+	must have a parent and must not be the parent's first child.
+
+	\param nodeID	The ID of the node whose index entry should be erased.
+	*/
+	void erase_index_entry(int nodeID);
 
 	boost::optional<Merge> erase_tuple_from_branch(const ValueKey& key, int nodeID);
 	boost::optional<Merge> erase_tuple_from_leaf(const ValueKey& key, int nodeID);

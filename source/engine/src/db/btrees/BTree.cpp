@@ -193,6 +193,13 @@ int BTree::add_branch_node()
 	return id;
 }
 
+void BTree::add_index_entry(int nodeID)
+{
+	assert(m_nodes[nodeID].parentID != -1);
+	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+	parentPage->add_tuple(make_branch_tuple(*page_begin(nodeID), nodeID));
+}
+
 int BTree::add_leaf_node()
 {
 	int id = add_node();
@@ -238,6 +245,20 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	int id = branchTuple.field(branchTuple.arity() - 1).get_int();
 	assert(0 <= id && static_cast<unsigned int>(id) < m_nodes.size() && page(id).get() != NULL);
 	return id;
+}
+
+void BTree::erase_index_entry(int nodeID)
+{
+	assert(m_nodes[nodeID].parentID != -1);
+	assert(m_nodes[m_nodes[nodeID].parentID].firstChildID != nodeID);
+
+	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+
+	ValueKey key = make_branch_key(*page_begin(nodeID));
+	SortedPage::TupleSetCIter it = parentPage->upper_bound(key);
+	--it;
+
+	parentPage->erase_tuple(it);
 }
 
 boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key, int nodeID)
@@ -511,8 +532,7 @@ void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
 {
 	// Erase the index entry for this node from the parent page (an updated index
 	// entry will be re-added below).
-	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-	parentPage->erase_tuple(make_branch_key(*page_begin(nodeID)));
+	erase_index_entry(nodeID);
 
 	// Noting that the tuple must be at least as large as the first tuple on this
 	// page, or we wouldn't be trying to insert it here, we can redistribute the
@@ -522,15 +542,14 @@ void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
 	page(nodeID)->add_tuple(tuple);
 
 	// Re-add an index entry for this node to the parent page.
-	parentPage->add_tuple(make_branch_tuple(*page_begin(nodeID), nodeID));
+	add_index_entry(nodeID);
 }
 
 void BTree::redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple)
 {
 	// Erase the index entry for the right sibling from the parent page (an updated
 	// index entry will be re-added below).
-	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-	parentPage->erase_tuple(make_branch_key(*page_begin(m_nodes[nodeID].siblingRightID)));
+	erase_index_entry(m_nodes[nodeID].siblingRightID);
 
 	PrefixTupleComparator comp;
 	if(comp.compare(*page_rbegin(nodeID), tuple) == -1)
@@ -551,7 +570,7 @@ void BTree::redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple)
 	}
 
 	// Re-add an index entry for the right sibling to the parent page.
-	parentPage->add_tuple(make_branch_tuple(*page_begin(m_nodes[nodeID].siblingRightID), m_nodes[nodeID].siblingRightID));
+	add_index_entry(m_nodes[nodeID].siblingRightID);
 }
 
 void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID)

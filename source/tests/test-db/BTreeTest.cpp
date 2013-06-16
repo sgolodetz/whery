@@ -118,8 +118,15 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 	}
 
 	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
-	key.field(0).set_int(3);
+	key.field(0).set_int(2);
 	tree.erase_tuple(key);
+
+	tree.print(std::cout);
+
+	tuple.field(0).set_int(1);
+	tuple.field(1).set_double(0.0);
+	tuple.field(2).set_double(0.0);
+	tree.insert_tuple(tuple);
 
 	tree.print(std::cout);
 }
