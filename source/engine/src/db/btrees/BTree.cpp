@@ -300,12 +300,30 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, 
 		return boost::none;
 	}
 
-	if(nodeID == m_rootID || nodePage->tuple_count() - 1 >= nodePage->max_tuple_count() / 2)
+	if(nodeID == m_rootID || has_more_than_min_tuples(nodeID))
 	{
 		// Either this node is the root (in which case it has no minimum tuple requirement),
 		// or it would still be at least half full after a deletion, so simply erase the
 		// first tuple that matches the key.
 		nodePage->erase_tuple(it);
+		return boost::none;
+	}
+	else if(m_nodes[nodeID].siblingLeftID != -1 &&
+			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
+			has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
+	{
+		// This node would be less than half full after a deletion, but its left sibling
+		// has a tuple to spare, so we can avoid the need for a merge.
+		redistribute_from_left_leaf_and_erase(nodeID, it);
+		return boost::none;
+	}
+	else if(m_nodes[nodeID].siblingRightID != -1 &&
+			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
+			has_more_than_min_tuples(m_nodes[nodeID].siblingRightID))
+	{
+		// This node would be less than half full after a deletion, but its right sibling
+		// has a tuple to spare, so we can avoid the need for a merge.
+		redistribute_from_right_leaf_and_erase(nodeID, it);
 		return boost::none;
 	}
 	else
@@ -325,6 +343,16 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_subtree(const ValueKey& ke
 	{
 		return erase_tuple_from_leaf(key, nodeID);
 	}
+}
+
+bool BTree::has_less_than_max_tuples(int nodeID) const
+{
+	return page(nodeID)->empty_tuple_count() > 0;
+}
+
+bool BTree::has_more_than_min_tuples(int nodeID) const
+{
+	return page(nodeID)->tuple_count() - 1 >= page(nodeID)->max_tuple_count() / 2;
 }
 
 void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
@@ -349,7 +377,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 		// The insertion succeeded without needing to split the direct child of this node.
 		return result;
 	}
-	else if(page(nodeID)->empty_tuple_count() > 0)
+	else if(has_less_than_max_tuples(nodeID))
 	{
 		// The child of this node was split, and there's space in this node, so
 		// insert an index entry for the right-hand node returned by the split.
@@ -368,7 +396,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 
 boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, int nodeID)
 {
-	if(page(nodeID)->empty_tuple_count() > 0)
+	if(has_less_than_max_tuples(nodeID))
 	{
 		// This node has spare capacity, so simply insert the tuple into it.
 		page(nodeID)->add_tuple(tuple);
@@ -376,7 +404,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	}
 	else if(m_nodes[nodeID].siblingLeftID != -1 &&
 			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
-			page(m_nodes[nodeID].siblingLeftID)->empty_tuple_count() > 0)
+			has_less_than_max_tuples(m_nodes[nodeID].siblingLeftID))
 	{
 		// This node is full, but its left sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
@@ -385,7 +413,7 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 	}
 	else if(m_nodes[nodeID].siblingRightID != -1 &&
 			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
-			page(m_nodes[nodeID].siblingRightID)->empty_tuple_count() > 0)
+			has_less_than_max_tuples(m_nodes[nodeID].siblingRightID))
 	{
 		// This node is full, but its right sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
@@ -528,6 +556,50 @@ void BTree::print_subtree(std::ostream& os, int nodeID, unsigned int depth) cons
 	}
 }
 
+void BTree::redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it)
+{
+	// Erase the index entry for this node from the parent page (an updated index
+	// entry will be re-added below).
+	erase_index_entry(nodeID);
+
+	// Erase the tuple (temporarily breaking the minimum tuple invariant for the page).
+	page(nodeID)->erase_tuple(it);
+
+	// Restore the minimum tuple invariant by transferring a tuple across from the left sibling.
+	transfer_leaf_tuples_right(m_nodes[nodeID].siblingLeftID, 1);
+
+	// Re-add an index entry for this node to the parent page.
+	add_index_entry(nodeID);
+}
+
+void BTree::redistribute_from_right_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it)
+{
+	// Erase the index entry for the right sibling from the parent page (an updated index
+	// entry will be re-added below).
+	erase_index_entry(m_nodes[nodeID].siblingRightID);
+
+	// If this node is not its parent's first child, similarly erase its index entry.
+	if(nodeID != m_nodes[m_nodes[nodeID].parentID].firstChildID)
+	{
+		erase_index_entry(nodeID);
+	}
+
+	// Erase the tuple (temporarily breaking the minimum tuple invariant for the page).
+	page(nodeID)->erase_tuple(it);
+
+	// Restore the minimum tuple invariant by transferring a tuple across from the right sibling.
+	transfer_leaf_tuples_left(m_nodes[nodeID].siblingRightID, 1);
+
+	// Re-add an index entry for the right sibling to the parent page.
+	add_index_entry(m_nodes[nodeID].siblingRightID);
+
+	// If this node is not its parent's first child, similarly re-add an index entry for it.
+	if(nodeID != m_nodes[m_nodes[nodeID].parentID].firstChildID)
+	{
+		add_index_entry(nodeID);
+	}
+}
+
 void BTree::redistribute_leaf_left_and_insert(int nodeID, const Tuple& tuple)
 {
 	// Erase the index entry for this node from the parent page (an updated index
@@ -600,8 +672,7 @@ void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rig
 BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 {
 	// Check the precondition.
-	SortedPage_Ptr nodePage = page(nodeID);
-	if(nodePage->empty_tuple_count() > 0)
+	if(has_less_than_max_tuples(nodeID))
 	{
 		throw std::invalid_argument("Cannot split a non-full leaf node.");
 	}
@@ -611,7 +682,7 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 	insert_node_as_right_sibling_of(nodeID, freshID);
 
 	// Transfer half of the tuples across to the fresh node.
-	transfer_leaf_tuples_right(nodeID, nodePage->tuple_count() / 2);
+	transfer_leaf_tuples_right(nodeID, page(nodeID)->tuple_count() / 2);
 
 	// Insert the original tuple into the appropriate node.
 	selectively_insert_tuple(tuple, nodeID, freshID);
@@ -625,8 +696,7 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 {
 	// Check the precondition.
-	SortedPage_Ptr nodePage = page(nodeID);
-	if(nodePage->empty_tuple_count() > 0)
+	if(has_less_than_max_tuples(nodeID))
 	{
 		throw std::invalid_argument("Cannot split a non-full branch node.");
 	}
@@ -639,6 +709,7 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	typedef std::multiset<FreshTuple,PrefixTupleComparator> FreshTupleSet;
 	FreshTupleSet tuples;
 	TupleManipulator branchTupleManipulator = branch_tuple_manipulator();
+	SortedPage_Ptr nodePage = page(nodeID);
 	for(SortedPage::TupleSetCIter it = nodePage->begin(), iend = nodePage->end(); it != iend; ++it)
 	{
 		FreshTuple temp(branchTupleManipulator);

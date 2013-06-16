@@ -445,6 +445,26 @@ private:
 	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
 	/**
+	Checks whether or not the specified node contains less than the maximum number
+	of tuples that can be stored in a node.
+
+	\param nodeID	The ID of the node to check.
+	\return			true, if the specified node has less than the maximum number of
+					tuples that can be stored in a node, or false otherwise.
+	*/
+	bool has_less_than_max_tuples(int nodeID) const;
+
+	/**
+	Checks whether or not the specified node contains more than the minimum number
+	of tuples that can be stored in a node.
+
+	\param nodeID	The ID of the node to check.
+	\return			true, if the specified node has more than the minimum number of
+					tuples that can be stored in a node, or false otherwise.
+	*/
+	bool has_more_than_min_tuples(int nodeID) const;
+
+	/**
 	Inserts a fresh node into the B+-tree as the right sibling of the specified node
 	and with the same parent. Note that this function makes no attempt to update the
 	parent of the two nodes, and should therefore only be used as part of a larger
@@ -567,6 +587,30 @@ private:
 	\param depth	The depth of the node in the tree (starting from 0 at the overall root).
 	*/
 	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
+
+	/**
+	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
+	the last tuple across from its left sibling (with the same parent) to ensure that the
+	minimum tuple requirement is still met. The left sibling must itself have a tuple to
+	spare to ensure that moving one does not break its own tuple requirements. Note that
+	this function appropriately updates the parent of the two nodes.
+
+	\param nodeID	The ID of the node containing the tuple being erased.
+	\param it		An iterator pointing to the tuple to be erased.
+	*/
+	void redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it);
+
+	/**
+	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
+	the first tuple across from its right sibling (with the same parent) to ensure that the
+	minimum tuple requirement is still met. The right sibling must itself have a tuple to
+	spare to ensure that moving one does not break its own tuple requirements. Note that
+	this function appropriately updates the parent of the two nodes.
+
+	\param nodeID	The ID of the node containing the tuple being erased.
+	\param it		An iterator pointing to the tuple to be erased.
+	*/
+	void redistribute_from_right_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it);
 
 	/**
 	Moves the first tuple from a full leaf to its non-full left sibling (with the same parent)
