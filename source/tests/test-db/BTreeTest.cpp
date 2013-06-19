@@ -142,6 +142,18 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 	tree.print(std::cout);
 	std::cout << '\n';
 
+	key.field(0).set_int(4);
+	tree.erase_tuple(key);
+
+	tree.print(std::cout);
+	std::cout << '\n';
+
+	key.field(0).set_int(5);
+	tree.erase_tuple(key);
+
+	tree.print(std::cout);
+	std::cout << '\n';
+
 #if 0
 	tuple.field(0).set_int(1);
 	tuple.field(1).set_double(0.0);

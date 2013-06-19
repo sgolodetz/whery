@@ -279,13 +279,43 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 
 	if(!result)
 	{
-		// The erasure succeeded without any direct children of this node being merged.
+		// The erasure succeeded without any merge occurring on the level directly below this one.
 		return result;
 	}
 	else
 	{
-		// TODO
-		throw 23;
+		// A merge occurred in the level below this one, so check whether the minimum tuple invariant
+		// for the node in this level has been violated and restore it if it has.
+
+		// Get the ID of the relevant node at this level (the parent of the node resulting from the lower-level merge).
+		int relevantNodeID = m_nodes[result->nodeID].parentID;
+
+		if(relevantNodeID == m_rootID)
+		{
+			// If the relevant node is the root and the merge in the level below erased the last tuple in it,
+			// decrease the height of the tree.
+			if(page(relevantNodeID)->tuple_count() == 0)
+			{
+				int oldRootID = m_rootID;
+				m_rootID = m_nodes[m_rootID].firstChildID;
+				m_nodes[m_rootID].parentID = -1;
+				delete_node(oldRootID);
+			}
+
+			return boost::none;
+		}
+		else
+		{
+			// If the relevant node is not the root and its minimum tuple invariant has been violated,
+			// restore it by redistributing tuples from a sibling node or merging with a sibling node.
+			// FIXME: Factor this out into a predicate.
+			if(page(relevantNodeID)->tuple_count() >= page(relevantNodeID)->max_tuple_count() / 2)
+			{
+				// TODO
+				throw 23;
+			}
+			else return boost::none;
+		}
 	}
 }
 
@@ -535,8 +565,7 @@ boost::optional<BTree::Merge> BTree::merge_leaves_and_erase(int nodeID, const So
 	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
 	delete_node(rightNodeID);
 
-	// TODO: Return the result.
-	return boost::none;
+	return Merge(leftNodeID);
 }
 
 SortedPage_Ptr BTree::page(int nodeID) const

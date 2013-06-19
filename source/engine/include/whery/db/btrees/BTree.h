@@ -81,7 +81,17 @@ private:
 	*/
 	struct Merge
 	{
-		// TODO
+		/** The ID of the node resulting from the merge. */
+		const int nodeID;
+
+		/**
+		Constructs a merge.
+
+		\param nodeID	The ID of the node resulting from the merge.
+		*/
+		explicit Merge(int nodeID_)
+		:	nodeID(nodeID_)
+		{}
 	};
 
 	/**
