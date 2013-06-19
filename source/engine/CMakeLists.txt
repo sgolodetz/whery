@@ -58,6 +58,12 @@ include/whery/db/btrees/BTreePageController.h
 )
 
 ##
+SET(db_entities_headers
+include/whery/db/entities/Entity.h
+include/whery/db/entities/EntityCache.h
+)
+
+##
 SET(db_pages_sources
 src/db/pages/InMemorySortedPage.cpp
 )
@@ -65,6 +71,11 @@ src/db/pages/InMemorySortedPage.cpp
 SET(db_pages_headers
 include/whery/db/pages/InMemorySortedPage.h
 include/whery/db/pages/SortedPage.h
+)
+
+##
+SET(db_transactions_headers
+include/whery/db/transactions/Transaction.h
 )
 
 ##
@@ -94,7 +105,9 @@ ${util_sources}
 SET(headers
 ${db_base_headers}
 ${db_btrees_headers}
+${db_entities_headers}
 ${db_pages_headers}
+${db_transactions_headers}
 ${util_headers}
 )
 
@@ -114,8 +127,14 @@ SOURCE_GROUP(db\\btrees\\.cpp FILES ${db_btrees_sources})
 SOURCE_GROUP(db\\btrees\\.h FILES ${db_btrees_headers})
 
 ##
+SOURCE_GROUP(db\\entities\\.h FILES ${db_entities_headers})
+
+##
 SOURCE_GROUP(db\\pages\\.cpp FILES ${db_pages_sources})
 SOURCE_GROUP(db\\pages\\.h FILES ${db_pages_headers})
+
+##
+SOURCE_GROUP(db\\transactions\\.h FILES ${db_transactions_headers})
 
 ##
 SOURCE_GROUP(util\\.cpp FILES ${util_sources})
