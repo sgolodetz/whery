@@ -433,6 +433,14 @@ private:
 	int child_node_id(const BackedTuple& branchTuple) const;
 
 	/**
+	Deletes the specified node from the B+-tree. Note that the caller is responsible
+	for updating other nodes in the tree where necessary.
+
+	\param nodeID	The ID of the node to delete.
+	*/
+	void delete_node(int nodeID);
+
+	/**
 	Erases the index entry for the specified node from its parent node. The node
 	must have a parent and must not be the parent's first child.
 
@@ -539,6 +547,8 @@ private:
 	*/
 	FreshTuple make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const;
 
+	boost::optional<Merge> merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID);
+
 	/**
 	Returns the page of the specified node.
 
@@ -601,8 +611,8 @@ private:
 	void redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it);
 
 	/**
-	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
-	the first tuple across from its right sibling (with the same parent) to ensure that the
+	Erases the tuple pointed to by the iterator from the specified leaf, and then moves the
+	first tuple across from its right sibling (with the same parent) to ensure that the
 	minimum tuple requirement is still met. The right sibling must itself have a tuple to
 	spare to ensure that moving one does not break its own tuple requirements. Note that
 	this function appropriately updates the parent of the two nodes.

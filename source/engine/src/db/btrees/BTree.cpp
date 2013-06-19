@@ -247,6 +247,15 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	return id;
 }
 
+void BTree::delete_node(int nodeID)
+{
+	m_nodeIDAllocator.deallocate(nodeID);
+
+	Node& n = m_nodes[nodeID];
+	n.page.reset();
+	n.firstChildID = n.parentID = n.siblingLeftID = n.siblingRightID = -1;
+}
+
 void BTree::erase_index_entry(int nodeID)
 {
 	assert(m_nodes[nodeID].parentID != -1);
@@ -308,28 +317,47 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, 
 		nodePage->erase_tuple(it);
 		return boost::none;
 	}
-	else if(m_nodes[nodeID].siblingLeftID != -1 &&
-			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
-			has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
-	{
-		// This node would be less than half full after a deletion, but its left sibling
-		// has a tuple to spare, so we can avoid the need for a merge.
-		redistribute_from_left_leaf_and_erase(nodeID, it);
-		return boost::none;
-	}
-	else if(m_nodes[nodeID].siblingRightID != -1 &&
-			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
-			has_more_than_min_tuples(m_nodes[nodeID].siblingRightID))
-	{
-		// This node would be less than half full after a deletion, but its right sibling
-		// has a tuple to spare, so we can avoid the need for a merge.
-		redistribute_from_right_leaf_and_erase(nodeID, it);
-		return boost::none;
-	}
 	else
 	{
-		// TODO
-		throw 23;
+		// Check whether the node has a "useful" left or right sibling, i.e. one that has the same parent as it
+		// (noting that we can't redistribute tuples between or merge nodes that do not have the same parent).
+		bool hasUsefulLeftSibling =		m_nodes[nodeID].siblingLeftID != -1 &&
+										m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID;
+		bool hasUsefulRightSibling =	m_nodes[nodeID].siblingRightID != -1 &&
+										m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID;
+
+		// The node must have at least one useful sibling, since otherwise the B+-tree would be invalid (we know
+		// that this node is the child of a branch node, and all branch nodes have at least two children).
+		assert(hasUsefulLeftSibling || hasUsefulRightSibling);
+
+		if(hasUsefulLeftSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
+		{
+			// This node would be less than half full after a deletion, but its left sibling
+			// has a tuple to spare, so we can avoid the need for a merge.
+			redistribute_from_left_leaf_and_erase(nodeID, it);
+			return boost::none;
+		}
+		else if(hasUsefulRightSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingRightID))
+		{
+			// This node would be less than half full after a deletion, but its right sibling
+			// has a tuple to spare, so we can avoid the need for a merge.
+			redistribute_from_right_leaf_and_erase(nodeID, it);
+			return boost::none;
+		}
+		else if(hasUsefulLeftSibling)
+		{
+			// This node would be less than half full after a deletion, and no redistribution from
+			// a sibling is possible; it does however have a useful left sibling, so first erase
+			// the tuple and then merge the two nodes.
+			return merge_leaves_and_erase(nodeID, it, m_nodes[nodeID].siblingLeftID, nodeID);
+		}
+		else
+		{
+			// This node would be less than half full after a deletion, and no redistribution from
+			// a sibling is possible; it does however have a useful right sibling, so first erase
+			// the tuple and then merge the two nodes.
+			return merge_leaves_and_erase(nodeID, it, nodeID, m_nodes[nodeID].siblingRightID);
+		}
 	}
 }
 
@@ -488,6 +516,27 @@ FreshTuple BTree::make_branch_tuple(const Tuple& sourceTuple, int childNodeID) c
 	result.field(result.arity() - 1).set_int(childNodeID);
 
 	return result;
+}
+
+boost::optional<BTree::Merge> BTree::merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID)
+{
+	// Erase the index entry for the right-hand node from the parent page.
+	erase_index_entry(rightNodeID);
+
+	// Erase the tuple itself.
+	page(nodeID)->erase_tuple(it);
+
+	// Transfer all tuples from the right-hand node to the left-hand node.
+	assert(page(leftNodeID)->tuple_count() + page(rightNodeID)->tuple_count() <= page(leftNodeID)->max_tuple_count());
+	transfer_leaf_tuples_left(rightNodeID, page(rightNodeID)->tuple_count());
+
+	// Disconnect the right-hand node from the B+-tree and delete it.
+	m_nodes[leftNodeID].siblingRightID = m_nodes[rightNodeID].siblingRightID;
+	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
+	delete_node(rightNodeID);
+
+	// TODO: Return the result.
+	return boost::none;
 }
 
 SortedPage_Ptr BTree::page(int nodeID) const
