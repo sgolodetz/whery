@@ -6,6 +6,8 @@
 #ifndef H_WHERY_TRANSACTION
 #define H_WHERY_TRANSACTION
 
+#include "whery/db/entities/EntityCache.h"
+
 namespace whery {
 
 /**
@@ -17,7 +19,21 @@ in the course of executing the program and whether they are modified.
 */
 class Transaction
 {
-	// TODO
+	//#################### PUBLIC METHODS ####################
+public:
+	template <typename T>
+	boost::shared_ptr<T> acquire_exclusive_entity(const EntityCacheID& id, const boost::shared_ptr<T>& /* dummy */)
+	{
+		// TODO
+		throw 23;
+	}
+
+	template <typename T>
+	boost::shared_ptr<const T> acquire_shared_entity(const EntityCacheID& id, const boost::shared_ptr<const T>& /* dummy */)
+	{
+		// TODO
+		throw 23;
+	}
 };
 
 }
