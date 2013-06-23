@@ -427,9 +427,29 @@ SortedPage::TupleSetCIter BTree::find_index_entry(int nodeID) const
 
 	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
 
-	ValueKey key = make_branch_key(*page_begin(nodeID));
-	SortedPage::TupleSetCIter it = parentPage->upper_bound(key);
-	--it;
+	SortedPage::TupleSetCIter it;
+	if(page(nodeID)->tuple_count() > 0)
+	{
+		// Normally, the node itself will contain at least one tuple,
+		// in which case we can use that to search for the entry in
+		// the parent node. However, this may conceivably not be the
+		// case during an erase operation, since the last tuple may
+		// have been deleted by a lower-level merge.
+		ValueKey key = make_branch_key(*page_begin(nodeID));
+		it = parentPage->upper_bound(key);
+		--it;
+	}
+	else
+	{
+		// If the node itself has no tuples due to an ongoing erase
+		// operation, we instead search for the entry using a tuple
+		// from its left sibling. This must exist and have the same
+		// parent as the node, since it is a precondition of this
+		// method that the node is not its parent's first child.
+		assert(is_useful_sibling(nodeID, m_nodes[nodeID].siblingLeftID));
+		ValueKey key = make_branch_key(*page_begin(m_nodes[nodeID].siblingLeftID));
+		it = parentPage->upper_bound(key);
+	}
 
 	return it;
 }

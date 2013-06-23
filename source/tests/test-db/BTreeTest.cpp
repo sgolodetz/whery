@@ -118,10 +118,11 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 		std::cout << '\n';
 	}
 
+	int darr[] = {0,1,7,8};
 	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
 	for(int i = 0; i < size; ++i)
 	{
-		key.field(0).set_int(arr[i]);
+		key.field(0).set_int(darr[i]);
 		tree.erase_tuple(key);
 		tree.print(std::cout);
 		std::cout << '\n';
