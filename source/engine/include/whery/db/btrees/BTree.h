@@ -616,6 +616,8 @@ private:
 
 	void redistribute_from_left_branch(int nodeID);
 
+	void redistribute_from_right_branch(int nodeID);
+
 	/**
 	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
 	the last tuple across from its left sibling (with the same parent) to ensure that the

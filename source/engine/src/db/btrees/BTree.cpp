@@ -324,7 +324,8 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 			else if(hasUsefulRightSibling && has_more_than_min_tuples(m_nodes[relevantNodeID].siblingRightID))
 			{
 				// TODO
-				throw 23;
+				redistribute_from_right_branch(relevantNodeID);
+				return boost::none;
 			}
 			else if(hasUsefulLeftSibling)
 			{
@@ -739,6 +740,32 @@ void BTree::redistribute_from_left_branch(int nodeID)
 	// Update the first child of the node to be the last child of its left sibling.
 	m_nodes[nodeID].firstChildID = childID;
 	m_nodes[childID].parentID = nodeID;
+}
+
+void BTree::redistribute_from_right_branch(int nodeID)
+{
+	assert(m_nodes[nodeID].has_children());
+	assert(is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID));
+
+	// Pull the index entry for the node's right sibling down from the parent into this node.
+	// TODO: This is similar to code in merge_branches and redistribute_from_left_branch - factor out the commonality.
+	SortedPage::TupleSetCIter it = find_index_entry(m_nodes[nodeID].siblingRightID);
+	page(nodeID)->add_tuple(make_branch_tuple(*it, m_nodes[m_nodes[nodeID].siblingRightID].firstChildID));
+	page(m_nodes[nodeID].parentID)->erase_tuple(it);
+
+	// Update the parent pointer of the new last child of this node to point to this node.
+	m_nodes[child_node_id(*page_rbegin(nodeID))].parentID = nodeID;
+
+	// Make a note of the right child of the first node of the right sibling.
+	SortedPage_Ptr rightPage = page(m_nodes[nodeID].siblingRightID);
+	int childID = child_node_id(*rightPage->begin());
+
+	// Push the first index entry of the right sibling up to the parent node.
+	page(m_nodes[nodeID].parentID)->add_tuple(make_branch_tuple(*rightPage->begin(), m_nodes[nodeID].siblingRightID));
+	rightPage->erase_tuple(rightPage->begin());
+
+	// Update the first child of the right sibling to be the stored child value.
+	m_nodes[m_nodes[nodeID].siblingRightID].firstChildID = childID;
 }
 
 void BTree::redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it)
