@@ -117,6 +117,14 @@ public:
 	virtual void erase_tuple(const TupleSetCIter& it) = 0;
 
 	/**
+	Erases any tuple pointed to by the specified reverse iterator from the page.
+	If the specified iterator equals rend(), this is a no-op.
+
+	\param rit	A reverse iterator pointing to a tuple on the page, or rend().
+	*/
+	virtual void erase_tuple(const TupleSetCRIter& rit) = 0;
+
+	/**
 	Gets the manipulators for the fields of the tuples on the page.
 
 	\return	The manipulators for the fields of the tuples on the page.

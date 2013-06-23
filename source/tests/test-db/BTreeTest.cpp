@@ -118,7 +118,8 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 		std::cout << '\n';
 	}
 
-	int darr[] = {0,1,7,8};
+	int darr[] = {0,1,2,7,8};
+	size = sizeof(darr) / sizeof(int);
 	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
 	for(int i = 0; i < size; ++i)
 	{

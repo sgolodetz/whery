@@ -81,6 +81,16 @@ void InMemorySortedPage::erase_tuple(const TupleSetCIter& it)
 	}
 }
 
+void InMemorySortedPage::erase_tuple(const TupleSetCRIter& rit)
+{
+	if(rit != m_tuples.rend())
+	{
+		TupleSetCIter it = rit.base();
+		--it;
+		erase_tuple(it);
+	}
+}
+
 unsigned int InMemorySortedPage::empty_tuple_count() const
 {
 	return max_tuple_count() - tuple_count();

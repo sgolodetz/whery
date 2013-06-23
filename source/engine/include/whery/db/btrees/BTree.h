@@ -614,6 +614,8 @@ private:
 	*/
 	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
 
+	void redistribute_from_left_branch(int nodeID);
+
 	/**
 	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
 	the last tuple across from its left sibling (with the same parent) to ensure that the

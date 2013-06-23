@@ -65,6 +65,11 @@ void CachedSortedPage::erase_tuple(const TupleSetCIter& it)
 	page()->erase_tuple(it);
 }
 
+void CachedSortedPage::erase_tuple(const TupleSetCRIter& rit)
+{
+	page()->erase_tuple(rit);
+}
+
 const std::vector<const FieldManipulator*>& CachedSortedPage::field_manipulators() const
 {
 	return page()->field_manipulators();
