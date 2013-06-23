@@ -740,6 +740,8 @@ private:
 	void update_parent_pointers(int oldParentID, int newParentID);
 };
 
+typedef boost::shared_ptr<BTree> BTree_Ptr;
+
 }
 
 #endif

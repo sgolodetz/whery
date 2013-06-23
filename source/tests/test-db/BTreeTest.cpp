@@ -18,21 +18,54 @@ using namespace whery;
 
 //#################### HELPER CLASSES ####################
 
-class TestPageController : public BTreePageController
+/**
+An instance of this class provides page support to a primary B+-tree
+with leaf tuples of the form <tuple ID,x,y> and branch tuples of the
+form <tuple ID,child node ID>. Since all tuple IDs are unique, the
+branch tuple IDs do not need to store any of the other fields.
+*/
+class PrimaryTestPageController : public BTreePageController
 {
+	//#################### PRIVATE VARIABLES ####################
+private:
+	/** The number of tuples that should fit on a B+-tree branch page. */
+	const int m_tuplesPerBranch;
+
+	/** The number of tuples that should fit on a B+-tree leaf page. */
+	const int m_tuplesPerLeaf;
+
+	//#################### CONSTRUCTORS ####################
+public:
+	/**
+	Constructs a page controller.
+
+	\param tuplesPerBranch	The number of tuples that should fit on a B+-tree branch page.
+	\param tuplesPerLeaf	The number of tuples that should fit on a B+-tree leaf page.
+	*/
+	PrimaryTestPageController(int tuplesPerBranch, int tuplesPerLeaf)
+	:	m_tuplesPerBranch(tuplesPerBranch), m_tuplesPerLeaf(tuplesPerLeaf)
+	{}
+
 	//#################### PUBLIC INHERITED METHODS ####################
 public:
+	/**
+	Returns a manipulator for branch tuples of the form <tuple ID,child node ID>.
+
+	\return	A manipulator for branch tuples of the form <tuple ID,child node ID>.
+	*/
 	virtual TupleManipulator btree_branch_tuple_manipulator() const
 	{
-		// For a primary B+-tree index, tuples in branch nodes are pairs:
-		// - The first component contains (unique) values from the first column of the relation.
-		// - The second component stores the ID of a child node.
 		return TupleManipulator(list_of<const FieldManipulator*>
 			(&IntFieldManipulator::instance())
 			(&IntFieldManipulator::instance())
 		);
 	}
 
+	/**
+	Returns a manipulator for leaf tuples of the form <tuple ID,x,y>.
+
+	\return	A manipulator for leaf tuples of the form <tuple ID,x,y>.
+	*/
 	virtual TupleManipulator btree_leaf_tuple_manipulator() const
 	{
 		return TupleManipulator(list_of<const FieldManipulator*>
@@ -42,30 +75,104 @@ public:
 		);
 	}
 
+	/**
+	Makes a new branch page for the B+-tree.
+
+	\return	A new branch page for the B+-tree.
+	*/
 	virtual SortedPage_Ptr make_btree_branch_page() const
 	{
-		const unsigned int TUPLES_PER_PAGE = 2;
 		TupleManipulator tupleManipulator = btree_branch_tuple_manipulator();
-		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * TUPLES_PER_PAGE, tupleManipulator));
+		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerBranch, tupleManipulator));
 	}
 
+	/**
+	Makes a new leaf page for the B+-tree.
+
+	\return	A new leaf page for the B+-tree.
+	*/
 	virtual SortedPage_Ptr make_btree_leaf_page() const
 	{
-		const unsigned int TUPLES_PER_PAGE = 2;
 		TupleManipulator tupleManipulator = btree_leaf_tuple_manipulator();
-		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * TUPLES_PER_PAGE, tupleManipulator));
+		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerLeaf, tupleManipulator));
 	}
 };
+
+//#################### GLOBAL VARIABLES ####################
+
+BTreePageController_CPtr primaryController_2_2(new PrimaryTestPageController(2, 2));
+
+//#################### HELPER FUNCTIONS ####################
+
+BTree_Ptr make_primary_prefix_tree()
+{
+	BTree_Ptr tree(new BTree(primaryController_2_2));
+
+	FreshTuple tuple(tree->leaf_tuple_manipulator());
+	for(int i = 0; i < 3; ++i)
+	{
+		for(int j = 0; j < 3; ++j)
+		{
+			tuple.field(0).set_int(i);
+			tuple.field(1).set_double(j);
+			tuple.field(2).set_double(j * j);
+			tree->insert_tuple(tuple);
+		}
+	}
+
+	return tree;
+}
 
 //#################### TESTS ####################
 
 BOOST_AUTO_TEST_SUITE(BTreeTest)
 
+BOOST_AUTO_TEST_CASE(begin_end)
+{
+	BTree tree(primaryController_2_2);
+	BOOST_REQUIRE(tree.begin() == tree.end());
+
+	// Insert a few tuples into the B+-tree and check begin() and end() after each insertion.
+	FreshTuple tuple(tree.leaf_tuple_manipulator());
+	for(int i = 0; i < 5; ++i)
+	{
+		tuple.field(0).set_int(i);
+		tuple.field(1).set_double(i * i);
+		tuple.field(2).set_double(i * i * i);
+		tree.insert_tuple(tuple);
+		BOOST_REQUIRE(tree.begin() != tree.end());
+		BOOST_CHECK_EQUAL(tree.begin()->field(0).get_int(), 0);
+		BOOST_CHECK_EQUAL((--tree.end())->field(0).get_int(), i);
+	}
+
+	// Erase the tuples again (in reverse order of insertion) and check begin() and end() after each erasure.
+	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	for(int i = 0; i < 5; ++i)
+	{
+		BOOST_REQUIRE(tree.begin() != tree.end());
+		BOOST_CHECK_EQUAL(tree.begin()->field(0).get_int(), i);
+		BOOST_CHECK_EQUAL((--tree.end())->field(0).get_int(), 4);
+		key.field(0).set_int(i);
+		tree.erase_tuple(key);
+	}
+
+	BOOST_REQUIRE(tree.begin() == tree.end());
+}
+
 BOOST_AUTO_TEST_CASE(constructor)
 {
-	BTree tree(BTreePageController_CPtr(new TestPageController));
+	BTree tree(primaryController_2_2);
 	BOOST_CHECK_EQUAL(tree.tuple_count(), 0);
-	BOOST_CHECK(tree.begin() == tree.end());
+}
+
+BOOST_AUTO_TEST_CASE(equal_range_valuekey)
+{
+	BTree_Ptr tree = make_primary_prefix_tree();
+
+	ValueKey key(tree->leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	key.field(0).set_int(-1);
+
+	// TODO
 }
 
 #if 0
@@ -100,9 +207,10 @@ BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 }
 #endif
 
+#if 0
 BOOST_AUTO_TEST_CASE(erase_tuple)
 {
-	BTree tree(BTreePageController_CPtr(new TestPageController));
+	BTree tree(primaryController_2_2);
 	FreshTuple tuple(tree.leaf_tuple_manipulator());
 
 	//int arr[] = {0,1,2,4,5,3};
@@ -176,6 +284,7 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 	tree.print(std::cout);
 #endif
 }
+#endif
 
 #if 0
 BOOST_AUTO_TEST_CASE(insert_tuple)

@@ -649,6 +649,9 @@ BTree::Merge BTree::merge_leaves_and_erase(int nodeID, const SortedPage::TupleSe
 	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
 	delete_node(rightNodeID);
 
+	// Update the last leaf ID if necessary.
+	if(m_lastLeafID == rightNodeID) m_lastLeafID = leftNodeID;
+
 	return Merge(leftNodeID);
 }
 
