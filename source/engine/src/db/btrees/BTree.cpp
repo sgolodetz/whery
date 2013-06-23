@@ -258,16 +258,7 @@ void BTree::delete_node(int nodeID)
 
 void BTree::erase_index_entry(int nodeID)
 {
-	assert(m_nodes[nodeID].parentID != -1);
-	assert(m_nodes[m_nodes[nodeID].parentID].firstChildID != nodeID);
-
-	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
-
-	ValueKey key = make_branch_key(*page_begin(nodeID));
-	SortedPage::TupleSetCIter it = parentPage->upper_bound(key);
-	--it;
-
-	parentPage->erase_tuple(it);
+	page(m_nodes[nodeID].parentID)->erase_tuple(find_index_entry(nodeID));
 }
 
 boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key, int nodeID)
@@ -304,17 +295,46 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 
 			return boost::none;
 		}
+		// FIXME: Factor this test into a predicate.
+		else if(page(relevantNodeID)->tuple_count() >= page(relevantNodeID)->max_tuple_count() / 2)
+		{
+			// If the relevant node is not the root and it still satisfies its minimum tuple invariant,
+			// then there is no need to do anything.
+			return boost::none;
+		}
 		else
 		{
 			// If the relevant node is not the root and its minimum tuple invariant has been violated,
 			// restore it by redistributing tuples from a sibling node or merging with a sibling node.
-			// FIXME: Factor this out into a predicate.
-			if(page(relevantNodeID)->tuple_count() >= page(relevantNodeID)->max_tuple_count() / 2)
+
+			// Check whether the node has a "useful" left or right sibling, i.e. one that has the same parent as it
+			// (noting that we can't redistribute tuples between or merge nodes that do not have the same parent).
+			// The node must have at least one useful sibling, since otherwise the B+-tree would be invalid (we know
+			// that this node is the child of a branch node, and all branch nodes have at least two children).
+			bool hasUsefulLeftSibling = is_useful_sibling(nodeID, m_nodes[nodeID].siblingLeftID);
+			bool hasUsefulRightSibling = is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID);
+			assert(hasUsefulLeftSibling || hasUsefulRightSibling);
+
+			if(hasUsefulLeftSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
 			{
 				// TODO
 				throw 23;
 			}
-			else return boost::none;
+			else if(hasUsefulRightSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingRightID))
+			{
+				// TODO
+				throw 23;
+			}
+			else if(hasUsefulLeftSibling)
+			{
+				// TODO
+				return merge_branches(m_nodes[nodeID].siblingLeftID, nodeID);
+			}
+			else
+			{
+				// TODO
+				return merge_branches(nodeID, m_nodes[nodeID].siblingRightID);
+			}
 		}
 	}
 }
@@ -351,13 +371,10 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, 
 	{
 		// Check whether the node has a "useful" left or right sibling, i.e. one that has the same parent as it
 		// (noting that we can't redistribute tuples between or merge nodes that do not have the same parent).
-		bool hasUsefulLeftSibling =		m_nodes[nodeID].siblingLeftID != -1 &&
-										m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID;
-		bool hasUsefulRightSibling =	m_nodes[nodeID].siblingRightID != -1 &&
-										m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID;
-
 		// The node must have at least one useful sibling, since otherwise the B+-tree would be invalid (we know
 		// that this node is the child of a branch node, and all branch nodes have at least two children).
+		bool hasUsefulLeftSibling = is_useful_sibling(nodeID, m_nodes[nodeID].siblingLeftID);
+		bool hasUsefulRightSibling = is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID);
 		assert(hasUsefulLeftSibling || hasUsefulRightSibling);
 
 		if(hasUsefulLeftSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
@@ -401,6 +418,20 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_subtree(const ValueKey& ke
 	{
 		return erase_tuple_from_leaf(key, nodeID);
 	}
+}
+
+SortedPage::TupleSetCIter BTree::find_index_entry(int nodeID) const
+{
+	assert(m_nodes[nodeID].parentID != -1);
+	assert(m_nodes[m_nodes[nodeID].parentID].firstChildID != nodeID);
+
+	SortedPage_Ptr parentPage = page(m_nodes[nodeID].parentID);
+
+	ValueKey key = make_branch_key(*page_begin(nodeID));
+	SortedPage::TupleSetCIter it = parentPage->upper_bound(key);
+	--it;
+
+	return it;
 }
 
 bool BTree::has_less_than_max_tuples(int nodeID) const
@@ -500,6 +531,11 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_subtree(const Tuple& tupl
 	}
 }
 
+bool BTree::is_useful_sibling(int nodeID, int siblingID) const
+{
+	return siblingID != -1 && m_nodes[siblingID].parentID == m_nodes[nodeID].parentID;
+}
+
 int BTree::left_child_of(const SortedPage::TupleSetCIter& it, int branchNodeID) const
 {
 	if(it == page_begin(branchNodeID))
@@ -548,7 +584,33 @@ FreshTuple BTree::make_branch_tuple(const Tuple& sourceTuple, int childNodeID) c
 	return result;
 }
 
-boost::optional<BTree::Merge> BTree::merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID)
+BTree::Merge BTree::merge_branches(int leftNodeID, int rightNodeID)
+{
+	// TODO: This is very similar to the code in merge_leaves_and_erase - factor out the commonality.
+
+	// Pull down the index entry for the right-hand node from the parent page into the left-hand node.
+	SortedPage::TupleSetCIter it = find_index_entry(rightNodeID);
+	page(leftNodeID)->add_tuple(make_branch_tuple(*it, m_nodes[rightNodeID].firstChildID));
+
+	// Erase the index entry for the right-hand node from the parent page.
+	page(m_nodes[leftNodeID].parentID)->erase_tuple(it);
+
+	// Update the parent pointers for the children of the right-hand node to make them point to the left-hand node.
+	update_parent_pointers(rightNodeID, leftNodeID);
+
+	// Transfer all tuples from the right-hand node to the left-hand node.
+	assert(page(leftNodeID)->tuple_count() + page(rightNodeID)->tuple_count() <= page(leftNodeID)->max_tuple_count());
+	transfer_leaf_tuples_left(rightNodeID, page(rightNodeID)->tuple_count());
+
+	// Disconnect the right-hand node from the B+-tree and delete it.
+	m_nodes[leftNodeID].siblingRightID = m_nodes[rightNodeID].siblingRightID;
+	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
+	delete_node(rightNodeID);
+
+	return Merge(leftNodeID);
+}
+
+BTree::Merge BTree::merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID)
 {
 	// Erase the index entry for the right-hand node from the parent page.
 	erase_index_entry(rightNodeID);
@@ -822,11 +884,7 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 	m_nodes[freshID].firstChildID = child_node_id(splitter);
 
 	// Update the parent pointers of all the children of the fresh page.
-	m_nodes[m_nodes[freshID].firstChildID].parentID = freshID;
-	for(SortedPage::TupleSetCIter jt = page_begin(freshID), jend = page_end(freshID); jt != jend; ++jt)
-	{
-		m_nodes[child_node_id(*jt)].parentID = freshID;
-	}
+	update_parent_pointers(freshID, freshID);
 
 	return Split(nodeID, freshID, splitter);
 }
@@ -888,6 +946,15 @@ void BTree::transfer_leaf_tuples_right(int sourceNodeID, unsigned int n)
 	}
 
 	transfer_leaf_tuples(sourceNodeID, m_nodes[sourceNodeID].siblingRightID, tuples);
+}
+
+void BTree::update_parent_pointers(int oldParentID, int newParentID)
+{
+	m_nodes[m_nodes[oldParentID].firstChildID].parentID = newParentID;
+	for(SortedPage::TupleSetCIter it = page_begin(oldParentID), iend = page_end(oldParentID); it != iend; ++it)
+	{
+		m_nodes[child_node_id(*it)].parentID = newParentID;
+	}
 }
 
 }

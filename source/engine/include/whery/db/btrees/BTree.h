@@ -462,6 +462,8 @@ private:
 	boost::optional<Merge> erase_tuple_from_leaf(const ValueKey& key, int nodeID);
 	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
+	SortedPage::TupleSetCIter find_index_entry(int nodeID) const;
+
 	/**
 	Checks whether or not the specified node contains less than the maximum number
 	of tuples that can be stored in a node.
@@ -523,6 +525,8 @@ private:
 	*/
 	boost::optional<Split> insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
 
+	bool is_useful_sibling(int nodeID, int siblingID) const;
+
 	/**
 	Returns the ID of the child to the left of the pointed-to index entry in the
 	specified branch node. (If the iterator points to the end of the index entries,
@@ -557,7 +561,9 @@ private:
 	*/
 	FreshTuple make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const;
 
-	boost::optional<Merge> merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID);
+	Merge merge_branches(int leftNodeID, int rightNodeID);
+
+	Merge merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID);
 
 	/**
 	Returns the page of the specified node.
@@ -726,6 +732,8 @@ private:
 									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
+
+	void update_parent_pointers(int oldParentID, int newParentID);
 };
 
 }

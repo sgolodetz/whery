@@ -105,7 +105,8 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 	BTree tree(BTreePageController_CPtr(new TestPageController));
 	FreshTuple tuple(tree.leaf_tuple_manipulator());
 
-	int arr[] = {0,1,2,4,5,3};
+	//int arr[] = {0,1,2,4,5,3};
+	int arr[] = {0,1,2,4,5,3,7,8,6,9};
 	int size = sizeof(arr) / sizeof(int);
 	for(int i = 0; i < size; ++i)
 	{
@@ -118,6 +119,15 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 	}
 
 	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	for(int i = 0; i < size; ++i)
+	{
+		key.field(0).set_int(arr[i]);
+		tree.erase_tuple(key);
+		tree.print(std::cout);
+		std::cout << '\n';
+	}
+
+#if 0
 	key.field(0).set_int(2);
 	tree.erase_tuple(key);
 
@@ -153,6 +163,7 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 
 	tree.print(std::cout);
 	std::cout << '\n';
+#endif
 
 #if 0
 	tuple.field(0).set_int(1);
