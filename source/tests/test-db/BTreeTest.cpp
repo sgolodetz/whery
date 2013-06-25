@@ -5,6 +5,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/algorithm/clamp.hpp>
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign;
 
@@ -196,17 +197,91 @@ BOOST_AUTO_TEST_CASE(constructor)
 	BOOST_CHECK_EQUAL(tree.tuple_count(), 0);
 }
 
+BOOST_AUTO_TEST_CASE(equal_range_rangekey)
+{
+	BTree_Ptr primaryTree, secondaryTree;
+	boost::tie(primaryTree, secondaryTree) = make_trees();
+
+	// Check some ranges in the primary B+-tree.
+	for(int i = -1; i <= 9; ++i)
+	{
+		for(int j = i; j <= 9; ++j)
+		{
+			RangeKey key(primaryTree->leaf_tuple_manipulator().field_manipulators(), list_of(0));
+			key.low_value().field(0).set_int(i);
+			key.high_value().field(0).set_int(j);
+
+			// Check the range [i,j].
+			key.low_kind() = CLOSED;
+			key.high_kind() = CLOSED;
+			BTree::EqualRangeResult result = primaryTree->equal_range(key);
+			std::vector<BackedTuple> tuples = std::vector<BackedTuple>(result.first, result.second);
+
+			int low = boost::algorithm::clamp(i, 0, 9);
+			int high = boost::algorithm::clamp(j + 1, 0, 9);
+			BOOST_CHECK_EQUAL(tuples.size(), high - low);
+			if(!tuples.empty())
+			{
+				BOOST_CHECK_EQUAL(tuples.front().field(0).get_int(), low);
+				BOOST_CHECK_EQUAL(tuples.back().field(0).get_int(), high - 1);
+			}
+
+			// Check the range [i,j).
+			key.high_kind() = OPEN;
+			result = primaryTree->equal_range(key);
+			tuples = std::vector<BackedTuple>(result.first, result.second);
+
+			high = boost::algorithm::clamp(j, 0, 9);
+			BOOST_CHECK_EQUAL(tuples.size(), high - low);
+			if(!tuples.empty())
+			{
+				BOOST_CHECK_EQUAL(tuples.front().field(0).get_int(), low);
+				BOOST_CHECK_EQUAL(tuples.back().field(0).get_int(), high - 1);
+			}
+
+			// Check the range (i,j).
+			key.low_kind() = OPEN;
+			result = primaryTree->equal_range(key);
+			tuples = std::vector<BackedTuple>(result.first, result.second);
+
+			low = boost::algorithm::clamp(i + 1, 0, 9);
+			if(i == j) high = low;
+			BOOST_CHECK_EQUAL(tuples.size(), high - low);
+			if(!tuples.empty())
+			{
+				BOOST_CHECK_EQUAL(tuples.front().field(0).get_int(), low);
+				BOOST_CHECK_EQUAL(tuples.back().field(0).get_int(), high - 1);
+			}
+
+			// Check the range (i,j].
+			key.high_kind() = CLOSED;
+			result = primaryTree->equal_range(key);
+			tuples = std::vector<BackedTuple>(result.first, result.second);
+
+			high = boost::algorithm::clamp(j + 1, 0, 9);
+			BOOST_CHECK_EQUAL(tuples.size(), high - low);
+			if(!tuples.empty())
+			{
+				BOOST_CHECK_EQUAL(tuples.front().field(0).get_int(), low);
+				BOOST_CHECK_EQUAL(tuples.back().field(0).get_int(), high - 1);
+			}
+		}
+	}
+
+	// TODO: Check some ranges in the secondary B+-tree.
+}
+
 BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 {
 	BTree_Ptr primaryTree, secondaryTree;
 	boost::tie(primaryTree, secondaryTree) = make_trees();
 
 	// Check that the primary B+-tree contains a single tuple for each tuple ID in [0,8], and no tuple for -1 or 9.
-	ValueKey primaryKey(primaryTree->leaf_tuple_manipulator(), list_of(0));
 	for(int i = -1; i <= 9; ++i)
 	{
-		primaryKey.field(0).set_int(i);
-		BTree::EqualRangeResult result = primaryTree->equal_range(primaryKey);
+		ValueKey key(primaryTree->leaf_tuple_manipulator(), list_of(0));
+		key.field(0).set_int(i);
+		BTree::EqualRangeResult result = primaryTree->equal_range(key);
 		std::vector<BackedTuple> tuples = std::vector<BackedTuple>(result.first, result.second);
 		BOOST_CHECK_EQUAL(tuples.size(), i >= 0 && i <= 8 ? 1 : 0);
 
@@ -217,11 +292,11 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 	}
 
 	// Check that the secondary B+-tree contains three tuples for each y in [0,2], and no tuple for -1 or 3.
-	ValueKey secondaryKey(secondaryTree->leaf_tuple_manipulator(), list_of(0));
 	for(int i = -1; i <= 3; ++i)
 	{
-		secondaryKey.field(0).set_double(i);
-		BTree::EqualRangeResult result = secondaryTree->equal_range(secondaryKey);
+		ValueKey key(secondaryTree->leaf_tuple_manipulator(), list_of(0));
+		key.field(0).set_double(i);
+		BTree::EqualRangeResult result = secondaryTree->equal_range(key);
 		std::vector<BackedTuple> tuples = std::vector<BackedTuple>(result.first, result.second);
 		BOOST_CHECK_EQUAL(tuples.size(), i >= 0 && i <= 2 ? 3 : 0);
 

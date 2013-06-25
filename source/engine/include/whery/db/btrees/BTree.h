@@ -284,9 +284,16 @@ public:
 	ConstIterator end() const;
 
 	/**
-	Returns the pair [lower_bound(key), upper_bound(key)].
+	Calculates a pair of iterators that together point to those tuples in the B+-tree
+	that are equivalent to the specified key. The pair returned will be equal to the
+	pair [lower_bound(key), upper_bound(key)] unless the key specifies a range of the
+	form (X,X) - i.e. open at both ends and with the same endpoint in each case - in
+	which case [lower_bound(key), lower_bound(key)] will be returned. This is essential,
+	because in that case the upper bound iterator would be strictly before the lower
+	bound iterator.
 
-	\return	The pair [lower_bound(key), upper_bound(key)].
+	\return	A pair of iterators that together point to those tuples in the B+-tree that
+			are equivalent to the specified key.
 	*/
 	EqualRangeResult equal_range(const RangeKey& key) const;
 

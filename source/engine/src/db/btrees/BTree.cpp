@@ -45,7 +45,16 @@ BTree::ConstIterator BTree::end() const
 
 BTree::EqualRangeResult BTree::equal_range(const RangeKey& key) const
 {
-	return std::make_pair(lower_bound(key), upper_bound(key));
+	if(key.has_low_endpoint() && key.has_high_endpoint() &&
+	   key.low_kind() == OPEN && key.high_kind() == OPEN &&
+	   PrefixTupleComparator().compare(key.low_value(), key.high_value()) == 0)
+	{
+		return std::make_pair(lower_bound(key), lower_bound(key));
+	}
+	else
+	{
+		return std::make_pair(lower_bound(key), upper_bound(key));
+	}
 }
 
 BTree::EqualRangeResult BTree::equal_range(const ValueKey& key) const
