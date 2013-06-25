@@ -740,6 +740,12 @@ private:
 	void update_parent_pointers(int oldParentID, int newParentID);
 };
 
+//#################### GLOBAL FUNCTIONS ####################
+
+std::ostream& operator<<(std::ostream& os, const BTree& rhs);
+
+//#################### TYPEDEFS ####################
+
 typedef boost::shared_ptr<BTree> BTree_Ptr;
 
 }

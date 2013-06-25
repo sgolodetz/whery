@@ -201,12 +201,7 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 	BTree_Ptr primaryTree, secondaryTree;
 	boost::tie(primaryTree, secondaryTree) = make_trees();
 
-	primaryTree->print(std::cout);
-	std::cout << '\n';
-	secondaryTree->print(std::cout);
-	std::cout << '\n';
-
-	// Check that the primary B+-tree contains a single tuple for each ID in [0,8], and no tuple for -1 or 9.
+	// Check that the primary B+-tree contains a single tuple for each tuple ID in [0,8], and no tuple for -1 or 9.
 	ValueKey primaryKey(primaryTree->leaf_tuple_manipulator(), list_of(0));
 	for(int i = -1; i <= 9; ++i)
 	{
