@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(begin_end)
 	}
 
 	// Erase the tuples again (in reverse order of insertion) and check begin() and end() after each erasure.
-	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	ValueKey key(tree.leaf_tuple_manipulator(), list_of(0));
 	for(int i = 0; i < 5; ++i)
 	{
 		BOOST_REQUIRE(tree.begin() != tree.end());
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 {
 	BTree_Ptr tree = make_primary_prefix_tree();
 
-	ValueKey key(tree->leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	ValueKey key(tree->leaf_tuple_manipulator(), list_of(0));
 	key.field(0).set_int(-1);
 
 	// TODO
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(erase_tuple)
 
 	int darr[] = {7,8,0,1,2};
 	size = sizeof(darr) / sizeof(int);
-	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	ValueKey key(tree.leaf_tuple_manipulator(), list_of(0));
 	for(int i = 0; i < size; ++i)
 	{
 		key.field(0).set_int(darr[i]);
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(upper_bound_valuekey)
 
 	tree.print(std::cout);
 
-	ValueKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
+	ValueKey key(tree.leaf_tuple_manipulator(), list_of(0));
 	for(int i = -1; i <= 3; ++i)
 	{
 		key.field(0).set_int(i);
