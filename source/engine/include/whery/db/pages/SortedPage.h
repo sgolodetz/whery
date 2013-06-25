@@ -87,9 +87,16 @@ public:
 	virtual TupleSetCIter end() const = 0;
 
 	/**
-	Returns the pair [lower_bound(key), upper_bound(key)].
+	Calculates a pair of iterators that together bound those tuples on the
+	page that are equivalent to the specified key. The pair returned will
+	be equal to the pair [lower_bound(key), upper_bound(key)] unless the key
+	is either invalid or an open singleton (a range of the form (X,X)), in
+	which case [lower_bound(key), lower_bound(key)] will be returned. This
+	is essential, because in such cases the upper bound iterator would be
+	strictly before the lower bound iterator.
 
-	\return	The pair [lower_bound(key), upper_bound(key)].
+	\return	A pair of iterators that together bound those tuples on the page
+			that are equivalent to the specified key.
 	*/
 	virtual EqualRangeResult equal_range(const RangeKey& key) const = 0;
 

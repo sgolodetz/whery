@@ -7,6 +7,8 @@
 
 #include <cassert>
 
+#include "whery/db/base/PrefixTupleComparator.h"
+
 namespace whery {
 
 //#################### CONSTRUCTORS ####################
@@ -71,6 +73,25 @@ const ValueKey& RangeKey::high_value() const
 {
 	assert(has_high_endpoint());
 	return m_highEndpoint->value();
+}
+
+bool RangeKey::is_open_singleton() const
+{
+	return
+		has_low_endpoint() &&
+		has_high_endpoint() &&
+		low_kind() == OPEN &&
+		high_kind() == OPEN &&
+		PrefixTupleComparator().compare(low_value(), high_value()) == 0;
+}
+
+bool RangeKey::is_valid() const
+{
+	return !(
+		has_low_endpoint() &&
+		has_high_endpoint() &&
+		PrefixTupleComparator().compare(low_value(), high_value()) == 1
+	);
 }
 
 RangeEndpointKind& RangeKey::low_kind()

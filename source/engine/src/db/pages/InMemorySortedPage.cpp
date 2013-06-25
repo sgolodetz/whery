@@ -67,6 +67,33 @@ void InMemorySortedPage::clear()
 	m_freeList.clear();
 }
 
+unsigned int InMemorySortedPage::empty_tuple_count() const
+{
+	return max_tuple_count() - tuple_count();
+}
+
+SortedPage::TupleSetCIter InMemorySortedPage::end() const
+{
+	return m_tuples.end();
+}
+
+SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key) const
+{
+	if(key.is_valid() && !key.is_open_singleton())
+	{
+		return std::make_pair(lower_bound(key), upper_bound(key));
+	}
+	else
+	{
+		return std::make_pair(lower_bound(key), lower_bound(key));
+	}
+}
+
+SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const ValueKey& key) const
+{
+	return std::make_pair(lower_bound(key), upper_bound(key));
+}
+
 void InMemorySortedPage::erase_tuple(const BackedTuple& key)
 {
 	erase_tuple(m_tuples.find(key));
@@ -89,26 +116,6 @@ void InMemorySortedPage::erase_tuple(const TupleSetCRIter& rit)
 		--it;
 		erase_tuple(it);
 	}
-}
-
-unsigned int InMemorySortedPage::empty_tuple_count() const
-{
-	return max_tuple_count() - tuple_count();
-}
-
-SortedPage::TupleSetCIter InMemorySortedPage::end() const
-{
-	return m_tuples.end();
-}
-
-SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key) const
-{
-	return std::make_pair(lower_bound(key), upper_bound(key));
-}
-
-SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const ValueKey& key) const
-{
-	return std::make_pair(lower_bound(key), upper_bound(key));
 }
 
 const std::vector<const FieldManipulator*>& InMemorySortedPage::field_manipulators() const
