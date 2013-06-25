@@ -308,6 +308,40 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(insert_erase)
+{
+	BTree tree(primaryController_2_2);
+
+	// Insert tuples in an order designed to exercise the various different insert cases.
+	// Check that the set of tuples is as expected after each insertion.
+	int insertArray[] = {3,4,1,2,6,5,7,8,9,10,11};
+	int insertSize = sizeof(insertArray) / sizeof(int);
+
+	FreshTuple tuple(tree.leaf_tuple_manipulator());
+	for(int i = 0; i < insertSize; ++i)
+	{
+		const int x = insertArray[i];
+		tuple.field(0).set_int(x);
+		tuple.field(1).set_double(x * x);
+		tuple.field(2).set_double(x * x * x);
+		tree.insert_tuple(tuple);
+
+		std::vector<int> sortedInsertArray(insertArray, insertArray + i + 1);
+		std::sort(sortedInsertArray.begin(), sortedInsertArray.end());
+
+		int k = 0;
+		for(BTree::ConstIterator jt = tree.begin(), jend = tree.end(); jt != jend; ++jt)
+		{
+			BOOST_CHECK_EQUAL(jt->field(0).get_int(), sortedInsertArray[k]);
+			++k;
+		}
+	}
+
+	// Erase tuples in an order designed to exercise the various different erase cases.
+	// Check that the set of tuples is as expected after each erasure.
+	// TODO
+}
+
 #if 0
 BOOST_AUTO_TEST_CASE(erase_tuple)
 {
