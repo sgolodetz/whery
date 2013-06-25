@@ -16,15 +16,11 @@ using namespace boost::assign;
 #include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
 
+#include "Constants.h"
+
 //#################### HELPER CLASSES ####################
 
-/**
-An instance of this class provides page support to a primary B+-tree
-with leaf tuples of the form <tuple ID,x,y> and branch tuples of the
-form <tuple ID,child node ID>. Since all tuple IDs are unique, the
-branch tuple IDs do not need to store any of the other fields.
-*/
-class PrimaryTestPageController : public BTreePageController
+class TestPageController : public BTreePageController
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -36,23 +32,41 @@ private:
 
 	//#################### CONSTRUCTORS ####################
 public:
-	/**
-	Constructs a page controller.
-
-	\param tuplesPerBranch	The number of tuples that should fit on a B+-tree branch page.
-	\param tuplesPerLeaf	The number of tuples that should fit on a B+-tree leaf page.
-	*/
-	PrimaryTestPageController(int tuplesPerBranch, int tuplesPerLeaf)
+	TestPageController(int tuplesPerBranch, int tuplesPerLeaf)
 	:	m_tuplesPerBranch(tuplesPerBranch), m_tuplesPerLeaf(tuplesPerLeaf)
 	{}
 
 	//#################### PUBLIC INHERITED METHODS ####################
 public:
-	/**
-	Returns a manipulator for branch tuples of the form <tuple ID,child node ID>.
+	virtual SortedPage_Ptr make_btree_branch_page() const
+	{
+		TupleManipulator tupleManipulator = btree_branch_tuple_manipulator();
+		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerBranch, tupleManipulator));
+	}
 
-	\return	A manipulator for branch tuples of the form <tuple ID,child node ID>.
-	*/
+	virtual SortedPage_Ptr make_btree_leaf_page() const
+	{
+		TupleManipulator tupleManipulator = btree_leaf_tuple_manipulator();
+		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerLeaf, tupleManipulator));
+	}
+};
+
+/**
+An instance of this class provides page support to a primary B+-tree
+with leaf tuples of the form <tuple ID,x,y> and branch tuples of the
+form <tuple ID,child node ID>. Since all tuple IDs are unique, the
+branch tuple IDs do not need to store any of the other fields.
+*/
+class PrimaryTestPageController : public TestPageController
+{
+	//#################### CONSTRUCTORS ####################
+public:
+	PrimaryTestPageController(int tuplesPerBranch, int tuplesPerLeaf)
+	:	TestPageController(tuplesPerBranch, tuplesPerLeaf)
+	{}
+
+	//#################### PUBLIC INHERITED METHODS ####################
+public:
 	virtual TupleManipulator btree_branch_tuple_manipulator() const
 	{
 		return TupleManipulator(list_of<const FieldManipulator*>
@@ -61,11 +75,6 @@ public:
 		);
 	}
 
-	/**
-	Returns a manipulator for leaf tuples of the form <tuple ID,x,y>.
-
-	\return	A manipulator for leaf tuples of the form <tuple ID,x,y>.
-	*/
 	virtual TupleManipulator btree_leaf_tuple_manipulator() const
 	{
 		return TupleManipulator(list_of<const FieldManipulator*>
@@ -74,53 +83,75 @@ public:
 			(&DoubleFieldManipulator::instance())
 		);
 	}
+};
 
-	/**
-	Makes a new branch page for the B+-tree.
+/**
+An instance of this class provides page support to a secondary B+-tree
+with leaf tuples of the form <y,tuple ID> and branch tuples of the form
+<y,tuple ID,child node ID>. The branch keys are clearly unique in this
+case, since they contain the tuple ID. If y were a unique key on its own,
+including the tuple ID would not be necessary, but there is no attempt
+made to guarantee that for these tests.
+*/
+class SecondaryTestPageController : public TestPageController
+{
+	//#################### CONSTRUCTORS ####################
+public:
+	SecondaryTestPageController(int tuplesPerBranch, int tuplesPerLeaf)
+	:	TestPageController(tuplesPerBranch, tuplesPerLeaf)
+	{}
 
-	\return	A new branch page for the B+-tree.
-	*/
-	virtual SortedPage_Ptr make_btree_branch_page() const
+	//#################### PUBLIC INHERITED METHODS ####################
+public:
+	virtual TupleManipulator btree_branch_tuple_manipulator() const
 	{
-		TupleManipulator tupleManipulator = btree_branch_tuple_manipulator();
-		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerBranch, tupleManipulator));
+		return TupleManipulator(list_of<const FieldManipulator*>
+			(&DoubleFieldManipulator::instance())
+			(&IntFieldManipulator::instance())
+			(&IntFieldManipulator::instance())
+		);
 	}
 
-	/**
-	Makes a new leaf page for the B+-tree.
-
-	\return	A new leaf page for the B+-tree.
-	*/
-	virtual SortedPage_Ptr make_btree_leaf_page() const
+	virtual TupleManipulator btree_leaf_tuple_manipulator() const
 	{
-		TupleManipulator tupleManipulator = btree_leaf_tuple_manipulator();
-		return SortedPage_Ptr(new InMemorySortedPage(tupleManipulator.size() * m_tuplesPerLeaf, tupleManipulator));
+		return TupleManipulator(list_of<const FieldManipulator*>
+			(&DoubleFieldManipulator::instance())
+			(&IntFieldManipulator::instance())
+		);
 	}
 };
 
 //#################### GLOBAL VARIABLES ####################
 
 BTreePageController_CPtr primaryController_2_2(new PrimaryTestPageController(2, 2));
+BTreePageController_CPtr secondaryController_2_2(new SecondaryTestPageController(2, 2));
 
 //#################### HELPER FUNCTIONS ####################
 
-BTree_Ptr make_primary_prefix_tree()
+std::pair<BTree_Ptr,BTree_Ptr> make_trees()
 {
-	BTree_Ptr tree(new BTree(primaryController_2_2));
+	BTree_Ptr primaryTree(new BTree(primaryController_2_2));
+	BTree_Ptr secondaryTree(new BTree(secondaryController_2_2));
 
-	FreshTuple tuple(tree->leaf_tuple_manipulator());
-	for(int i = 0; i < 3; ++i)
+	FreshTuple primaryTuple(primaryTree->leaf_tuple_manipulator());
+	FreshTuple secondaryTuple(secondaryTree->leaf_tuple_manipulator());
+
+	for(int tupleID = 0; tupleID < 9; ++tupleID)
 	{
-		for(int j = 0; j < 3; ++j)
-		{
-			tuple.field(0).set_int(i);
-			tuple.field(1).set_double(j);
-			tuple.field(2).set_double(j * j);
-			tree->insert_tuple(tuple);
-		}
+		const double x = tupleID / 3;
+		const double y = tupleID % 3;
+
+		primaryTuple.field(0).set_int(tupleID);
+		primaryTuple.field(1).set_double(x);
+		primaryTuple.field(2).set_double(y);
+		primaryTree->insert_tuple(primaryTuple);
+
+		secondaryTuple.field(0).set_double(y);
+		secondaryTuple.field(1).set_int(tupleID);
+		secondaryTree->insert_tuple(secondaryTuple);
 	}
 
-	return tree;
+	return std::make_pair(primaryTree, secondaryTree);
 }
 
 //#################### TESTS ####################
@@ -167,12 +198,44 @@ BOOST_AUTO_TEST_CASE(constructor)
 
 BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 {
-	BTree_Ptr tree = make_primary_prefix_tree();
+	BTree_Ptr primaryTree, secondaryTree;
+	boost::tie(primaryTree, secondaryTree) = make_trees();
 
-	ValueKey key(tree->leaf_tuple_manipulator(), list_of(0));
-	key.field(0).set_int(-1);
+	primaryTree->print(std::cout);
+	std::cout << '\n';
+	secondaryTree->print(std::cout);
+	std::cout << '\n';
 
-	// TODO
+	// Check that the primary B+-tree contains a single tuple for each ID in [0,8], and no tuple for -1 or 9.
+	ValueKey primaryKey(primaryTree->leaf_tuple_manipulator(), list_of(0));
+	for(int i = -1; i <= 9; ++i)
+	{
+		primaryKey.field(0).set_int(i);
+		BTree::EqualRangeResult result = primaryTree->equal_range(primaryKey);
+		std::vector<BackedTuple> tuples = std::vector<BackedTuple>(result.first, result.second);
+		BOOST_CHECK_EQUAL(tuples.size(), i >= 0 && i <= 8 ? 1 : 0);
+
+		if(!tuples.empty())
+		{
+			BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), i);
+		}
+	}
+
+	// Check that the secondary B+-tree contains three tuples for each y in [0,2], and no tuple for -1 or 3.
+	ValueKey secondaryKey(secondaryTree->leaf_tuple_manipulator(), list_of(0));
+	for(int i = -1; i <= 3; ++i)
+	{
+		secondaryKey.field(0).set_double(i);
+		BTree::EqualRangeResult result = secondaryTree->equal_range(secondaryKey);
+		std::vector<BackedTuple> tuples = std::vector<BackedTuple>(result.first, result.second);
+		BOOST_CHECK_EQUAL(tuples.size(), i >= 0 && i <= 2 ? 3 : 0);
+
+		for(unsigned int j = 0, size = tuples.size(); j < size; ++j)
+		{
+			BOOST_CHECK_CLOSE(tuples[j].field(0).get_double(), i, Constants::SMALL_EPSILON);
+			BOOST_CHECK_EQUAL(tuples[j].field(1).get_int(), i + j * 3);
+		}
+	}
 }
 
 #if 0

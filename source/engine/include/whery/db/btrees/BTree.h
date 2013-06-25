@@ -126,7 +126,7 @@ public:
 
 	The leaf tuples themselves cannot be modified through this interface.
 	*/
-	class ConstIterator
+	class ConstIterator : public std::iterator<std::bidirectional_iterator_tag, BackedTuple>
 	{
 		//#################### FRIENDS ####################
 		friend class BTree;
