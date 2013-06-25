@@ -112,18 +112,7 @@ public:
 	const ValueKey& high_value() const;
 
 	/**
-	Returns whether or not the range is an "open singleton" - a range that has two equal,
-	open endpoints specified, such as (X,X). Such ranges tend to require special handling
-	by equal_range methods.
-
-	\return	true, if the range is an open singleton, or false otherwise.
-	*/
-	bool is_open_singleton() const;
-
-	/**
-	Returns whether or not the range is valid. The only time a range is invalid is when
-	it has both endpoints specified and the high endpoint is strictly less than the low
-	endpoint.
+	Returns whether or not the range is valid.
 
 	\return	true, if the range is valid, or false otherwise.
 	*/

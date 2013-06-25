@@ -79,7 +79,7 @@ SortedPage::TupleSetCIter InMemorySortedPage::end() const
 
 SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key) const
 {
-	if(key.is_valid() && !key.is_open_singleton())
+	if(key.is_valid())
 	{
 		return std::make_pair(lower_bound(key), upper_bound(key));
 	}

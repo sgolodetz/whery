@@ -75,23 +75,28 @@ const ValueKey& RangeKey::high_value() const
 	return m_highEndpoint->value();
 }
 
-bool RangeKey::is_open_singleton() const
-{
-	return
-		has_low_endpoint() &&
-		has_high_endpoint() &&
-		low_kind() == OPEN &&
-		high_kind() == OPEN &&
-		PrefixTupleComparator().compare(low_value(), high_value()) == 0;
-}
-
 bool RangeKey::is_valid() const
 {
-	return !(
-		has_low_endpoint() &&
-		has_high_endpoint() &&
-		PrefixTupleComparator().compare(low_value(), high_value()) == 1
-	);
+	// If the key has only one endpoint, it's always valid.
+	if(!has_low_endpoint() || !has_high_endpoint())
+	{
+		return true;
+	}
+
+	int comp = PrefixTupleComparator().compare(low_value(), high_value());
+
+	if(low_kind() == OPEN && high_kind() == OPEN)
+	{
+		// If it's a fully-open range, it's only valid if the low endpoint
+		// is strictly less than the high endpoint.
+		return comp == -1;
+	}
+	else
+	{
+		// Otherwise, it's valid if the low endpoint is no greater than the
+		// high endpoint.
+		return comp != 1;
+	}
 }
 
 RangeEndpointKind& RangeKey::low_kind()

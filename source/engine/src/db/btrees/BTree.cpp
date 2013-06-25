@@ -45,7 +45,7 @@ BTree::ConstIterator BTree::end() const
 
 BTree::EqualRangeResult BTree::equal_range(const RangeKey& key) const
 {
-	if(key.is_valid() && !key.is_open_singleton())
+	if(key.is_valid())
 	{
 		return std::make_pair(lower_bound(key), upper_bound(key));
 	}
