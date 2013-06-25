@@ -309,38 +309,6 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 }
 
 #if 0
-BOOST_AUTO_TEST_CASE(equal_range_rangekey)
-{
-	BTree tree(BTreePageController_CPtr(new TestPageController));
-	FreshTuple tuple(tree.leaf_tuple_manipulator());
-
-	for(int i = 0; i < 3; ++i)
-	{
-		for(int j = 0; j < 3; ++j)
-		{
-			tuple.field(0).set_int(i);
-			tuple.field(1).set_int(j);
-			tuple.field(2).set_int(j);
-			tree.insert_tuple(tuple);
-		}
-	}
-
-	tree.print(std::cout);
-
-	RangeKey key(tree.leaf_tuple_manipulator().field_manipulators(), list_of(0));
-	key.low_kind() = OPEN;
-	key.high_kind() = CLOSED;
-	key.low_value().field(0).set_int(0);
-	key.high_value().field(0).set_int(2);
-	BTree::EqualRangeResult er = tree.equal_range(key);
-	for(BTree::ConstIterator it = er.first; it != er.second; ++it)
-	{
-		std::cout << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';
-	}
-}
-#endif
-
-#if 0
 BOOST_AUTO_TEST_CASE(erase_tuple)
 {
 	BTree tree(primaryController_2_2);
