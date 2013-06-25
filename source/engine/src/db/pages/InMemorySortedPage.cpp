@@ -85,7 +85,8 @@ SortedPage::EqualRangeResult InMemorySortedPage::equal_range(const RangeKey& key
 	}
 	else
 	{
-		return std::make_pair(lower_bound(key), lower_bound(key));
+		TupleSetCIter it = lower_bound(key);
+		return std::make_pair(it, it);
 	}
 }
 

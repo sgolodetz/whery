@@ -51,7 +51,8 @@ BTree::EqualRangeResult BTree::equal_range(const RangeKey& key) const
 	}
 	else
 	{
-		return std::make_pair(lower_bound(key), lower_bound(key));
+		ConstIterator it = lower_bound(key);
+		return std::make_pair(it, it);
 	}
 }
 
