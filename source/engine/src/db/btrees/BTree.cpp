@@ -352,13 +352,21 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, int nodeID)
 {
 	SortedPage_Ptr nodePage = page(nodeID);
-
-	// If all of the tuples in the node are less than the key,
-	// and there is a right sibling, erase from that instead.
 	SortedPage::TupleSetCIter it = nodePage->lower_bound(key);
-	if(it == nodePage->end() && m_nodes[nodeID].siblingRightID != -1)
+
+	// If all of the tuples in the node are less than the key:
+	if(it == nodePage->end())
 	{
-		return erase_tuple_from_leaf(key, m_nodes[nodeID].siblingRightID);
+		if(m_nodes[nodeID].siblingRightID != -1)
+		{
+			// If there is a right sibling, erase from that instead.
+			return erase_tuple_from_leaf(key, m_nodes[nodeID].siblingRightID);
+		}
+		else
+		{
+			// Otherwise, no tuple in the B+-tree compares equal to the key, so early out.
+			return boost::none;
+		}
 	}
 
 	// If the tuple pointed to by the iterator does not compare equal

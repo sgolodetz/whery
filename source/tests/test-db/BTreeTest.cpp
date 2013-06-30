@@ -317,6 +317,8 @@ BOOST_AUTO_TEST_CASE(insert_erase)
 	int insertArray[] = {3,4,1,2,6,5,7,8,9,10,11};
 	int insertSize = sizeof(insertArray) / sizeof(int);
 
+	std::set<int> currentTuples;
+
 	FreshTuple tuple(tree.leaf_tuple_manipulator());
 	for(int i = 0; i < insertSize; ++i)
 	{
@@ -326,20 +328,37 @@ BOOST_AUTO_TEST_CASE(insert_erase)
 		tuple.field(2).set_double(x * x * x);
 		tree.insert_tuple(tuple);
 
-		std::vector<int> sortedInsertArray(insertArray, insertArray + i + 1);
-		std::sort(sortedInsertArray.begin(), sortedInsertArray.end());
+		BOOST_CHECK_EQUAL(tree.tuple_count(), i + 1);
 
-		int k = 0;
-		for(BTree::ConstIterator jt = tree.begin(), jend = tree.end(); jt != jend; ++jt)
+		currentTuples.insert(x);
+		std::set<int>::const_iterator kt = currentTuples.begin();
+		for(BTree::ConstIterator jt = tree.begin(), jend = tree.end(); jt != jend; ++jt, ++kt)
 		{
-			BOOST_CHECK_EQUAL(jt->field(0).get_int(), sortedInsertArray[k]);
-			++k;
+			BOOST_CHECK_EQUAL(jt->field(0).get_int(), *kt);
 		}
 	}
 
 	// Erase tuples in an order designed to exercise the various different erase cases.
 	// Check that the set of tuples is as expected after each erasure.
-	// TODO
+	int eraseArray[] = {11,10,1,2,4,7,8,9,3,5,6};
+	int eraseSize = sizeof(eraseArray) / sizeof(int);
+
+	ValueKey key(tree.leaf_tuple_manipulator(), list_of(0));
+	for(int i = 0; i < eraseSize; ++i)
+	{
+		const int x = eraseArray[i];
+		key.field(0).set_int(x);
+		tree.erase_tuple(key);
+
+		BOOST_CHECK_EQUAL(tree.tuple_count(), insertSize - i - 1);
+
+		currentTuples.erase(x);
+		std::set<int>::const_iterator kt = currentTuples.begin();
+		for(BTree::ConstIterator jt = tree.begin(), jend = tree.end(); jt != jend; ++jt, ++kt)
+		{
+			BOOST_CHECK_EQUAL(jt->field(0).get_int(), *kt);
+		}
+	}
 }
 
 #if 0
