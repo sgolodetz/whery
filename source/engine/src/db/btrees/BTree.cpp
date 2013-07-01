@@ -891,30 +891,6 @@ void BTree::redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple)
 	add_index_entry(m_nodes[nodeID].siblingRightID);
 }
 
-void BTree::selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID)
-{
-	SortedPage_Ptr leftPage = page(leftNodeID), rightPage = page(rightNodeID);
-
-	// Check the precondition.
-	if(leftPage->empty_tuple_count() == 0 || rightPage->empty_tuple_count() == 0)
-	{
-		throw std::invalid_argument("Cannot selectively insert a tuple unless both potential pages have space.");
-	}
-
-	// Compare the tuple to be inserted against the first tuple on the right-hand page.
-	// If it's strictly before that tuple in the ordering, insert it into the left-hand
-	// page; if not, insert it into the right-hand page.
-	PrefixTupleComparator comp;
-	if(comp.compare(tuple, *rightPage->begin()) == -1)
-	{
-		leftPage->add_tuple(tuple);
-	}
-	else
-	{
-		rightPage->add_tuple(tuple);
-	}
-}
-
 BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 {
 	// Check the precondition.
@@ -930,8 +906,18 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 	// Transfer half of the tuples across to the fresh node.
 	transfer_leaf_tuples_right(nodeID, page(nodeID)->tuple_count() / 2);
 
-	// Insert the original tuple into the appropriate node.
-	selectively_insert_tuple(tuple, nodeID, freshID);
+	// Compare the tuple to be inserted against the first tuple on the fresh page.
+	// If it's strictly before that tuple in the ordering, insert it into this page;
+	// if not, insert it into the fresh page.
+	PrefixTupleComparator comp;
+	if(comp.compare(tuple, *page_begin(freshID)) == -1)
+	{
+		page(nodeID)->add_tuple(tuple);
+	}
+	else
+	{
+		page(freshID)->add_tuple(tuple);
+	}
 
 	// Construct and return the split result.
 	Split split(nodeID, freshID, FreshTuple(leaf_tuple_manipulator()));

@@ -764,19 +764,6 @@ private:
 	void redistribute_leaf_right_and_insert(int nodeID, const Tuple& tuple);
 
 	/**
-	Selectively inserts the specified tuple into one of two adjacent nodes,
-	based on a comparison against the first tuple of the right-hand node.
-	Both nodes must have space for an extra tuple.
-
-	\param tuple					The tuple to insert.
-	\param leftNodeID				The ID of the left-hand node.
-	\param rightNodeID				The ID of the right-hand node.
-	\throw std::invalid_argument	If at least one of the two nodes does
-									not have space for an extra tuple.
-	*/
-	void selectively_insert_tuple(const Tuple& tuple, int leftNodeID, int rightNodeID);
-
-	/**
 	Splits a full branch node into two half-full branch nodes and inserts the specified tuple.
 
 	\param nodeID					The ID of the branch node to split.
