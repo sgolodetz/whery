@@ -534,18 +534,14 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 		page(nodeID)->add_tuple(tuple);
 		return boost::none;
 	}
-	else if(m_nodes[nodeID].siblingLeftID != -1 &&
-			m_nodes[m_nodes[nodeID].siblingLeftID].parentID == m_nodes[nodeID].parentID &&
-			has_less_than_max_tuples(m_nodes[nodeID].siblingLeftID))
+	else if(is_useful_sibling(nodeID, m_nodes[nodeID].siblingLeftID) && has_less_than_max_tuples(m_nodes[nodeID].siblingLeftID))
 	{
 		// This node is full, but its left sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
 		redistribute_leaf_left_and_insert(nodeID, tuple);
 		return boost::none;
 	}
-	else if(m_nodes[nodeID].siblingRightID != -1 &&
-			m_nodes[m_nodes[nodeID].siblingRightID].parentID == m_nodes[nodeID].parentID &&
-			has_less_than_max_tuples(m_nodes[nodeID].siblingRightID))
+	else if(is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID) && has_less_than_max_tuples(m_nodes[nodeID].siblingRightID))
 	{
 		// This node is full, but its right sibling has the same parent and spare capacity,
 		// so we can avoid the need for a split.
