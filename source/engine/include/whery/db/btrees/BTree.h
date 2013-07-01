@@ -157,7 +157,7 @@ public:
 
 		\param tree		The B+-tree for which this is an iterator.
 		\param nodeID	The ID of the leaf node containing the initially-pointed-to tuple.
-		\param it		An iterator to the initially-pointed-to tuple within a leaf page.
+		\param it		An iterator to the initially-pointed-to tuple within the leaf page.
 		*/
 		ConstIterator(const BTree *tree, int nodeID, SortedPage::TupleSetCIter it)
 		:	m_tree(tree), m_nodeID(nodeID), m_it(it)
@@ -292,14 +292,13 @@ public:
 	ConstIterator end() const;
 
 	/**
-	Calculates a pair of iterators that together bound those tuples in the B+-tree
-	that are equivalent to the specified key. The pair returned will be equal to
-	the pair [lower_bound(key), upper_bound(key)] unless the key is "invalid", in
-	which case [lower_bound(key), lower_bound(key)] will be returned. This is
-	essential, because in such cases the upper bound iterator would be strictly
-	before the lower bound iterator.
+	Calculates a pair of iterators that together bound those leaf (data) tuples in the B+-tree
+	that are equivalent to the specified key. The pair returned will be equal to the pair
+	[lower_bound(key), upper_bound(key)] unless the key is "invalid", in which case
+	[lower_bound(key), lower_bound(key)] will be returned. This is essential, because in
+	such cases the upper bound iterator would be strictly before the lower bound iterator.
 
-	\return	A pair of iterators that together bound those tuples in the B+-tree
+	\return	A pair of iterators that together bound those leaf tuples in the B+-tree
 			that are equivalent to the specified key.
 	*/
 	EqualRangeResult equal_range(const RangeKey& key) const;
@@ -312,8 +311,8 @@ public:
 	EqualRangeResult equal_range(const ValueKey& key) const;
 
 	/**
-	Erases the first tuple that matches the specified key from the B+-tree.
-	Other tuples that match the specified key remain in the tree.
+	Erases the first leaf (data) tuple that matches the specified key from the B+-tree.
+	Other leaf tuples that match the specified key remain in the tree.
 
 	\param key	The key denoting the tuple to erase.
 	*/
@@ -456,6 +455,17 @@ private:
 	int child_node_id(const BackedTuple& branchTuple) const;
 
 	/**
+	Connects a fresh node into the B+-tree as the right sibling of the specified node
+	and with the same parent. Note that this function makes no attempt to update the
+	parent of the two nodes, and should therefore only be used as part of a larger
+	algorithm that does do so.
+
+	\param freshID		The ID of the fresh node.
+	\param existingID	The ID of the existing node whose right sibling the fresh node will become.
+	*/
+	void connect_node_as_right_sibling_of(int freshID, int existingID);
+
+	/**
 	Deletes the specified node from the B+-tree. Note that the caller is responsible
 	for updating other nodes in the tree where necessary.
 
@@ -464,7 +474,9 @@ private:
 	void delete_node(int nodeID);
 
 	/**
-	Disconnects the specified node from its siblings in the B+-tree.
+	Disconnects the specified node from its siblings in the B+-tree. Note that this
+	function makes no attempt to update the parent of the node, and should therefore
+	only be used as part of a larger algorithm that does so.
 
 	\param nodeID	The ID of the node to disconnect.
 	*/
@@ -542,17 +554,6 @@ private:
 	bool has_less_than_max_tuples(int nodeID) const;
 
 	/**
-	Inserts a fresh node into the B+-tree as the right sibling of the specified node
-	and with the same parent. Note that this function makes no attempt to update the
-	parent of the two nodes, and should therefore only be used as part of a larger
-	algorithm that does do so.
-
-	\param existingID	The ID of the existing node whose right sibling the fresh node will become.
-	\param freshID		The ID of the fresh node.
-	*/
-	void insert_node_as_right_sibling_of(int existingID, int freshID);
-
-	/**
 	Inserts a tuple into the subtree rooted at the specified branch node. This may cause
 	the node to be split, in which case a split result will be returned.
 
@@ -627,8 +628,24 @@ private:
 	*/
 	FreshTuple make_branch_tuple(const Tuple& sourceTuple, int childNodeID) const;
 
+	/**
+	Merges two branch nodes together (by merging the right-hand node into the left-hand node).
+
+	\param leftNodeID	The left-hand operand of the merge.
+	\param rightNodeID	The right-operand of the merge.
+	\return				The result of the merge.
+	*/
 	Merge merge_branches(int leftNodeID, int rightNodeID);
 
+	/**
+	Merges two leaf nodes together, erasing a tuple from one of them in the process.
+
+	\param nodeID		The ID of the node containing the tuple to erase (must be either leftNodeID or rightNodeID).
+	\param it			An iterator pointing to the tuple to erase.
+	\param leftNodeID	The left-hand operand of the merge.
+	\param rightNodeID	The right-hand operand of the merge.
+	\return				The result of the merge.
+	*/
 	Merge merge_leaves_and_erase(int nodeID, const SortedPage::TupleSetCIter& it, int leftNodeID, int rightNodeID);
 
 	/**
@@ -680,9 +697,15 @@ private:
 	*/
 	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
 
-	void redistribute_from_left_branch(int nodeID);
+	/**
+	Moves the last tuple across from the left sibling of the specified branch node so as to restore
+	the specified node's minimum tuple invariant. The left sibling must have the same parent as the
+	specified branch node and a tuple to spare. Note that this function appropriately updates the
+	parent of the two nodes.
 
-	void redistribute_from_right_branch(int nodeID);
+	\param nodeID	The ID of the branch node whose minimum tuple invariant has been broken.
+	*/
+	void redistribute_from_left_branch(int nodeID);
 
 	/**
 	Erases the tuple pointed to by the iterator from the specified leaf, and then moves
@@ -695,6 +718,16 @@ private:
 	\param it		An iterator pointing to the tuple to be erased.
 	*/
 	void redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it);
+
+	/**
+	Moves the first tuple across from the right sibling of the specified branch node so as to restore
+	the specified node's minimum tuple invariant. The right sibling must have the same parent as the
+	specified branch node and a tuple to spare. Note that this function appropriately updates the
+	parent of the two nodes.
+
+	\param nodeID	The ID of the branch node whose minimum tuple invariant has been broken.
+	*/
+	void redistribute_from_right_branch(int nodeID);
 
 	/**
 	Erases the tuple pointed to by the iterator from the specified leaf, and then moves the
@@ -803,6 +836,13 @@ private:
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
 
+	/**
+	Updates the parent pointers in the children of the old parent node to
+	point to the new parent node.
+
+	\param oldParentID	The ID of the old parent node.
+	\param newParentID	The ID of the new parent node.
+	*/
 	void update_parent_pointers(int oldParentID, int newParentID);
 };
 

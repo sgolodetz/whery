@@ -254,6 +254,16 @@ int BTree::child_node_id(const BackedTuple& branchTuple) const
 	return id;
 }
 
+void BTree::connect_node_as_right_sibling_of(int freshID, int existingID)
+{
+	m_nodes[freshID].parentID = m_nodes[existingID].parentID;
+	m_nodes[freshID].siblingLeftID = existingID;
+	m_nodes[freshID].siblingRightID = m_nodes[existingID].siblingRightID;
+	m_nodes[existingID].siblingRightID = freshID;
+	if(m_nodes[freshID].siblingRightID != -1) m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
+	if(m_lastLeafID == existingID) m_lastLeafID = freshID;
+}
+
 void BTree::delete_node(int nodeID)
 {
 	m_nodeIDAllocator.deallocate(nodeID);
@@ -486,16 +496,6 @@ bool BTree::has_at_least_min_tuples(int nodeID, int offset) const
 bool BTree::has_less_than_max_tuples(int nodeID) const
 {
 	return page(nodeID)->empty_tuple_count() > 0;
-}
-
-void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
-{
-	m_nodes[freshID].parentID = m_nodes[existingID].parentID;
-	m_nodes[freshID].siblingLeftID = existingID;
-	m_nodes[freshID].siblingRightID = m_nodes[existingID].siblingRightID;
-	m_nodes[existingID].siblingRightID = freshID;
-	if(m_nodes[freshID].siblingRightID != -1) m_nodes[m_nodes[freshID].siblingRightID].siblingLeftID = freshID;
-	if(m_lastLeafID == existingID) m_lastLeafID = freshID;
 }
 
 boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple, int nodeID)
@@ -775,32 +775,6 @@ void BTree::redistribute_from_left_branch(int nodeID)
 	m_nodes[childID].parentID = nodeID;
 }
 
-void BTree::redistribute_from_right_branch(int nodeID)
-{
-	assert(m_nodes[nodeID].has_children());
-	assert(is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID));
-
-	// Pull the index entry for the node's right sibling down from the parent into this node.
-	// TODO: This is similar to code in merge_branches and redistribute_from_left_branch - factor out the commonality.
-	SortedPage::TupleSetCIter it = find_index_entry(m_nodes[nodeID].siblingRightID);
-	page(nodeID)->add_tuple(make_branch_tuple(*it, m_nodes[m_nodes[nodeID].siblingRightID].firstChildID));
-	page(m_nodes[nodeID].parentID)->erase_tuple(it);
-
-	// Update the parent pointer of the new last child of this node to point to this node.
-	m_nodes[child_node_id(*page_rbegin(nodeID))].parentID = nodeID;
-
-	// Make a note of the right child of the first node of the right sibling.
-	SortedPage_Ptr rightPage = page(m_nodes[nodeID].siblingRightID);
-	int childID = child_node_id(*rightPage->begin());
-
-	// Push the first index entry of the right sibling up to the parent node.
-	page(m_nodes[nodeID].parentID)->add_tuple(make_branch_tuple(*rightPage->begin(), m_nodes[nodeID].siblingRightID));
-	rightPage->erase_tuple(rightPage->begin());
-
-	// Update the first child of the right sibling to be the stored child value.
-	m_nodes[m_nodes[nodeID].siblingRightID].firstChildID = childID;
-}
-
 void BTree::redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it)
 {
 	// Erase the index entry for this node from the parent page (an updated index
@@ -815,6 +789,33 @@ void BTree::redistribute_from_left_leaf_and_erase(int nodeID, const SortedPage::
 
 	// Re-add an index entry for this node to the parent page.
 	add_index_entry(nodeID);
+}
+
+void BTree::redistribute_from_right_branch(int nodeID)
+{
+	assert(m_nodes[nodeID].has_children());
+	assert(is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID));
+
+	// Pull the index entry for the node's right sibling down from the parent into this node.
+	// TODO: This is similar to code in merge_branches and redistribute_from_left_branch - factor out the commonality.
+	SortedPage::TupleSetCIter it = find_index_entry(m_nodes[nodeID].siblingRightID);
+	page(nodeID)->add_tuple(make_branch_tuple(*it, m_nodes[m_nodes[nodeID].siblingRightID].firstChildID));
+	page(m_nodes[nodeID].parentID)->erase_tuple(it);
+
+	// Update the parent pointer of the new last child of this node (the former
+	// first child of this node's right sibling) to point to this node.
+	m_nodes[child_node_id(*page_rbegin(nodeID))].parentID = nodeID;
+
+	// Make a note of the right child of the first node of the right sibling.
+	SortedPage_Ptr rightPage = page(m_nodes[nodeID].siblingRightID);
+	int childID = child_node_id(*rightPage->begin());
+
+	// Push the first index entry of the right sibling up to the parent node.
+	page(m_nodes[nodeID].parentID)->add_tuple(make_branch_tuple(*rightPage->begin(), m_nodes[nodeID].siblingRightID));
+	rightPage->erase_tuple(rightPage->begin());
+
+	// Update the first child of the right sibling to be the stored child value.
+	m_nodes[m_nodes[nodeID].siblingRightID].firstChildID = childID;
 }
 
 void BTree::redistribute_from_right_leaf_and_erase(int nodeID, const SortedPage::TupleSetCIter& it)
@@ -924,7 +925,7 @@ BTree::Split BTree::split_leaf_and_insert(int nodeID, const Tuple& tuple)
 
 	// Create a fresh leaf node and connect it to the rest of the tree.
 	int freshID = add_leaf_node();
-	insert_node_as_right_sibling_of(nodeID, freshID);
+	connect_node_as_right_sibling_of(freshID, nodeID);
 
 	// Transfer half of the tuples across to the fresh node.
 	transfer_leaf_tuples_right(nodeID, page(nodeID)->tuple_count() / 2);
@@ -948,7 +949,7 @@ BTree::Split BTree::split_branch_and_insert(int nodeID, const FreshTuple& tuple)
 
 	// Create a fresh branch node and connect it to the rest of the tree.
 	int freshID = add_branch_node();
-	insert_node_as_right_sibling_of(nodeID, freshID);
+	connect_node_as_right_sibling_of(freshID, nodeID);
 
 	// Make a tuple set containing fresh copies of all the tuples in the original page.
 	typedef std::multiset<FreshTuple,PrefixTupleComparator> FreshTupleSet;
