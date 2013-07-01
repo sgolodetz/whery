@@ -698,6 +698,16 @@ private:
 	void print_subtree(std::ostream& os, int nodeID, unsigned int depth) const;
 
 	/**
+	Pulls the index entry of the source node down from its parent into the specified
+	target node, replacing the child node ID it contains with the one specified.
+
+	\param sourceNodeID	The ID of the node whose index entry should be pulled down.
+	\param targetNodeID	The ID of the node into which to pull the index entry down.
+	\param childNodeID	The child node ID to use for the new index entry.
+	*/
+	void pull_down_index_entry(int sourceNodeID, int targetNodeID, int childNodeID);
+
+	/**
 	Moves the last tuple across from the left sibling of the specified branch node so as to restore
 	the specified node's minimum tuple invariant. The left sibling must have the same parent as the
 	specified branch node and a tuple to spare. Note that this function appropriately updates the
