@@ -263,6 +263,14 @@ void BTree::delete_node(int nodeID)
 	n.firstChildID = n.parentID = n.siblingLeftID = n.siblingRightID = -1;
 }
 
+void BTree::disconnect_node_from_siblings(int nodeID)
+{
+	int leftID = m_nodes[nodeID].siblingLeftID;
+	int rightID = m_nodes[nodeID].siblingRightID;
+	if(leftID != -1) m_nodes[leftID].siblingRightID = rightID;
+	if(rightID != -1) m_nodes[rightID].siblingLeftID = leftID;
+}
+
 void BTree::erase_index_entry(int nodeID)
 {
 	page(m_nodes[nodeID].parentID)->erase_tuple(find_index_entry(nodeID));
@@ -649,8 +657,7 @@ BTree::Merge BTree::merge_branches(int leftNodeID, int rightNodeID)
 	transfer_leaf_tuples_left(rightNodeID, page(rightNodeID)->tuple_count());
 
 	// Disconnect the right-hand node from the B+-tree and delete it.
-	m_nodes[leftNodeID].siblingRightID = m_nodes[rightNodeID].siblingRightID;
-	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
+	disconnect_node_from_siblings(rightNodeID);
 	delete_node(rightNodeID);
 
 	return Merge(leftNodeID);
@@ -669,8 +676,7 @@ BTree::Merge BTree::merge_leaves_and_erase(int nodeID, const SortedPage::TupleSe
 	transfer_leaf_tuples_left(rightNodeID, page(rightNodeID)->tuple_count());
 
 	// Disconnect the right-hand node from the B+-tree and delete it.
-	m_nodes[leftNodeID].siblingRightID = m_nodes[rightNodeID].siblingRightID;
-	if(m_nodes[leftNodeID].siblingRightID != -1) m_nodes[m_nodes[leftNodeID].siblingRightID].siblingLeftID = leftNodeID;
+	disconnect_node_from_siblings(rightNodeID);
 	delete_node(rightNodeID);
 
 	// Update the last leaf ID if necessary.

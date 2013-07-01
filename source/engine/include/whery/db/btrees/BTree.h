@@ -464,6 +464,13 @@ private:
 	void delete_node(int nodeID);
 
 	/**
+	Disconnects the specified node from its siblings in the B+-tree.
+
+	\param nodeID	The ID of the node to disconnect.
+	*/
+	void disconnect_node_from_siblings(int nodeID);
+
+	/**
 	Erases the index entry for the specified node from its parent node. The node
 	must have a parent and must not be the parent's first child.
 
@@ -475,6 +482,13 @@ private:
 	boost::optional<Merge> erase_tuple_from_leaf(const ValueKey& key, int nodeID);
 	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
+	/**
+	Finds the index entry for the specified node in its parent node. The node must
+	have a parent and must not be the parent's first child.
+
+	\param nodeID	The ID of the node whose index entry should be found.
+	\return			An iterator pointing to the index entry for the specified node in its parent.
+	*/
 	SortedPage::TupleSetCIter find_index_entry(int nodeID) const;
 
 	/**
