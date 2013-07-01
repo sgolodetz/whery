@@ -143,6 +143,14 @@ public:
 		SortedPage::TupleSetCIter m_it;
 
 		//#################### CONSTRUCTORS ####################
+	public:
+		/**
+		Constructs an invalid B+-tree iterator (it can be assigned something valid later).
+		*/
+		ConstIterator()
+		:	m_tree(NULL), m_nodeID(-1)
+		{}
+
 	private:
 		/**
 		Constructs a B+-tree iterator.

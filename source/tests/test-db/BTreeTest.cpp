@@ -308,6 +308,29 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(find)
+{
+	BTree_Ptr tree;
+	boost::tie(tree, boost::tuples::ignore) = make_trees();
+
+	ValueKey key(tree->leaf_tuple_manipulator(), list_of(0));
+	BTree::ConstIterator actual;
+	for(BTree::ConstIterator it = tree->begin(), iend = tree->end(); it != iend; ++it)
+	{
+		key.field(0).set_from(it->field(0));
+		actual = tree->find(key);
+		BOOST_CHECK_MESSAGE(actual == it, "check actual == it failed");
+	}
+
+	key.field(0).set_int(-1);
+	actual = tree->find(key);
+	BOOST_CHECK_MESSAGE(actual == tree->end(), "check actual == tree->end() failed");
+
+	key.field(0).set_int(9);
+	actual = tree->find(key);
+	BOOST_CHECK_MESSAGE(actual == tree->end(), "check actual == tree->end() failed");
+}
+
 BOOST_AUTO_TEST_CASE(insert_erase)
 {
 	BTree tree(primaryController_2_2);
