@@ -233,14 +233,13 @@ int BTree::add_node()
 	return id;
 }
 
-boost::optional<BTree::Split> BTree::add_root_node(const Split& split)
+void BTree::add_root_node(const Split& split)
 {
 	m_rootID = add_branch_node();
 	m_nodes[split.leftNodeID].parentID = m_rootID;
 	m_nodes[split.rightNodeID].parentID = m_rootID;
 	m_nodes[m_rootID].firstChildID = split.leftNodeID;
 	page(m_rootID)->add_tuple(make_branch_tuple(split.splitter, split.rightNodeID));
-	return boost::none;
 }
 
 TupleManipulator BTree::branch_tuple_manipulator() const
@@ -516,7 +515,14 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_branch(const Tuple& tuple
 		// inserting the new tuple and then pushing the median tuple upwards. If the node being
 		// split is also the root node, add a new root above both it and the fresh node.
 		Split split = split_branch_and_insert(nodeID, make_branch_tuple(result->splitter, result->rightNodeID));
-		return nodeID == m_rootID ? add_root_node(split) : split;
+
+		if(nodeID == m_rootID)
+		{
+			add_root_node(split);
+			return boost::none;
+		}
+
+		return split;
 	}
 }
 
@@ -552,7 +558,14 @@ boost::optional<BTree::Split> BTree::insert_tuple_into_leaf(const Tuple& tuple, 
 		// and insert the tuple into the appropriate one of them. If the node being split
 		// is also the root node, add a new root above both it and the fresh node.
 		Split split = split_leaf_and_insert(nodeID, tuple);
-		return nodeID == m_rootID ? add_root_node(split) : split;
+
+		if(nodeID == m_rootID)
+		{
+			add_root_node(split);
+			return boost::none;
+		}
+
+		return split;
 	}
 }
 

@@ -437,9 +437,8 @@ private:
 	which must be the old root.
 
 	\param split	The split that created the need for a new root.
-	\return			boost::none (for convenience).
 	*/
-	boost::optional<Split> add_root_node(const Split& split);
+	void add_root_node(const Split& split);
 
 	/**
 	Returns a tuple manipulator that can be used to interact with the B+-tree's branch (index) tuples.
