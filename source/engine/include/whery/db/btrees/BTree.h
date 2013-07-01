@@ -541,6 +541,15 @@ private:
 	*/
 	boost::optional<Split> insert_tuple_into_subtree(const Tuple& tuple, int nodeID);
 
+	/**
+	Checks whether or not the specified sibling of the specified node is "useful" for a
+	redistribution or a merge, in the sense that it both exists and has the same parent.
+
+	\param nodeID		The ID of the node whose sibling we want to check.
+	\param siblingID	The ID of the left or right sibling of the node (may be -1 if there isn't one).
+	\return				true, if the specified sibling exists and has the same parent as the node, or
+						false otherwise.
+	*/
 	bool is_useful_sibling(int nodeID, int siblingID) const;
 
 	/**
