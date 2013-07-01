@@ -478,8 +478,35 @@ private:
 	*/
 	void erase_index_entry(int nodeID);
 
+	/**
+	Erases the first tuple that matches the specified key from the subtree rooted at
+	the specified branch node. Other tuples that match the specified key remain in
+	the subtree.
+
+	\param key		The key denoting the tuple to erase.
+	\param nodeID	The ID of the branch node at the root of the subtree from which to erase it.
+	\return			The result of any merge that occurs, or boost::none otherwise.
+	*/
 	boost::optional<Merge> erase_tuple_from_branch(const ValueKey& key, int nodeID);
+
+	/**
+	Erases the first tuple that matches the specified key from the specified leaf node.
+	Other tuples that match the specified key remain in the node.
+
+	\param key		The key denoting the tuple to erase.
+	\param nodeID	The ID of the leaf node from which to erase it.
+	\return			The result of any merge that occurs, or boost::none otherwise.
+	*/
 	boost::optional<Merge> erase_tuple_from_leaf(const ValueKey& key, int nodeID);
+
+	/**
+	Erases the first tuple that matches the specified key from the subtree rooted at the
+	specified node. Other tuples that match the specified key remain in the subtree.
+
+	\param key		The key denoting the tuple to erase.
+	\param nodeID	The ID of the node at the root of the subtree from which to erase it.
+	\return			The result of any merge that occurs, or boost::none otherwise.
+	*/
 	boost::optional<Merge> erase_tuple_from_subtree(const ValueKey& key, int nodeID);
 
 	/**
