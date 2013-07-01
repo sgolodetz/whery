@@ -479,6 +479,19 @@ private:
 	SortedPage::TupleSetCIter find_index_entry(int nodeID) const;
 
 	/**
+	Checks whether or not the specified node satisfies its minimum tuple invariant, possibly
+	after changing its tuple count by the specified offset. For example, specifying an offset
+	of -1 allows us to check whether the node will still satisfy its minimum tuple invariant
+	after a tuple has been erased.
+
+	\param nodeID	The node for which we want to check the minimum tuple invariant.
+	\param offset	An optional offset to apply to the node's tuple count when performing the check.
+	\return			true, if the node satisfies its minimum tuple invariant after changing
+					its tuple count by the specified offset, or false otherwise.
+	*/
+	bool has_at_least_min_tuples(int nodeID, int offset = 0) const;
+
+	/**
 	Checks whether or not the specified node contains less than the maximum number
 	of tuples that can be stored in a node.
 
@@ -487,16 +500,6 @@ private:
 					tuples that can be stored in a node, or false otherwise.
 	*/
 	bool has_less_than_max_tuples(int nodeID) const;
-
-	/**
-	Checks whether or not the specified node contains more than the minimum number
-	of tuples that can be stored in a node.
-
-	\param nodeID	The ID of the node to check.
-	\return			true, if the specified node has more than the minimum number of
-					tuples that can be stored in a node, or false otherwise.
-	*/
-	bool has_more_than_min_tuples(int nodeID) const;
 
 	/**
 	Inserts a fresh node into the B+-tree as the right sibling of the specified node

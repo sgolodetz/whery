@@ -303,8 +303,7 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 
 			return boost::none;
 		}
-		// FIXME: Factor this test into a predicate.
-		else if(page(relevantNodeID)->tuple_count() >= page(relevantNodeID)->max_tuple_count() / 2)
+		else if(has_at_least_min_tuples(relevantNodeID))
 		{
 			// If the relevant node is not the root and it still satisfies its minimum tuple invariant,
 			// then there is no need to do anything.
@@ -323,13 +322,13 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_branch(const ValueKey& key
 			bool hasUsefulRightSibling = is_useful_sibling(relevantNodeID, m_nodes[relevantNodeID].siblingRightID);
 			assert(hasUsefulLeftSibling || hasUsefulRightSibling);
 
-			if(hasUsefulLeftSibling && has_more_than_min_tuples(m_nodes[relevantNodeID].siblingLeftID))
+			if(hasUsefulLeftSibling && has_at_least_min_tuples(m_nodes[relevantNodeID].siblingLeftID, -1))
 			{
 				// TODO
 				redistribute_from_left_branch(relevantNodeID);
 				return boost::none;
 			}
-			else if(hasUsefulRightSibling && has_more_than_min_tuples(m_nodes[relevantNodeID].siblingRightID))
+			else if(hasUsefulRightSibling && has_at_least_min_tuples(m_nodes[relevantNodeID].siblingRightID, -1))
 			{
 				// TODO
 				redistribute_from_right_branch(relevantNodeID);
@@ -377,7 +376,7 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, 
 		return boost::none;
 	}
 
-	if(nodeID == m_rootID || has_more_than_min_tuples(nodeID))
+	if(nodeID == m_rootID || has_at_least_min_tuples(nodeID, -1))
 	{
 		// Either this node is the root (in which case it has no minimum tuple requirement),
 		// or it would still be at least half full after a deletion, so simply erase the
@@ -395,14 +394,14 @@ boost::optional<BTree::Merge> BTree::erase_tuple_from_leaf(const ValueKey& key, 
 		bool hasUsefulRightSibling = is_useful_sibling(nodeID, m_nodes[nodeID].siblingRightID);
 		assert(hasUsefulLeftSibling || hasUsefulRightSibling);
 
-		if(hasUsefulLeftSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingLeftID))
+		if(hasUsefulLeftSibling && has_at_least_min_tuples(m_nodes[nodeID].siblingLeftID, -1))
 		{
 			// This node would be less than half full after a deletion, but its left sibling
 			// has a tuple to spare, so we can avoid the need for a merge.
 			redistribute_from_left_leaf_and_erase(nodeID, it);
 			return boost::none;
 		}
-		else if(hasUsefulRightSibling && has_more_than_min_tuples(m_nodes[nodeID].siblingRightID))
+		else if(hasUsefulRightSibling && has_at_least_min_tuples(m_nodes[nodeID].siblingRightID, -1))
 		{
 			// This node would be less than half full after a deletion, but its right sibling
 			// has a tuple to spare, so we can avoid the need for a merge.
@@ -472,14 +471,14 @@ SortedPage::TupleSetCIter BTree::find_index_entry(int nodeID) const
 	return it;
 }
 
+bool BTree::has_at_least_min_tuples(int nodeID, int offset) const
+{
+	return page(nodeID)->tuple_count() + offset >= page(nodeID)->max_tuple_count() / 2;
+}
+
 bool BTree::has_less_than_max_tuples(int nodeID) const
 {
 	return page(nodeID)->empty_tuple_count() > 0;
-}
-
-bool BTree::has_more_than_min_tuples(int nodeID) const
-{
-	return page(nodeID)->tuple_count() - 1 >= page(nodeID)->max_tuple_count() / 2;
 }
 
 void BTree::insert_node_as_right_sibling_of(int existingID, int freshID)
