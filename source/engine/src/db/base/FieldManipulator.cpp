@@ -34,6 +34,12 @@ std::string FieldManipulator::get_string(const char *location) const
 	throw std::bad_cast(/*"Cannot convert field value to type 'string'."*/);
 }
 
+boost::uuids::uuid FieldManipulator::get_uuid(const char *location) const
+{
+	// Default implementation (intended to be overridden as necessary).
+	throw std::bad_cast(/*"Cannot convert field value to type 'uuid'."*/);
+}
+
 void FieldManipulator::set_double(char *location, double value) const
 {
 	// Default implementation (intended to be overridden as necessary).
@@ -44,6 +50,12 @@ void FieldManipulator::set_int(char *location, int value) const
 {
 	// Default implementation (intended to be overridden as necessary).
 	throw std::bad_cast(/*"Cannot set field value from type 'int'."*/);
+}
+
+void FieldManipulator::set_uuid(char *location, const boost::uuids::uuid& value) const
+{
+	// Default implementation (intended to be overridden as necessary).
+	throw std::bad_cast(/*"Cannot set field value from type 'uuid'."*/);
 }
 
 }

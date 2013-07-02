@@ -7,8 +7,13 @@
 
 #include <vector>
 
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+using namespace boost::uuids;
+
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/IntFieldManipulator.h"
+#include "whery/db/base/UuidFieldManipulator.h"
 using namespace whery;
 
 #include "Constants.h"
@@ -22,6 +27,10 @@ char *dloc = &dbuffer[0];
 const IntFieldManipulator& ifm = IntFieldManipulator::instance();
 std::vector<char> ibuffer(ifm.size());
 char *iloc = &ibuffer[0];
+
+const UuidFieldManipulator& ufm = UuidFieldManipulator::instance();
+std::vector<char> ubuffer(ufm.size());
+char *uloc = &ubuffer[0];
 
 //#################### TESTS ####################
 
@@ -61,6 +70,21 @@ BOOST_AUTO_TEST_CASE(ifm_setint_getint)
 {
 	ifm.set_int(iloc, 84);
 	BOOST_CHECK_EQUAL(ifm.get_int(iloc), 84);
+}
+
+BOOST_AUTO_TEST_CASE(ufm_setuuid_getstring)
+{
+	std::string s = "01234567-89ab-cdef-0123-456789abcdef";
+	uuid u = string_generator()(s);
+	ufm.set_uuid(uloc, u);
+	BOOST_CHECK_EQUAL(ufm.get_string(uloc), s);
+}
+
+BOOST_AUTO_TEST_CASE(ufm_setuuid_getuuid)
+{
+	uuid u = string_generator()("01234567-89ab-cdef-0123-456789abcdef");
+	ufm.set_uuid(uloc, u);
+	BOOST_CHECK_EQUAL(ufm.get_uuid(uloc), u);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
