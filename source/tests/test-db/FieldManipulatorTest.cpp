@@ -13,7 +13,7 @@ using namespace boost::uuids;
 
 #include "whery/db/base/DoubleFieldManipulator.h"
 #include "whery/db/base/IntFieldManipulator.h"
-#include "whery/db/base/UuidFieldManipulator.h"
+#include "whery/db/base/UUIDFieldManipulator.h"
 using namespace whery;
 
 #include "Constants.h"
@@ -28,7 +28,7 @@ const IntFieldManipulator& ifm = IntFieldManipulator::instance();
 std::vector<char> ibuffer(ifm.size());
 char *iloc = &ibuffer[0];
 
-const UuidFieldManipulator& ufm = UuidFieldManipulator::instance();
+const UUIDFieldManipulator& ufm = UUIDFieldManipulator::instance();
 std::vector<char> ubuffer(ufm.size());
 char *uloc = &ubuffer[0];
 

@@ -1,5 +1,5 @@
 /**
- * whery: UuidFieldManipulator.h
+ * whery: UUIDFieldManipulator.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
@@ -13,7 +13,7 @@ namespace whery {
 /**
 \brief An instance of this class is used to manipulate Boost UUID fields at some location in memory.
 */
-class UuidFieldManipulator : public FieldManipulator
+class UUIDFieldManipulator : public FieldManipulator
 {
 	//#################### SINGLETON IMPLEMENTATION ####################
 public:
@@ -22,14 +22,14 @@ public:
 
 	\return	The singleton instance.
 	*/
-	static const UuidFieldManipulator& instance();
+	static const UUIDFieldManipulator& instance();
 
 private:
 	/** Private to prevent uncontrolled instantiation. */
-	UuidFieldManipulator();
+	UUIDFieldManipulator();
 
 	/** Private and unimplemented to prevent copying. */
-	UuidFieldManipulator(const UuidFieldManipulator&);
+	UUIDFieldManipulator(const UUIDFieldManipulator&);
 
 	//#################### PUBLIC INHERITED METHODS ####################
 public:

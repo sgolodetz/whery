@@ -26,7 +26,7 @@ src/db/base/RangeEndpoint.cpp
 src/db/base/RangeKey.cpp
 src/db/base/TupleComparator.cpp
 src/db/base/TupleManipulator.cpp
-src/db/base/UuidFieldManipulator.cpp
+src/db/base/UUIDFieldManipulator.cpp
 src/db/base/ValueKey.cpp
 )
 
@@ -45,7 +45,7 @@ include/whery/db/base/SortDirection.h
 include/whery/db/base/Tuple.h
 include/whery/db/base/TupleComparator.h
 include/whery/db/base/TupleManipulator.h
-include/whery/db/base/UuidFieldManipulator.h
+include/whery/db/base/UUIDFieldManipulator.h
 include/whery/db/base/ValueKey.h
 )
 
