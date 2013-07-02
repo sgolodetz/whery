@@ -94,37 +94,6 @@ InMemorySortedPage make_small_page()
 
 BOOST_AUTO_TEST_SUITE(InMemorySortedPageTest)
 
-BOOST_AUTO_TEST_CASE(delete_tuple)
-{
-	InMemorySortedPage page = make_small_page();
-	std::vector<BackedTuple> tuples(page.begin(), page.end());
-
-	// Check that the page has the right number of tuples to start with.
-	BOOST_CHECK_EQUAL(page.tuple_count(), 3);
-
-	// Erase the second tuple in the page, i.e. (17,10.0,51) since the page is sorted.
-	page.erase_tuple(tuples[1]);
-
-	// Check that deleting a tuple decreases the tuple count of the page
-	// and leaves the other tuples unaffected.
-	BOOST_CHECK_EQUAL(page.tuple_count(), 2);
-	BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), 7);
-	BOOST_CHECK_EQUAL(tuples[2].field(0).get_int(), 23);
-
-	FreshTuple t(page.field_manipulators());
-	page.add_tuple(t);
-
-	// Check that adding a tuple when there is a tuple on the free list
-	// increases the tuple count of the page.
-	BOOST_CHECK_EQUAL(page.tuple_count(), 3);
-
-	page.add_tuple(t);
-
-	// Check that adding a tuple when there is no tuple on the free list
-	// increases the tuple count of the page.
-	BOOST_CHECK_EQUAL(page.tuple_count(), 4);
-}
-
 BOOST_AUTO_TEST_CASE(equal_range_rangekey)
 {
 	InMemorySortedPage page = make_prefix_page();
@@ -220,6 +189,37 @@ BOOST_AUTO_TEST_CASE(equal_range_valuekey)
 
 	BOOST_CHECK_EQUAL(tuples.size(), 1);
 	check_tuple(tuples[0], 2, 3, 1);
+}
+
+BOOST_AUTO_TEST_CASE(erase_tuple)
+{
+	InMemorySortedPage page = make_small_page();
+	std::vector<BackedTuple> tuples(page.begin(), page.end());
+
+	// Check that the page has the right number of tuples to start with.
+	BOOST_CHECK_EQUAL(page.tuple_count(), 3);
+
+	// Erase the second tuple in the page, i.e. (17,10.0,51) since the page is sorted.
+	page.erase_tuple(tuples[1]);
+
+	// Check that deleting a tuple decreases the tuple count of the page
+	// and leaves the other tuples unaffected.
+	BOOST_CHECK_EQUAL(page.tuple_count(), 2);
+	BOOST_CHECK_EQUAL(tuples[0].field(0).get_int(), 7);
+	BOOST_CHECK_EQUAL(tuples[2].field(0).get_int(), 23);
+
+	FreshTuple t(page.field_manipulators());
+	page.add_tuple(t);
+
+	// Check that adding a tuple when there is a tuple on the free list
+	// increases the tuple count of the page.
+	BOOST_CHECK_EQUAL(page.tuple_count(), 3);
+
+	page.add_tuple(t);
+
+	// Check that adding a tuple when there is no tuple on the free list
+	// increases the tuple count of the page.
+	BOOST_CHECK_EQUAL(page.tuple_count(), 4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
