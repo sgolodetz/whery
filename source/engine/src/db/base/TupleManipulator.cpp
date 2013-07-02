@@ -48,10 +48,10 @@ unsigned int TupleManipulator::arity() const
 	return m_fieldManipulators.size();
 }
 
-Field TupleManipulator::field(char *tupleLocation, unsigned int i) const
+Field TupleManipulator::field(char *tupleLocation, unsigned int i, bool readOnly) const
 {
 	assert(i < m_fieldManipulators.size());
-	return Field(tupleLocation + m_fieldOffsets[i], *m_fieldManipulators[i]);
+	return Field(tupleLocation + m_fieldOffsets[i], *m_fieldManipulators[i], readOnly);
 }
 
 const std::vector<const FieldManipulator*>& TupleManipulator::field_manipulators() const

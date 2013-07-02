@@ -86,9 +86,10 @@ public:
 
 	\param tupleLocation	The location of a target tuple.
 	\param i				The index of the field to retrieve from the tuple.
+	\param readOnly			Whether or not the field should be read-only.
 	\return					The i'th field of the tuple.
 	*/
-	Field field(char *tupleLocation, unsigned int i) const;
+	Field field(char *tupleLocation, unsigned int i, bool readOnly = false) const;
 
 	/**
 	Gets the manipulators for the fields in a target tuple.

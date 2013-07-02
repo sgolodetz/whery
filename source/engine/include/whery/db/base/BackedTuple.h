@@ -24,6 +24,9 @@ protected:
 	/** The manipulator used to interact with the memory containing the tuple. */
 	TupleManipulator m_manipulator;
 
+	/** Whether or not this tuple is read-only. If so, attempting to modify it will fail. */
+	bool m_readOnly;
+
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
@@ -41,7 +44,7 @@ protected:
 	The memory location for the tuple must be set separately. This constructor is
 	intended for use by derived classes only.
 
-	\manipulator	The manipulator used to interact with the memory containing the tuple.
+	\param manipulator	The manipulator used to interact with the memory containing the tuple.
 	*/
 	explicit BackedTuple(const TupleManipulator& manipulator);
 
@@ -68,6 +71,11 @@ public:
 	\return	The location of the tuple in memory.
 	*/
 	const char *location() const;
+
+	/**
+	Makes this tuple read-only. Attempting to modify it will fail.
+	*/
+	void make_read_only();
 
 	/**
 	Gets the overall size of the tuple (in bytes).

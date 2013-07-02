@@ -13,13 +13,17 @@ SET(targetname test-db)
 #############################
 
 SET(sources
-DataPageTest.cpp
+BTreeTest.cpp
+CachedSortedPageTest.cpp
 FieldManipulatorTest.cpp
 FieldTest.cpp
 FreshTupleTest.cpp
+IDAllocatorTest.cpp
+InMemorySortedPageTest.cpp
+PrefixTupleComparatorTest.cpp
+ProjectedTupleTest.cpp
 TestRunner.cpp
 TupleManipulatorTest.cpp
-TupleProjectionTest.cpp
 )
 
 SET(headers

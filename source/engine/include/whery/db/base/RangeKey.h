@@ -102,14 +102,21 @@ public:
 
 	\return	The value of the range's high endpoint (if any).
 	*/
-	FreshTuple& high_value();
+	ValueKey& high_value();
 
 	/**
 	Gets the value of the range's high endpoint (if any).
 
 	\return	The value of the range's high endpoint (if any).
 	*/
-	const FreshTuple& high_value() const;
+	const ValueKey& high_value() const;
+
+	/**
+	Returns whether or not the range is valid.
+
+	\return	true, if the range is valid, or false otherwise.
+	*/
+	bool is_valid() const;
 
 	/**
 	Gets the kind (open or closed) of the range's low endpoint (if any).
@@ -130,14 +137,14 @@ public:
 
 	\return	The value of the range's low endpoint (if any).
 	*/
-	FreshTuple& low_value();
+	ValueKey& low_value();
 
 	/**
 	Gets the value of the range's low endpoint (if any).
 
 	\return	The value of the range's low endpoint (if any).
 	*/
-	const FreshTuple& low_value() const;
+	const ValueKey& low_value() const;
 
 	//#################### PRIVATE METHODS ####################
 private:

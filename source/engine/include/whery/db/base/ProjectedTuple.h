@@ -1,10 +1,10 @@
 /**
- * whery: TupleProjection.h
+ * whery: ProjectedTuple.h
  * Copyright Stuart Golodetz, 2013. All rights reserved.
  */
 
-#ifndef H_WHERY_TUPLEPROJECTION
-#define H_WHERY_TUPLEPROJECTION
+#ifndef H_WHERY_PROJECTEDTUPLE
+#define H_WHERY_PROJECTEDTUPLE
 
 #include <vector>
 
@@ -13,10 +13,10 @@
 namespace whery {
 
 /**
-\brief An instance of this class represents the projection of a specified set of fields
-from a tuple to form a derived tuple.
+\brief An instance of this class represents a tuple created by projecting
+a specified set of fields from a tuple to form a derived tuple.
 */
-class TupleProjection : public Tuple
+class ProjectedTuple : public Tuple
 {
 	//#################### PRIVATE VARIABLES ####################
 private:
@@ -32,13 +32,13 @@ private:
 	//#################### CONSTRUCTORS ####################
 public:
 	/**
-	Constructs a tuple projection.
+	Constructs a projected tuple.
 
 	\param source					The tuple whose fields are to be projected.
 	\param projectedFields			The indices of the fields that are to be projected.
 	\throw std::invalid_argument	If projectedFields is empty.
 	*/
-	TupleProjection(const Tuple& source, const std::vector<unsigned int>& projectedFields);
+	ProjectedTuple(const Tuple& source, const std::vector<unsigned int>& projectedFields);
 
 	//#################### PUBLIC INHERITED METHODS ####################
 public:
