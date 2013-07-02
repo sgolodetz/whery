@@ -26,6 +26,7 @@ src/db/base/RangeEndpoint.cpp
 src/db/base/RangeKey.cpp
 src/db/base/TupleComparator.cpp
 src/db/base/TupleManipulator.cpp
+src/db/base/UuidFieldManipulator.cpp
 src/db/base/ValueKey.cpp
 )
 
@@ -44,6 +45,7 @@ include/whery/db/base/SortDirection.h
 include/whery/db/base/Tuple.h
 include/whery/db/base/TupleComparator.h
 include/whery/db/base/TupleManipulator.h
+include/whery/db/base/UuidFieldManipulator.h
 include/whery/db/base/ValueKey.h
 )
 
@@ -139,7 +141,8 @@ INCLUDE(${whery_SOURCE_DIR}/UseBoost.cmake)
 
 IF(MSVC_IDE)
 	# Prevent the deprecation warnings that VC++ arbitrarily decides to produce for C Standard Library functions
-	#ADD_DEFINITIONS (/D _CRT_SECURE_NO_WARNINGS)
+	ADD_DEFINITIONS (/D _CRT_SECURE_NO_WARNINGS)
+	ADD_DEFINITIONS (/D _SCL_SECURE_NO_WARNINGS)
 ENDIF(MSVC_IDE)
 
 ##########################################
