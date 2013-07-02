@@ -281,7 +281,14 @@ public:
 	*/
 	ConstIterator begin() const;
 
+	/**
+	TODO: Loads a large number of tuples into an empty B+-tree to avoid the cost of repeated insertions.
+	*/
 	void bulk_load(const std::vector<SortedPage_Ptr>& pages);
+
+	/**
+	TODO: Clears the B+-tree. (This is deferred because of its interaction with entity management.)
+	*/
 	void clear();
 
 	/**
@@ -317,6 +324,20 @@ public:
 	\param key	The key denoting the tuple to erase.
 	*/
 	void erase_tuple(const ValueKey& key);
+
+	/**
+	TODO: Erases any tuples that match the specified key from the B+-tree.
+
+	\param key	The key denoting the tuples to erase.
+	*/
+	void erase_tuples(const RangeKey& key);
+
+	/**
+	TODO: Erases any tuples that match the specified key from the B+-tree.
+
+	\param key	The key denoting the tuples to erase.
+	*/
+	void erase_tuples(const ValueKey& key);
 
 	/**
 	Returns an iterator pointing to the first leaf (data) tuple in the B+-tree

@@ -384,40 +384,4 @@ BOOST_AUTO_TEST_CASE(insert_erase)
 	}
 }
 
-#if 0
-BOOST_AUTO_TEST_CASE(upper_bound_valuekey)
-{
-	BTree tree(BTreePageController_CPtr(new TestPageController));
-	FreshTuple tuple(tree.leaf_tuple_manipulator());
-
-	for(int i = 0; i < 3; ++i)
-	{
-		for(int j = 0; j < 3; ++j)
-		{
-			tuple.field(0).set_int(i);
-			tuple.field(1).set_int(j);
-			tuple.field(2).set_int(j);
-			tree.insert_tuple(tuple);
-		}
-	}
-
-	tree.print(std::cout);
-
-	ValueKey key(tree.leaf_tuple_manipulator(), list_of(0));
-	for(int i = -1; i <= 3; ++i)
-	{
-		key.field(0).set_int(i);
-		BTree::ConstIterator it = tree.upper_bound(key);
-		if(it != tree.end())
-		{
-			std::cout << i << ' ' << it->field(0).get_int() << ' ' << it->field(1).get_int() << '\n';
-		}
-		else
-		{
-			std::cout << i << " End\n";
-		}
-	}
-}
-#endif
-
 BOOST_AUTO_TEST_SUITE_END()
