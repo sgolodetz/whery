@@ -57,15 +57,6 @@ private:
 		{}
 
 		/**
-		Constructs a node.
-
-		\param page	The page to be used to store the tuple data for the node.
-		*/
-		explicit Node(const SortedPage_Ptr& page_)
-		:	firstChildID(-1), page(page_), parentID(-1), siblingLeftID(-1), siblingRightID(-1)
-		{}
-
-		/**
 		Returns whether or not the node has any children.
 
 		\return	true, if the node has children, or false otherwise.

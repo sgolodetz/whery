@@ -52,11 +52,22 @@ include/whery/db/base/ValueKey.h
 ##
 SET(db_btrees_sources
 src/db/btrees/BTree.cpp
+src/db/btrees/BTreeNode.cpp
 )
 
 SET(db_btrees_headers
 include/whery/db/btrees/BTree.h
+include/whery/db/btrees/BTreeNode.h
 include/whery/db/btrees/BTreePageController.h
+)
+
+##
+SET(db_entities_sources
+src/db/entities/Entity.cpp
+)
+
+SET(db_entities_headers
+include/whery/db/entities/Entity.h
 )
 
 ##
@@ -89,6 +100,7 @@ include/whery/util/TextUtil.h
 SET(sources
 ${db_base_sources}
 ${db_btrees_sources}
+${db_entities_sources}
 ${db_pages_sources}
 ${util_sources}
 )
@@ -96,6 +108,7 @@ ${util_sources}
 SET(headers
 ${db_base_headers}
 ${db_btrees_headers}
+${db_entities_headers}
 ${db_pages_headers}
 ${util_headers}
 )
@@ -114,6 +127,10 @@ SOURCE_GROUP(db\\base\\.h FILES ${db_base_headers})
 ##
 SOURCE_GROUP(db\\btrees\\.cpp FILES ${db_btrees_sources})
 SOURCE_GROUP(db\\btrees\\.h FILES ${db_btrees_headers})
+
+##
+SOURCE_GROUP(db\\entities\\.cpp FILES ${db_entities_sources})
+SOURCE_GROUP(db\\entities\\.h FILES ${db_entities_headers})
 
 ##
 SOURCE_GROUP(db\\pages\\.cpp FILES ${db_pages_sources})

@@ -13,6 +13,8 @@
 
 namespace whery {
 
+using boost::uuids::uuid;
+
 /**
 \brief An instance of a class deriving from this one is used to manipulate
 fields of a particular type at some location in memory (e.g. an int field
@@ -116,7 +118,7 @@ public:
 	\return					The value of the field as a Boost UUID.
 	\throw std::bad_cast	If the type conversion fails.
 	*/
-	virtual boost::uuids::uuid get_uuid(const char *location) const;
+	virtual uuid get_uuid(const char *location) const;
 
 	/**
 	Sets the field at location to the specified value, performing type conversion where necessary.
@@ -146,7 +148,7 @@ public:
 	\param value			The value to which to set the field.
 	\throw std::bad_cast	If the type conversion fails.
 	*/
-	virtual void set_uuid(char *location, const boost::uuids::uuid& value) const;
+	virtual void set_uuid(char *location, const uuid& value) const;
 
 	//#################### PROTECTED METHODS ####################
 protected:

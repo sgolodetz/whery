@@ -41,7 +41,7 @@ std::string UUIDFieldManipulator::get_string(const char *location) const
 	return to_string(get_uuid(location));
 }
 
-boost::uuids::uuid UUIDFieldManipulator::get_uuid(const char *location) const
+uuid UUIDFieldManipulator::get_uuid(const char *location) const
 {
 	return *reinterpret_cast<const uuid*>(location);
 }
