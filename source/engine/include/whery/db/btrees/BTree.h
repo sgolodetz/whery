@@ -779,7 +779,6 @@ private:
 	\param nodeID					The ID of the branch node to split.
 	\param tuple					The tuple to insert.
 	\return							The result of the split.
-	\throw std::invalid_argument	If the branch node is not full.
 	*/
 	Split split_branch_and_insert(int nodeID, const FreshTuple& tuple);
 
@@ -789,7 +788,6 @@ private:
 	\param nodeID					The ID of the leaf node to split.
 	\param tuple					The tuple to insert.
 	\return							The result of the split.
-	\throw std::invalid_argument	If the leaf node is not full.
 	*/
 	Split split_leaf_and_insert(int nodeID, const Tuple& tuple);
 
@@ -802,8 +800,6 @@ private:
 	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
 	\param targetNodeID				The ID of the node to which the tuples should be transferred.
 	\param tuples					The tuples to transfer.
-	\throw std::invalid_argument	If the target node does not have the same parent,
-									or does not have space for the extra tuples.
 	*/
 	void transfer_leaf_tuples(int sourceNodeID, int targetNodeID, const std::vector<BackedTuple>& tuples);
 
@@ -815,8 +811,6 @@ private:
 
 	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
 	\param n						The number of tuples to transfer.
-	\throw std::invalid_argument	If the specified node has fewer than n tuples, or the left sibling
-									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_left(int sourceNodeID, unsigned int n);
 
@@ -828,8 +822,6 @@ private:
 
 	\param sourceNodeID				The ID of the node from which the tuples should be transferred.
 	\param n						The number of tuples to transfer.
-	\throw std::invalid_argument	If the specified node has fewer than n tuples, or the right sibling
-									does not have the same parent/enough space.
 	*/
 	void transfer_leaf_tuples_right(int sourceNodeID, unsigned int n);
 
