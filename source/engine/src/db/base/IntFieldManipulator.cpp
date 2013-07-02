@@ -5,7 +5,6 @@
 
 #include "whery/db/base/IntFieldManipulator.h"
 
-#include <functional>
 #include <boost/lexical_cast.hpp>
 
 namespace whery {

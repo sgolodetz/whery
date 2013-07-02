@@ -54,6 +54,16 @@ INCLUDE(${whery_SOURCE_DIR}/UseBoost.cmake)
 
 INCLUDE(${whery_SOURCE_DIR}/BoostTestCompilerFlags.cmake)
 
+####################################
+# Specify preprocessor definitions #
+####################################
+
+IF(MSVC_IDE)
+	# Prevent the deprecation warnings that VC++ arbitrarily decides to produce for C Standard Library functions
+	ADD_DEFINITIONS (/D _CRT_SECURE_NO_WARNINGS)
+	ADD_DEFINITIONS (/D _SCL_SECURE_NO_WARNINGS)
+ENDIF(MSVC_IDE)
+
 ##########################################
 # Specify the target and where to put it #
 ##########################################

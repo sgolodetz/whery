@@ -9,6 +9,8 @@
 #include <functional>
 #include <string>
 
+#include <boost/uuid/uuid.hpp>
+
 namespace whery {
 
 /**
@@ -107,6 +109,16 @@ public:
 	virtual std::string get_string(const char *location) const;
 
 	/**
+	Gets the value of the field at location as a Boost UUID, performing type conversion where necessary.
+	If the type conversion fails, an exception will be thrown.
+
+	\param location			The location of the field.
+	\return					The value of the field as a Boost UUID.
+	\throw std::bad_cast	If the type conversion fails.
+	*/
+	virtual boost::uuids::uuid get_uuid(const char *location) const;
+
+	/**
 	Sets the field at location to the specified value, performing type conversion where necessary.
 	If the type conversion fails, an exception will be thrown.
 
@@ -125,6 +137,16 @@ public:
 	\throw std::bad_cast	If the type conversion fails.
 	*/
 	virtual void set_int(char *location, int value) const;
+
+	/**
+	Sets the field at location to the specified value, performing type conversion where necessary.
+	If the type conversion fails, an exception will be thrown.
+
+	\param location			The location of the field.
+	\param value			The value to which to set the field.
+	\throw std::bad_cast	If the type conversion fails.
+	*/
+	virtual void set_uuid(char *location, const boost::uuids::uuid& value) const;
 
 	//#################### PROTECTED METHODS ####################
 protected:
