@@ -15,45 +15,73 @@ SET(targetname whery)
 ##
 SET(db_base_sources
 src/db/base/BackedTuple.cpp
-src/db/base/DataPage.cpp
 src/db/base/DoubleFieldManipulator.cpp
 src/db/base/Field.cpp
 src/db/base/FieldManipulator.cpp
 src/db/base/FreshTuple.cpp
 src/db/base/IntFieldManipulator.cpp
+src/db/base/PrefixTupleComparator.cpp
+src/db/base/ProjectedTuple.cpp
 src/db/base/RangeEndpoint.cpp
 src/db/base/RangeKey.cpp
 src/db/base/TupleComparator.cpp
 src/db/base/TupleManipulator.cpp
-src/db/base/TupleProjection.cpp
 src/db/base/ValueKey.cpp
 )
 
 SET(db_base_headers
 include/whery/db/base/BackedTuple.h
-include/whery/db/base/DataPage.h
 include/whery/db/base/DoubleFieldManipulator.h
 include/whery/db/base/Field.h
 include/whery/db/base/FieldManipulator.h
 include/whery/db/base/FreshTuple.h
 include/whery/db/base/IntFieldManipulator.h
+include/whery/db/base/PrefixTupleComparator.h
+include/whery/db/base/ProjectedTuple.h
 include/whery/db/base/RangeEndpoint.h
 include/whery/db/base/RangeKey.h
 include/whery/db/base/SortDirection.h
 include/whery/db/base/Tuple.h
 include/whery/db/base/TupleComparator.h
 include/whery/db/base/TupleManipulator.h
-include/whery/db/base/TupleProjection.h
 include/whery/db/base/ValueKey.h
+)
+
+##
+SET(db_btrees_sources
+src/db/btrees/BTree.cpp
+)
+
+SET(db_btrees_headers
+include/whery/db/btrees/BTree.h
+include/whery/db/btrees/BTreePageController.h
+)
+
+##
+SET(db_pages_sources
+src/db/pages/CachedSortedPage.cpp
+src/db/pages/InMemorySortedPage.cpp
+src/db/pages/PageCache.cpp
+)
+
+SET(db_pages_headers
+include/whery/db/pages/CachedSortedPage.h
+include/whery/db/pages/InMemorySortedPage.h
+include/whery/db/pages/PageCache.h
+include/whery/db/pages/SortedPage.h
 )
 
 ##
 SET(util_sources
 src/util/AlignmentTracker.cpp
+src/util/IDAllocator.cpp
+src/util/TextUtil.cpp
 )
 
 SET(util_headers
 include/whery/util/AlignmentTracker.h
+include/whery/util/IDAllocator.h
+include/whery/util/TextUtil.h
 )
 
 #################################################################
@@ -62,11 +90,15 @@ include/whery/util/AlignmentTracker.h
 
 SET(sources
 ${db_base_sources}
+${db_btrees_sources}
+${db_pages_sources}
 ${util_sources}
 )
 
 SET(headers
 ${db_base_headers}
+${db_btrees_headers}
+${db_pages_headers}
 ${util_headers}
 )
 
@@ -80,6 +112,14 @@ SET(templates
 ##
 SOURCE_GROUP(db\\base\\.cpp FILES ${db_base_sources})
 SOURCE_GROUP(db\\base\\.h FILES ${db_base_headers})
+
+##
+SOURCE_GROUP(db\\btrees\\.cpp FILES ${db_btrees_sources})
+SOURCE_GROUP(db\\btrees\\.h FILES ${db_btrees_headers})
+
+##
+SOURCE_GROUP(db\\pages\\.cpp FILES ${db_pages_sources})
+SOURCE_GROUP(db\\pages\\.h FILES ${db_pages_headers})
 
 ##
 SOURCE_GROUP(util\\.cpp FILES ${util_sources})

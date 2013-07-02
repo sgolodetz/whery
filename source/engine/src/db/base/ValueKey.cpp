@@ -16,6 +16,11 @@ ValueKey::ValueKey(
 	m_fieldIndices(fieldIndices)
 {}
 
+ValueKey::ValueKey(const TupleManipulator& tupleManipulator, const std::vector<unsigned int>& fieldIndices)
+:	FreshTuple(TupleManipulator(tupleManipulator.field_manipulators(), fieldIndices)),
+	m_fieldIndices(fieldIndices)
+{}
+
 //#################### PUBLIC METHODS ####################
 
 const std::vector<unsigned int>& ValueKey::field_indices() const

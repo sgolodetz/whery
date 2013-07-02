@@ -7,17 +7,20 @@
 #include <iostream>
 #include <utility>
 
-#include "whery/db/base/DataPage.h"
+#include <boost/utility.hpp>
+
 #include "whery/db/base/DoubleFieldManipulator.h"
+#include "whery/db/base/FreshTuple.h"
 #include "whery/db/base/IntFieldManipulator.h"
 #include "whery/db/base/TupleComparator.h"
+#include "whery/db/pages/InMemorySortedPage.h"
 using namespace whery;
 
-void output(const DataPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
+void output(const InMemorySortedPage& page, std::vector<std::pair<unsigned int,SortDirection> > *fieldIndices = NULL)
 {
 	std::cout << page.tuple_count() << ' ' << page.percentage_full() << '\n';
 
-	std::vector<BackedTuple> tuples = page.tuples();
+	std::vector<BackedTuple> tuples(page.begin(), page.end());
 	if(fieldIndices != NULL)
 	{
 		std::sort(tuples.begin(), tuples.end(), TupleComparator(*fieldIndices));
@@ -37,6 +40,7 @@ void output(const DataPage& page, std::vector<std::pair<unsigned int,SortDirecti
 }
 
 int main()
+try
 {
 	const int PAGE_BUFFER_SIZE = 1024;
 
@@ -44,46 +48,47 @@ int main()
 	fms.push_back(&IntFieldManipulator::instance());
 	fms.push_back(&DoubleFieldManipulator::instance());
 	fms.push_back(&IntFieldManipulator::instance());
-	DataPage page(fms, PAGE_BUFFER_SIZE);
+	InMemorySortedPage page(fms, PAGE_BUFFER_SIZE);
 
 	output(page);
 
-	BackedTuple tuple = page.add_tuple();
+	FreshTuple tuple(page.field_manipulators());
 	tuple.field(0).set_int(0);
 	tuple.field(1).set_double(23.0);
 	tuple.field(2).set_int(9);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(1);
 	tuple.field(1).set_double(7.0);
 	tuple.field(2).set_int(8);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(2);
 	tuple.field(1).set_double(17.0);
-	tuple.field(2).set_int(51);
+	tuple.field(2).set_int(10);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(3);
 	tuple.field(1).set_double(24.0);
 	tuple.field(2).set_int(12);
+	page.add_tuple(tuple);
 
 	output(page);
 
-	page.delete_tuple(page.tuples()[2]);
+	page.erase_tuple(*boost::next(page.begin(), 2));
 
 	output(page);
 
-	tuple = page.add_tuple();
 	tuple.field(0).set_int(2);
 	tuple.field(1).set_double(17.0);
 	tuple.field(2).set_int(51);
+	page.add_tuple(tuple);
 
 	output(page);
 
@@ -92,4 +97,8 @@ int main()
 	output(page, &fieldIndices);
 
 	return 0;
+}
+catch(std::exception& e)
+{
+	std::cout << "ERROR: " << e.what() << '\n';
 }

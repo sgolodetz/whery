@@ -5,17 +5,19 @@
 
 #include "whery/db/base/Field.h"
 
+#include <stdexcept>
+
 #include "whery/db/base/FieldManipulator.h"
 
 namespace whery {
 
 //#################### CONSTRUCTORS ####################
 
-Field::Field(char *location, const FieldManipulator& manipulator)
-:	m_location(location), m_manipulator(manipulator)
+Field::Field(char *location, const FieldManipulator& manipulator, bool readOnly)
+:	m_location(location), m_manipulator(manipulator), m_readOnly(readOnly)
 {}
 
-//#################### PUBLIC MEMBER FUNCTIONS ####################
+//#################### PUBLIC METHODS ####################
 
 int Field::compare_to(const Field& other) const
 {
@@ -39,17 +41,30 @@ std::string Field::get_string() const
 
 void Field::set_double(double value) const
 {
+	ensure_writable();
 	m_manipulator.set_double(m_location, value);
 }
 
 void Field::set_from(const Field& source) const
 {
+	ensure_writable();
 	m_manipulator.set_from(m_location, source.m_manipulator, source.m_location);
 }
 
 void Field::set_int(int value) const
 {
+	ensure_writable();
 	m_manipulator.set_int(m_location, value);
+}
+
+//#################### PRIVATE METHODS ####################
+
+void Field::ensure_writable() const
+{
+	if(m_readOnly)
+	{
+		throw std::logic_error("Cannot modify a read-only field.");
+	}
 }
 
 }

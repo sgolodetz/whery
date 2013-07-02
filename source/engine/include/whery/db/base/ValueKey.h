@@ -29,10 +29,16 @@ public:
 	\param fieldIndices				A non-empty array specifying the indices of the fields to be used for the key.
 	\throw std::invalid_argument	If fieldManipulators or fieldIndices is empty.
 	*/
-	ValueKey(
-		const std::vector<const FieldManipulator*>& fieldManipulators,
-		const std::vector<unsigned int>& fieldIndices
-	);
+	ValueKey(const std::vector<const FieldManipulator*>& fieldManipulators, const std::vector<unsigned int>& fieldIndices);
+
+	/**
+	Constructs a value key.
+
+	\param tupleManipulator			A manipulator for the tuples being keyed.
+	\param fieldIndices				A non-empty array specifying the indices of the fields to be used for the key.
+	\throw std::invalid_argument	If fieldIndices is empty.
+	*/
+	ValueKey(const TupleManipulator& tupleManipulator, const std::vector<unsigned int>& fieldIndices);
 
 	//#################### PUBLIC METHODS ####################
 public:

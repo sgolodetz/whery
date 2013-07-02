@@ -7,6 +7,8 @@
 
 #include <cassert>
 
+#include "whery/db/base/PrefixTupleComparator.h"
+
 namespace whery {
 
 //#################### CONSTRUCTORS ####################
@@ -61,16 +63,40 @@ RangeEndpointKind RangeKey::high_kind() const
 	return m_highEndpoint->kind();
 }
 
-FreshTuple& RangeKey::high_value()
+ValueKey& RangeKey::high_value()
 {
 	ensure_endpoint(m_highEndpoint);
 	return m_highEndpoint->value();
 }
 
-const FreshTuple& RangeKey::high_value() const
+const ValueKey& RangeKey::high_value() const
 {
 	assert(has_high_endpoint());
 	return m_highEndpoint->value();
+}
+
+bool RangeKey::is_valid() const
+{
+	// If the key has only one endpoint, it's always valid.
+	if(!has_low_endpoint() || !has_high_endpoint())
+	{
+		return true;
+	}
+
+	int comp = PrefixTupleComparator().compare(low_value(), high_value());
+
+	if(low_kind() == OPEN && high_kind() == OPEN)
+	{
+		// If it's a fully-open range, it's only valid if the low endpoint
+		// is strictly less than the high endpoint.
+		return comp == -1;
+	}
+	else
+	{
+		// Otherwise, it's valid if the low endpoint is no greater than the
+		// high endpoint.
+		return comp != 1;
+	}
 }
 
 RangeEndpointKind& RangeKey::low_kind()
@@ -85,13 +111,13 @@ RangeEndpointKind RangeKey::low_kind() const
 	return m_lowEndpoint->kind();
 }
 
-FreshTuple& RangeKey::low_value()
+ValueKey& RangeKey::low_value()
 {
 	ensure_endpoint(m_lowEndpoint);
 	return m_lowEndpoint->value();
 }
 
-const FreshTuple& RangeKey::low_value() const
+const ValueKey& RangeKey::low_value() const
 {
 	assert(has_low_endpoint());
 	return m_lowEndpoint->value();
@@ -103,8 +129,8 @@ void RangeKey::ensure_endpoint(RangeEndpoint_Ptr& endpoint)
 {
 	if(endpoint.get() == NULL)
 	{
-		FreshTuple tuple(TupleManipulator(m_fieldManipulators, m_fieldIndices));
-		endpoint.reset(new RangeEndpoint(tuple, CLOSED));
+		ValueKey value(m_fieldManipulators, m_fieldIndices);
+		endpoint.reset(new RangeEndpoint(value, CLOSED));
 	}
 }
 

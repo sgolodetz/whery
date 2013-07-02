@@ -8,7 +8,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "FreshTuple.h"
+#include "ValueKey.h"
 
 namespace whery {
 
@@ -41,7 +41,7 @@ private:
 	RangeEndpointKind m_kind;
 
 	/** The value at the endpoint. */
-	FreshTuple m_value;
+	ValueKey m_value;
 
 	//#################### CONSTRUCTORS ####################
 public:
@@ -51,7 +51,7 @@ public:
 	\param value	The value at the endpoint.
 	\param kind		The kind of endpoint (open or closed).
 	*/
-	RangeEndpoint(const FreshTuple& value, RangeEndpointKind kind);
+	RangeEndpoint(const ValueKey& value, RangeEndpointKind kind);
 
 	//#################### PUBLIC METHODS ####################
 public:
@@ -67,7 +67,7 @@ public:
 
 	\return	The value at the endpoint.
 	*/
-	FreshTuple& value();
+	ValueKey& value();
 };
 
 typedef boost::shared_ptr<RangeEndpoint> RangeEndpoint_Ptr;
